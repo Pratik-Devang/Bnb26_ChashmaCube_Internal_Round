@@ -1,0 +1,18 @@
+{
+  "train": [
+    "inclusive-sum",
+    "sum-of-squares",
+    "filtered-even-sum",
+    "filtered-counting",
+    "inclusive-product",
+    "transformed-accumulation",
+    "offset-accumulation"
+  ],
+  "validation": [
+    "sum-of-cubes"
+  ],
+  "test": [
+    "filtered-odd-sum",
+    "weighted-accumulation"
+  ]
+}

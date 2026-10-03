@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://relearn.local/schemas/misconception-example.json",
+  "title": "Re:Learn misconception example",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "sampleId",
+    "problemId",
+    "problemFamily",
+    "split",
+    "prompt",
+    "submittedCode",
+    "testCases",
+    "testResults",
+    "label",
+    "source",
+    "reviewStatus",
+    "reviewedBy",
+    "reviewerNote",
+    "intendedFailure"
+  ],
+  "properties": {
+    "sampleId": { "type": "string", "minLength": 1 },
+    "problemId": { "type": "string", "minLength": 1 },
+    "problemFamily": { "type": "string", "minLength": 1 },
+    "split": { "enum": ["train", "validation", "test"] },
+    "prompt": { "type": "string", "minLength": 1 },
+    "submittedCode": { "type": "string", "minLength": 1 },
+    "learnerExplanation": { "type": ["string", "null"] },
+    "testCases": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "required": ["args", "expected"],
+        "properties": {
+          "args": { "type": "array" },
+          "expected": {}
+        }
+      }
+    },
+    "testResults": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "required": ["passed", "failed", "timedOut", "cases"],
+          "properties": {
+            "passed": { "type": "integer", "minimum": 0 },
+            "failed": { "type": "integer", "minimum": 0 },
+            "timedOut": { "type": "boolean" },
+            "cases": { "type": "array" }
+          }
+        }
+      ]
+    },
+    "label": {
+      "enum": [
+        "CORRECT",
+        "RANGE_ENDPOINT_EXCLUDED",
+        "WRONG_INITIALIZATION",
+        "ACCUMULATOR_OVERWRITTEN",
+        "WRONG_OR_MISSING_UPDATE",
+        "VARIABLE_ROLE_CONFUSION"
+      ]
+    },
+    "source": { "enum": ["synthetic-candidate", "manual", "mbpp", "mcminer"] },
+    "sourceReference": { "type": ["string", "null"] },
+    "reviewStatus": { "enum": ["PENDING", "NEEDS_SECOND_REVIEW", "APPROVED", "REJECTED"] },
+    "reviewedBy": { "type": "array", "items": { "type": "string" } },
+    "reviewerNote": { "type": ["string", "null"] },
+    "intendedFailure": { "type": "string", "minLength": 1 }
+  }
+}
