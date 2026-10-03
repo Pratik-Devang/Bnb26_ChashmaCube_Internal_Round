@@ -1,0 +1,112 @@
+[
+  {
+    "problemId": "inclusive-sum-01",
+    "problemFamily": "inclusive-sum",
+    "functionName": "inclusive_sum",
+    "prompt": "Return the sum of every whole number from 1 through n.",
+    "operation": "sum",
+    "termExpression": "i",
+    "neutralValue": "0",
+    "wrongInitialValue": "1",
+    "testCases": [{"args": [1], "expected": 1}, {"args": [5], "expected": 15}, {"args": [8], "expected": 36}]
+  },
+  {
+    "problemId": "square-sum-01",
+    "problemFamily": "sum-of-squares",
+    "functionName": "sum_squares",
+    "prompt": "Return the sum of the squares from 1 through n.",
+    "operation": "sum",
+    "termExpression": "i * i",
+    "neutralValue": "0",
+    "wrongInitialValue": "1",
+    "testCases": [{"args": [1], "expected": 1}, {"args": [3], "expected": 14}, {"args": [5], "expected": 55}]
+  },
+  {
+    "problemId": "cube-sum-01",
+    "problemFamily": "sum-of-cubes",
+    "functionName": "sum_cubes",
+    "prompt": "Return the sum of the cubes from 1 through n.",
+    "operation": "sum",
+    "termExpression": "i ** 3",
+    "neutralValue": "0",
+    "wrongInitialValue": "1",
+    "testCases": [{"args": [1], "expected": 1}, {"args": [3], "expected": 36}, {"args": [4], "expected": 100}]
+  },
+  {
+    "problemId": "even-sum-01",
+    "problemFamily": "filtered-even-sum",
+    "functionName": "sum_evens",
+    "prompt": "Return the sum of every even number from 1 through n.",
+    "operation": "filtered_sum",
+    "termExpression": "i if i % 2 == 0 else 0",
+    "neutralValue": "0",
+    "wrongInitialValue": "2",
+    "testCases": [{"args": [2], "expected": 2}, {"args": [6], "expected": 12}, {"args": [9], "expected": 20}]
+  },
+  {
+    "problemId": "odd-sum-01",
+    "problemFamily": "filtered-odd-sum",
+    "functionName": "sum_odds",
+    "prompt": "Return the sum of every odd number from 1 through n.",
+    "operation": "filtered_sum",
+    "termExpression": "i if i % 2 == 1 else 0",
+    "neutralValue": "0",
+    "wrongInitialValue": "1",
+    "testCases": [{"args": [1], "expected": 1}, {"args": [5], "expected": 9}, {"args": [8], "expected": 16}]
+  },
+  {
+    "problemId": "multiple-count-01",
+    "problemFamily": "filtered-counting",
+    "functionName": "count_multiples_of_three",
+    "prompt": "Count the numbers from 1 through n that are divisible by 3.",
+    "operation": "count",
+    "termExpression": "1 if i % 3 == 0 else 0",
+    "neutralValue": "0",
+    "wrongInitialValue": "1",
+    "testCases": [{"args": [2], "expected": 0}, {"args": [6], "expected": 2}, {"args": [10], "expected": 3}]
+  },
+  {
+    "problemId": "factorial-01",
+    "problemFamily": "inclusive-product",
+    "functionName": "factorial_loop",
+    "prompt": "Return the product of every whole number from 1 through n.",
+    "operation": "product",
+    "termExpression": "i",
+    "neutralValue": "1",
+    "wrongInitialValue": "0",
+    "testCases": [{"args": [1], "expected": 1}, {"args": [4], "expected": 24}, {"args": [6], "expected": 720}]
+  },
+  {
+    "problemId": "double-sum-01",
+    "problemFamily": "transformed-accumulation",
+    "functionName": "sum_doubles",
+    "prompt": "Double each number from 1 through n and return their total.",
+    "operation": "sum",
+    "termExpression": "2 * i",
+    "neutralValue": "0",
+    "wrongInitialValue": "2",
+    "testCases": [{"args": [1], "expected": 2}, {"args": [3], "expected": 12}, {"args": [5], "expected": 30}]
+  },
+  {
+    "problemId": "triangular-offset-01",
+    "problemFamily": "offset-accumulation",
+    "functionName": "sum_after_ten",
+    "prompt": "Starting with 10, add every whole number from 1 through n and return the result.",
+    "operation": "sum",
+    "termExpression": "i",
+    "neutralValue": "10",
+    "wrongInitialValue": "0",
+    "testCases": [{"args": [1], "expected": 11}, {"args": [4], "expected": 20}, {"args": [6], "expected": 31}]
+  },
+  {
+    "problemId": "weighted-sum-01",
+    "problemFamily": "weighted-accumulation",
+    "functionName": "weighted_sum",
+    "prompt": "For every number i from 1 through n, add i times n and return the total.",
+    "operation": "sum",
+    "termExpression": "i * n",
+    "neutralValue": "0",
+    "wrongInitialValue": "1",
+    "testCases": [{"args": [1], "expected": 1}, {"args": [3], "expected": 18}, {"args": [5], "expected": 75}]
+  }
+]

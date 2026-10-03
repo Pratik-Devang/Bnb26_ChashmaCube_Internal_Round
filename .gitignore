@@ -1,0 +1,13 @@
+node_modules/
+.next/
+out/
+build/
+.env*
+!.env.example
+*.log
+.DS_Store
+__pycache__/
+*.py[cod]
+.venv/
+relearn-ml/artifacts/*.joblib
+relearn-ml/artifacts/*.pkl
