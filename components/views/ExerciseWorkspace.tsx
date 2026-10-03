@@ -243,7 +243,7 @@ export function ExerciseWorkspace({ exerciseId }: Props) {
           attemptType: reassessmentType,
           parentAttemptId: parentAttemptId || undefined,
           interventionId: activeInterventionId,
-          testResults,
+          testResults: currentTestResults || testResults || { passed: 0, failed: 0, cases: [] },
         });
         setDiagnosisResponse(reassessResponse);
 

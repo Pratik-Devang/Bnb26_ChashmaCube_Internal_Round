@@ -1,0 +1,50 @@
+{
+    "activeFile": "",
+    "expandedProjectPaths": [
+        "."
+    ],
+    "fileStates": {
+        "Tile.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1.5
+        },
+        "Tiled2.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "Tiled_animation_32px.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1.5
+        },
+        "Tiled_map.tmx": {
+            "scale": 1.5,
+            "selectedLayer": 3,
+            "viewCenter": {
+                "x": 590,
+                "y": 400
+            }
+        }
+    },
+    "last.exportedFilePath": "B:/Заказы/Craftpix_Gamekit_Island_1_8px/Tiled",
+    "last.imagePath": "B:/Заказы/Craftpix_Gamekit_Island_1_8px/Tiled",
+    "map.height": 40,
+    "map.lastUsedExportFilter": "Все файлы (*)",
+    "map.lastUsedFormat": "tmx",
+    "map.tileHeight": 16,
+    "map.tileWidth": 16,
+    "map.width": 50,
+    "openFiles": [
+    ],
+    "project": "Tiled.tiled-project",
+    "recentFiles": [
+        "Tiled_map.tmx",
+        "Tile.tsx",
+        "Tiled_animation_32px.tsx",
+        "Tiled2.tsx"
+    ],
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.tileSize": {
+        "height": 32,
+        "width": 32
+    }
+}
