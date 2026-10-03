@@ -8,6 +8,7 @@ import { LearningPath } from "@/components/dashboard/LearningPath";
 import { ActiveGameCard } from "@/components/dashboard/ActiveGameCard";
 import { QuestPanel } from "@/components/dashboard/QuestPanel";
 import { ProgressOverview } from "@/components/dashboard/ProgressOverview";
+import { ExerciseLibrary } from "@/components/dashboard/ExerciseLibrary";
 import { conceptStates, diagnosis, learner, learningModules, quests as initialQuests, statistics } from "@/lib/mock-data";
 import type { Quest } from "@/types/learning";
 
@@ -53,6 +54,7 @@ export default function DashboardPage() {
           <LearningPath modules={filteredModules} expandedIds={expandedIds} gameRunning={gameRunning} onToggleDetails={toggleDetails} onToggleGame={() => setGameRunning((value) => !value)} />
           <ActiveGameCard diagnosis={diagnosis} running={gameRunning} onToggle={() => setGameRunning((value) => !value)} />
           <ProgressOverview concepts={conceptStates} />
+          <ExerciseLibrary />
         </div>
         <QuestPanel quests={quests} streak={learner.streak} onComplete={completeQuest} />
       </div>

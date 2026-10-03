@@ -1,5 +1,4 @@
 import {
-  activeExercise,
   conceptStates,
   learner,
   learningModules,
@@ -7,6 +6,7 @@ import {
   quests,
   statistics,
 } from "./mock-data";
+import { demoExercises } from "./demo-content";
 import type {
   AttemptRequest,
   AttemptResponse,
@@ -29,7 +29,9 @@ export async function getLearningPlan(): Promise<LearningPlanResponse> {
 }
 
 export async function getExercise(exerciseId: string): Promise<Exercise> {
-  return mockDelay({ ...activeExercise, id: exerciseId });
+  const found = demoExercises.find((item) => item.id === exerciseId);
+  if (!found) throw new Error("Exercise not found");
+  return mockDelay(found);
 }
 
 export async function submitAttempt(payload: AttemptRequest): Promise<AttemptResponse> {
