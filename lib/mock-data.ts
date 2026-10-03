@@ -21,14 +21,14 @@ export const learner: Learner = {
 export const learningModules: LearningModule[] = [
   {
     id: "variables",
-    title: "Variables & values",
-    description: "Give information a name so your program can remember it.",
-    beginnerNote: "Think of a variable as a labeled box that can hold a value.",
+    title: "The First Island",
+    description: "Explore the island and learn variables and values from its inhabitants.",
+    beginnerNote: "Travel from teacher to teacher in order, then complete the Island Scout's coding trial.",
     status: "completed",
     progress: 100,
-    xpReward: 80,
+    xpReward: 110,
     accent: "cyan",
-    icon: "📦",
+    icon: "🏝️",
     misconception: "CORRECT",
   },
   {

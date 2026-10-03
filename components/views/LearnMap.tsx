@@ -9,8 +9,9 @@ import { PageHeader } from "@/components/ui/PageHeader";
 export function LearnMap() {
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState("loop-boundaries");
-  const modules = useMemo(() => learningModules.filter((item) => item.title.toLowerCase().includes(query.toLowerCase())), [query]);
+  const modules = useMemo(() => learningModules.filter((item) => `${item.title} ${item.description} ${item.id}`.toLowerCase().includes(query.toLowerCase())), [query]);
   const active = learningModules.find((item) => item.id === selected) ?? learningModules[2];
+  const isFirstIsland = active.id === "variables";
 
   return (
     <main className="route-page learn-page">
@@ -43,11 +44,17 @@ export function LearnMap() {
           <h2>{active.title}</h2>
           <p>{active.beginnerNote}</p>
           <div className="focus-meter"><span><i style={{ width: `${active.progress}%` }} /></span><strong>{active.progress}%</strong></div>
-          <dl><div><dt>Reward</dt><dd>+{active.xpReward} XP</dd></div><div><dt>Format</dt><dd>{active.status === "active" ? "Mini-game" : "Lesson"}</dd></div><div><dt>Time</dt><dd>8 min</dd></div></dl>
+          <dl><div><dt>Reward</dt><dd>+{active.xpReward} XP</dd></div><div><dt>Format</dt><dd>{isFirstIsland ? "Island journey" : active.status === "active" ? "Mini-game" : "Lesson"}</dd></div><div><dt>Time</dt><dd>{isFirstIsland ? "15 min" : "8 min"}</dd></div></dl>
           {active.status === "locked" ? <button className="solid-action" disabled><Icon name="lock" />Finish earlier stops</button> : (
             <div className="lesson-actions">
-              <Link className="solid-action" href={`/topics/${active.id}?mode=lesson`}><Icon name="play" />{active.status === "completed" ? "Review this lesson" : "Start this lesson"}</Link>
-              <Link className="quiet-action" href={`/topics/${active.id}?mode=practice`}><Icon name="target" />Practice again</Link>
+              {isFirstIsland ? (
+                <Link className="solid-action" href="/game"><Icon name="play" />Enter The First Island</Link>
+              ) : (
+                <>
+                  <Link className="solid-action" href={`/topics/${active.id}?mode=lesson`}><Icon name="play" />{active.status === "completed" ? "Review this lesson" : "Start this lesson"}</Link>
+                  <Link className="quiet-action" href={`/topics/${active.id}?mode=practice`}><Icon name="target" />Practice again</Link>
+                </>
+              )}
             </div>
           )}
           {active.status === "active" ? <div className="gentle-note"><Icon name="brain" /><span><strong>Why this lesson?</strong>Your last answer suggests the final step of a range deserves a closer look.</span></div> : null}
