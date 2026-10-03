@@ -212,8 +212,9 @@ async def main() -> None:
     async with async_session_factory() as session:
         await seed_demo_data(session)
     await dispose_engine()
-    print("Seeded deterministic Re:Learn demo data.")
-
-
 if __name__ == "__main__":
+    import sys
+    if sys.platform == "win32":
+        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
     asyncio.run(main())
+

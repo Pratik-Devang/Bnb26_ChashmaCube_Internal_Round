@@ -20,3 +20,7 @@ htmlcov/
 relearn-ml/artifacts/*.joblib
 relearn-ml/artifacts/*.pkl
 relearn-api/tmp/
+
+# Pyodide local install – large binaries should not be committed.
+# Run: npm run setup:pyodide  (or: Copy-Item node_modules/pyodide/* public/pyodide/ -Recurse)
+public/pyodide/
