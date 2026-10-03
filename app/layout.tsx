@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { AppFrame } from "@/components/navigation/AppFrame";
 
 export const metadata: Metadata = {
   title: "re:learn · Turn mistakes into mastery",
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body><AppFrame>{children}</AppFrame></body>
     </html>
   );
 }
