@@ -1,10 +1,11 @@
 import {
-  activeExercise,
   conceptStates,
+  exerciseCatalog,
   learner,
   learningModules,
   mockDiagnosisResponse,
-  quests,
+  mockIntervention,
+  quests as initialQuests,
   statistics,
 } from "./mock-data";
 import type {
@@ -12,57 +13,351 @@ import type {
   AttemptResponse,
   DiagnosisResponse,
   Exercise,
+  Intervention,
+  InterventionCompletion,
   LearnerConceptState,
   LearningPlanResponse,
+  ModelMetrics,
   Quest,
+  QuestCompletion,
   ReassessmentRequest,
 } from "@/types/learning";
 
-/** Base URL for the future FastAPI service. Components should only call this module. */
-export const NEXT_PUBLIC_API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
+/**
+ * Custom typed error class for API errors.
+ */
+export class ApiError extends Error {
+  public code: string;
+  public status: number;
+  public details?: Record<string, unknown> | null;
 
-const mockDelay = <T,>(value: T): Promise<T> =>
-  new Promise((resolve) => setTimeout(() => resolve(value), 180));
+  constructor(message: string, code = "API_ERROR", status = 500, details?: Record<string, unknown> | null) {
+    super(message);
+    this.name = "ApiError";
+    this.code = code;
+    this.status = status;
+    this.details = details;
+  }
+}
 
-export async function getLearningPlan(): Promise<LearningPlanResponse> {
-  return mockDelay({ learner, modules: learningModules, quests, statistics });
+/** Base URL for the FastAPI service. When omitted or blank, mock mode is active. */
+export const NEXT_PUBLIC_API_BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL ?? "").trim();
+
+const isMockMode = !NEXT_PUBLIC_API_BASE_URL;
+
+const mockDelay = <T,>(value: T, delayMs = 180): Promise<T> =>
+  new Promise((resolve) => setTimeout(() => resolve(value), delayMs));
+
+let mockQuestsState = [...initialQuests];
+let mockLastAttemptCode = "";
+
+function normalizeBaseUrl(url: string): string {
+  return url.replace(/\/+$/, "");
+}
+
+async function apiFetch<T>(endpoint: string, init?: RequestInit): Promise<T> {
+  const base = normalizeBaseUrl(NEXT_PUBLIC_API_BASE_URL);
+  const path = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+  const url = `${base}${path}`;
+
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      ...init,
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        ...init?.headers,
+      },
+    });
+  } catch (error) {
+    throw new ApiError(
+      `Network error: unable to reach Re:Learn API at ${base}. Please ensure the server is running.`,
+      "NETWORK_ERROR",
+      0,
+      { originalError: error instanceof Error ? error.message : String(error) }
+    );
+  }
+
+  const rawText = await response.text();
+  let json: unknown = null;
+  try {
+    json = rawText ? JSON.parse(rawText) : null;
+  } catch {
+    json = null;
+  }
+
+  if (!response.ok) {
+    if (json && typeof json === "object") {
+      const data = json as Record<string, unknown>;
+      if (typeof data.code === "string" && typeof data.message === "string") {
+        throw new ApiError(
+          data.message,
+          data.code,
+          response.status,
+          (data.details as Record<string, unknown>) ?? null
+        );
+      }
+      if (data.detail) {
+        if (typeof data.detail === "string") {
+          throw new ApiError(data.detail, "HTTP_ERROR", response.status);
+        }
+        if (typeof data.detail === "object" && data.detail !== null) {
+          const detailObj = data.detail as Record<string, unknown>;
+          if (typeof detailObj.message === "string") {
+            throw new ApiError(
+              detailObj.message,
+              typeof detailObj.code === "string" ? detailObj.code : "HTTP_ERROR",
+              response.status,
+              detailObj.details as Record<string, unknown>
+            );
+          }
+        }
+        throw new ApiError(
+          "Request validation failed.",
+          "VALIDATION_ERROR",
+          response.status,
+          { detail: data.detail }
+        );
+      }
+    }
+    throw new ApiError(
+      rawText || `Request failed with status ${response.status}`,
+      "HTTP_ERROR",
+      response.status
+    );
+  }
+
+  return json as T;
+}
+
+export async function getLearningPlan(learnerId = "learner-demo"): Promise<LearningPlanResponse> {
+  if (isMockMode) {
+    return mockDelay({
+      learner,
+      modules: learningModules,
+      quests: mockQuestsState,
+      statistics,
+    });
+  }
+  return apiFetch<LearningPlanResponse>(`/api/v1/learning-plan?learnerId=${encodeURIComponent(learnerId)}`);
 }
 
 export async function getExercise(exerciseId: string): Promise<Exercise> {
-  return mockDelay({ ...activeExercise, id: exerciseId });
+  if (isMockMode) {
+    const found = exerciseCatalog[exerciseId];
+    if (!found) {
+      throw new ApiError(`Exercise '${exerciseId}' was not found in mock catalog.`, "EXERCISE_NOT_FOUND", 404);
+    }
+    return mockDelay({ ...found });
+  }
+  return apiFetch<Exercise>(`/api/v1/exercises/${encodeURIComponent(exerciseId)}`);
 }
 
 export async function submitAttempt(payload: AttemptRequest): Promise<AttemptResponse> {
-  return mockDelay({
-    id: "attempt-demo",
-    learnerId: payload.learnerId,
-    exerciseId: payload.exerciseId,
-    createdAt: new Date().toISOString(),
+  if (isMockMode) {
+    mockLastAttemptCode = payload.submittedCode;
+    return mockDelay({
+      id: `attempt-mock-${Date.now()}`,
+      learnerId: payload.learnerId,
+      exerciseId: payload.exerciseId,
+      attemptType: payload.attemptType ?? "INITIAL",
+      parentAttemptId: payload.parentAttemptId ?? null,
+      createdAt: new Date().toISOString(),
+    });
+  }
+  return apiFetch<AttemptResponse>("/api/v1/attempts", {
+    method: "POST",
+    body: JSON.stringify(payload),
   });
 }
 
 export async function requestDiagnosis(attemptId: string): Promise<DiagnosisResponse> {
-  return mockDelay({ ...mockDiagnosisResponse, attemptId });
+  if (isMockMode) {
+    const code = mockLastAttemptCode;
+    const isPassing = !code.includes("range(1, n)") && (code.includes("range(1, n + 1)") || code.includes("range(1, n+1)") || code.includes("for x in values") || code.includes("range(step, n + 1"));
+    if (isPassing) {
+      return mockDelay({
+        attemptId,
+        diagnosis: {
+          id: `diagnosis-pass-${Date.now()}`,
+          misconceptionCode: "CORRECT",
+          learnerFriendlyName: "Ready for the next step",
+          confidence: 0.99,
+          summary: "Your solution passed every test successfully!",
+          evidence: [{ type: "test", message: "All test cases produced the expected result." }],
+          classProbabilities: { CORRECT: 0.99 },
+          modelVersion: "rule-based-mock-v1",
+        },
+        intervention: mockIntervention,
+        reassessmentExerciseId: "list-traversal-04",
+        conceptStatus: "IMPROVING",
+      });
+    }
+
+    const hasBoundaryBug = /range\s*\(\s*1\s*,\s*n\s*\)/.test(code);
+    if (hasBoundaryBug) {
+      return mockDelay({
+        ...mockDiagnosisResponse,
+        attemptId,
+      });
+    }
+
+    return mockDelay({
+      attemptId,
+      diagnosis: {
+        id: `diagnosis-unc-${Date.now()}`,
+        misconceptionCode: "UNCERTAIN",
+        learnerFriendlyName: "Let’s look a little closer",
+        confidence: 0.0,
+        summary: "No standard misconception pattern was detected in your code. Review your loop boundaries.",
+        evidence: [{ type: "code", message: "Inspect your loop initialization, range, or update condition." }],
+        classProbabilities: { UNCERTAIN: 1.0 },
+        modelVersion: "rule-based-mock-v1",
+      },
+      intervention: mockIntervention,
+      reassessmentExerciseId: "list-traversal-04",
+      conceptStatus: "NEEDS_PRACTICE",
+    });
+  }
+  return apiFetch<DiagnosisResponse>(`/api/v1/attempts/${encodeURIComponent(attemptId)}/diagnose`, {
+    method: "POST",
+  });
 }
 
-export async function getLearnerProgress(_learnerId: string): Promise<LearnerConceptState[]> {
-  return mockDelay(conceptStates);
+export async function getDiagnosis(diagnosisId: string): Promise<DiagnosisResponse> {
+  if (isMockMode) {
+    return mockDelay({ ...mockDiagnosisResponse });
+  }
+  return apiFetch<DiagnosisResponse>(`/api/v1/diagnoses/${encodeURIComponent(diagnosisId)}`);
 }
 
-export async function completeIntervention(interventionId: string): Promise<{ interventionId: string; completed: true }> {
-  return mockDelay({ interventionId, completed: true });
+export async function selectIntervention(diagnosisId: string): Promise<Intervention> {
+  if (isMockMode) {
+    return mockDelay({ ...mockIntervention, diagnosisId });
+  }
+  return apiFetch<Intervention>(`/api/v1/diagnoses/${encodeURIComponent(diagnosisId)}/intervention`, {
+    method: "POST",
+  });
+}
+
+export async function completeIntervention(
+  interventionId: string,
+  learnerId = "learner-demo"
+): Promise<InterventionCompletion> {
+  if (isMockMode) {
+    return mockDelay({
+      interventionId,
+      completed: true,
+      completedAt: new Date().toISOString(),
+      nearTransferExerciseId: "list-traversal-04",
+      farTransferExerciseId: "multiples-through-n-02",
+    });
+  }
+  return apiFetch<InterventionCompletion>(`/api/v1/interventions/${encodeURIComponent(interventionId)}/complete`, {
+    method: "POST",
+    body: JSON.stringify({ learnerId }),
+  });
 }
 
 export async function submitReassessment(payload: ReassessmentRequest): Promise<DiagnosisResponse> {
-  return mockDelay({ ...mockDiagnosisResponse, attemptId: `reassessment-${payload.exerciseId}` });
+  if (isMockMode) {
+    const isFar = payload.attemptType === "FAR_TRANSFER";
+    const allPassing = payload.testResults.failed === 0 && payload.testResults.passed > 0;
+    const finalStatus = isFar && allPassing ? "RESOLVED" : allPassing ? "IMPROVING" : "NEEDS_PRACTICE";
+
+    return mockDelay({
+      attemptId: `attempt-reassess-${Date.now()}`,
+      diagnosis: {
+        id: `diag-reassess-${Date.now()}`,
+        misconceptionCode: allPassing ? "CORRECT" : "RANGE_ENDPOINT_EXCLUDED",
+        learnerFriendlyName: allPassing ? "Ready for the next step" : "Boundary bug",
+        confidence: 0.96,
+        summary: allPassing
+          ? isFar
+            ? "Outstanding! You proved mastery across both transfer challenges."
+            : "Great job! The near-transfer challenge confirmed your understanding."
+          : "The loop endpoint still missed the final required value.",
+        evidence: allPassing
+          ? [{ type: "test", message: "All test cases passed." }]
+          : [{ type: "code", message: "Check that the loop range or index covers the end of the collection." }],
+        classProbabilities: { CORRECT: allPassing ? 0.98 : 0.05 },
+        modelVersion: "rule-based-mock-v1",
+      },
+      intervention: mockIntervention,
+      reassessmentExerciseId: isFar ? null : "multiples-through-n-02",
+      conceptStatus: finalStatus,
+    });
+  }
+  return apiFetch<DiagnosisResponse>("/api/v1/reassessments", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
 }
 
-export async function getQuests(_learnerId: string): Promise<Quest[]> {
-  return mockDelay(quests);
+export async function getLearnerProgress(learnerId = "learner-demo"): Promise<LearnerConceptState[]> {
+  if (isMockMode) {
+    return mockDelay(conceptStates);
+  }
+  const response = await apiFetch<{
+    learnerId: string;
+    concepts: {
+      conceptId: string;
+      concept: string;
+      status: string;
+      masteryScore: number;
+      evidenceCount: number;
+      lastMisconceptionCode?: string | null;
+      updatedAt: string;
+    }[];
+  }>(`/api/v1/learners/${encodeURIComponent(learnerId)}/progress`);
+
+  return response.concepts.map((item) => {
+    const stateStr = item.status.toLowerCase().replace("_", "-") as LearnerConceptState["state"];
+    return {
+      id: item.conceptId,
+      concept: item.concept,
+      state: stateStr,
+      mastery: Math.round(item.masteryScore * 100),
+      friendlyDescription: `Mastery at ${Math.round(item.masteryScore * 100)}% (${item.evidenceCount} attempts)`,
+      misconception: (item.lastMisconceptionCode as LearnerConceptState["misconception"]) ?? "CORRECT",
+    };
+  });
 }
 
-export async function completeQuest(questId: string): Promise<Quest> {
-  const quest = quests.find((item) => item.id === questId);
-  if (!quest) throw new Error("Quest not found");
-  return mockDelay({ ...quest, status: "completed" });
+export async function getQuests(learnerId = "learner-demo"): Promise<Quest[]> {
+  if (isMockMode) {
+    return mockDelay(mockQuestsState);
+  }
+  return apiFetch<Quest[]>(`/api/v1/learners/${encodeURIComponent(learnerId)}/quests`);
+}
+
+export async function completeQuest(questId: string, learnerId = "learner-demo"): Promise<QuestCompletion> {
+  if (isMockMode) {
+    const quest = mockQuestsState.find((item) => item.id === questId);
+    if (!quest) throw new ApiError(`Quest '${questId}' not found`, "QUEST_NOT_FOUND", 404);
+    quest.status = "completed";
+    return mockDelay({
+      quest: { ...quest, status: "completed" },
+      learnerXp: learner.xp + quest.xpReward,
+      xpAwarded: quest.xpReward,
+    });
+  }
+  return apiFetch<QuestCompletion>(`/api/v1/quests/${encodeURIComponent(questId)}/complete`, {
+    method: "POST",
+    body: JSON.stringify({ learnerId }),
+  });
+}
+
+export async function getModelMetrics(): Promise<ModelMetrics> {
+  if (isMockMode) {
+    return mockDelay({
+      id: "model-rule-demo-v1",
+      name: "rule-based-demo-v1",
+      datasetVersion: "baseline-curated",
+      metrics: { kind: "deterministic-integration-provider", accuracy: 0.96 },
+      createdAt: new Date().toISOString(),
+    });
+  }
+  return apiFetch<ModelMetrics>("/api/v1/model/metrics");
 }

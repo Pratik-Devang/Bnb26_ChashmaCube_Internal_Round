@@ -173,18 +173,70 @@ export const statistics: DashboardStatistics = {
   inProgress: learningModules.filter((module) => module.status === "active").length,
 };
 
-export const activeExercise: Exercise = {
-  id: "inclusive-sum-01",
-  conceptId: "loop-boundaries",
-  title: "Add every number",
-  prompt: "Write a loop that adds every whole number from 1 through n.",
-  difficulty: "beginner",
-  starterCode: "def inclusive_sum(n):\n    total = 0\n    # Write your loop here\n    return total",
-  testCases: [
-    { input: { n: 5 }, expected: 15 },
-    { input: { n: 3 }, expected: 6 },
-  ],
-  exerciseType: "practice",
+export const exerciseCatalog: Record<string, Exercise> = {
+  "inclusive-sum-01": {
+    id: "inclusive-sum-01",
+    conceptId: "concept-loop-boundaries",
+    title: "Add every number",
+    prompt: "Write inclusive_sum(n) so it returns the sum of every whole number from 1 through n.",
+    difficulty: "beginner",
+    starterCode: "def inclusive_sum(n):\n    total = 0\n    # Add your loop here\n    return total",
+    testCases: [
+      { args: [1], expected: 1 },
+      { args: [5], expected: 15 },
+      { args: [8], expected: 36 },
+    ],
+    exerciseType: "PRACTICE",
+  },
+  "list-traversal-04": {
+    id: "list-traversal-04",
+    conceptId: "concept-loop-boundaries",
+    title: "Visit every item",
+    prompt: "Write add_items(values) so it adds every number in the list, including the final item.",
+    difficulty: "beginner",
+    starterCode: "def add_items(values):\n    total = 0\n    # Visit every index\n    return total",
+    testCases: [
+      { args: [[4]], expected: 4 },
+      { args: [[2, 3, 5]], expected: 10 },
+      { args: [[1, 1, 1, 7]], expected: 10 },
+    ],
+    exerciseType: "NEAR_TRANSFER",
+  },
+  "multiples-through-n-02": {
+    id: "multiples-through-n-02",
+    conceptId: "concept-loop-boundaries",
+    title: "Count landing tiles",
+    prompt: "Write count_multiples(n, step) to count multiples of step from step through n, including n when it is a multiple.",
+    difficulty: "beginner",
+    starterCode: "def count_multiples(n, step):\n    count = 0\n    # Count every landing tile\n    return count",
+    testCases: [
+      { args: [6, 3], expected: 2 },
+      { args: [10, 2], expected: 5 },
+      { args: [9, 4], expected: 2 },
+    ],
+    exerciseType: "FAR_TRANSFER",
+  },
+};
+
+export const activeExercise: Exercise = exerciseCatalog["inclusive-sum-01"];
+
+export const mockIntervention = {
+  id: "intervention-123",
+  type: "RANGE_PATH_GAME",
+  title: "Help Byte reach the final tile",
+  estimatedMinutes: 2,
+  content: {
+    type: "RANGE_PATH_GAME",
+    title: "Help Byte reach the final tile",
+    estimatedMinutes: 2,
+    instructions: "Choose an endpoint that lets Byte visit every required tile.",
+    rounds: [
+      { start: 1, requiredLastTile: 5, choices: [5, 6, 7], correctStop: 6 },
+      { start: 2, requiredLastTile: 8, choices: [8, 9, 10], correctStop: 9 },
+    ],
+    nearTransferExerciseId: "list-traversal-04",
+    farTransferExerciseId: "multiples-through-n-02",
+  },
 };
 
 export const mockDiagnosisResponse: DiagnosisResponse = {
@@ -208,11 +260,8 @@ export const mockDiagnosisResponse: DiagnosisResponse = {
     },
     modelVersion: "baseline-demo-v0",
   },
-  intervention: {
-    id: "intervention-123",
-    type: "RANGE_PATH_GAME",
-    title: "Help Byte reach the final tile",
-    estimatedMinutes: 2,
-  },
+  intervention: mockIntervention,
   reassessmentExerciseId: "list-traversal-04",
+  conceptStatus: "NEEDS_PRACTICE",
 };
+
