@@ -19,6 +19,17 @@ uvicorn app.main:app --reload
 
 Check the service at `http://localhost:8000/health` and the generated API documentation at `http://localhost:8000/docs`.
 
+## Create and seed the database
+
+After PostgreSQL is running and `.env` contains the correct connection string:
+
+```powershell
+alembic upgrade head
+python -m app.seed.demo_data
+```
+
+The seed command is repeatable and restores the deterministic demo learner, concepts, misconceptions, three boundary exercises, intervention content, quests, and initial progress state. It does not create ML training examples.
+
 ## Architecture boundaries
 
 - `app/api/` owns HTTP routing only.
