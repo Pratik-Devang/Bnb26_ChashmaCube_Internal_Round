@@ -1,3 +1,46 @@
+export type GameSpriteKey =
+  | "traveler"
+  | "slime"
+  | "emberbug"
+  | "bristleback"
+  | "fox"
+  | "mossling"
+  | "scout"
+  | "caveKeeper";
+
+export type MapPosition = { x: number; y: number };
+
+export type IslandLesson = {
+  id: string;
+  order: number;
+  title: string;
+  eyebrow: string;
+  body: string[];
+  code?: string;
+  takeaway?: string;
+};
+
+export type IslandActor = {
+  id: string;
+  name: string;
+  sprite: GameSpriteKey;
+  frames: 4 | 5 | 6 | 8;
+  role: "ambient" | "teacher" | "challenge";
+  reaction: string;
+  position: MapPosition;
+  scale?: number;
+  lesson?: IslandLesson;
+};
+
+export type FirstIslandProgress = {
+  completedLessonIds: string[];
+  challengeCompleted: boolean;
+  coinsEarned: number;
+};
+
+/** Legacy prototype types retained until the original static GameWorld is removed. */
+export type AmbientActor = Omit<IslandActor, "role" | "lesson">;
+
 export type LearningLandmark = {
   id: string;
   title: string;
@@ -7,21 +50,5 @@ export type LearningLandmark = {
   reward: number;
   difficulty: "Beginner" | "Intermediate" | "Advanced";
   exerciseId: string;
-  position: {
-    x: number;
-    y: number;
-  };
-};
-
-export type AmbientActor = {
-  id: string;
-  name: string;
-  sprite: "traveler" | "slime" | "emberbug" | "bristleback" | "fox" | "mossling" | "scout" | "caveKeeper";
-  frames: 4 | 5 | 6 | 8;
-  reaction: string;
-  position: {
-    x: number;
-    y: number;
-  };
-  scale?: number;
+  position: MapPosition;
 };

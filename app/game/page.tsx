@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { GameWorld } from "@/components/game/GameWorld";
+import { FirstIslandWorld } from "@/components/game/FirstIslandWorld";
 
 export const metadata: Metadata = {
-  title: "Starter Island · Re:Learn",
-  description: "Explore a game-world prototype for Re:Learn.",
+  title: "The First Island · Re:Learn",
+  description: "Learn variables and values by exploring The First Island.",
 };
 
 export default function GamePage() {
-  return <GameWorld />;
+  return <FirstIslandWorld />;
 }
