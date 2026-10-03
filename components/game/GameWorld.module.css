@@ -1,0 +1,704 @@
+.gameRoot {
+  --night: #101812;
+  --panel: #1a281d;
+  --panel-light: #243529;
+  --cream: #fff6d6;
+  --moss: #b8d34e;
+  --lime: #dcf36a;
+  --gold: #ffc94d;
+  --muted: #98a696;
+  min-height: 100vh;
+  overflow: hidden;
+  position: relative;
+  padding: 24px 32px 18px;
+  background: #0d150f;
+  color: var(--cream);
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  isolation: isolate;
+}
+
+.gameRoot::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  opacity: .2;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(184, 211, 78, .035) 2px, transparent 2px),
+    linear-gradient(90deg, rgba(184, 211, 78, .035) 2px, transparent 2px);
+  background-size: 16px 16px;
+}
+
+.ambientGlow {
+  position: fixed;
+  z-index: -1;
+  width: 520px;
+  height: 520px;
+  top: -260px;
+  left: calc(50% - 260px);
+  border-radius: 50%;
+  background: rgba(184, 211, 78, .06);
+  filter: blur(110px);
+  pointer-events: none;
+}
+
+.topBar {
+  width: min(1480px, 100%);
+  min-height: 64px;
+  margin: 0 auto 16px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 28px;
+}
+
+.gameBrand {
+  width: fit-content;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.brandMark {
+  width: 43px;
+  height: 43px;
+  display: grid;
+  place-items: center;
+  border: 3px solid #090e0a;
+  border-radius: 2px;
+  background: var(--lime);
+  color: #152011;
+  font-family: Georgia, serif;
+  font-size: 1.45rem;
+  font-weight: 900;
+  box-shadow: 4px 4px 0 #080d09, 0 0 0 2px #4e6330;
+}
+
+.gameBrand > span:last-child,
+.locationPill > span {
+  display: flex;
+  flex-direction: column;
+}
+
+.gameBrand strong {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 1.05rem;
+  letter-spacing: -.03em;
+}
+
+.gameBrand small,
+.locationPill small {
+  color: var(--moss);
+  font-size: .54rem;
+  font-weight: 900;
+  letter-spacing: .15em;
+}
+
+.locationPill {
+  min-width: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 9px 18px;
+  border: 2px solid #3f533d;
+  border-radius: 2px;
+  background: #18241b;
+  box-shadow: 4px 4px 0 #070c08, inset 0 0 0 2px #101a13;
+  clip-path: polygon(6px 0, calc(100% - 6px) 0, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0 calc(100% - 6px), 0 6px);
+}
+
+.locationPill svg {
+  width: 23px;
+  height: 23px;
+  fill: none;
+  stroke: var(--lime);
+  stroke-width: 1.7;
+}
+
+.locationPill strong { font-size: .82rem; }
+
+.topActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 9px;
+}
+
+.coinWallet,
+.iconButton,
+.exitButton {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #344b35;
+  border-radius: 2px;
+  background: #19261c;
+  box-shadow: 3px 3px 0 #070c08;
+}
+
+.coinWallet { gap: 7px; padding: 0 13px; }
+.coin { width: 12px; height: 12px; overflow: hidden; border: 2px solid #8e601a; background: var(--gold); color: transparent; box-shadow: inset 2px 2px 0 #ffe990; }
+.coinWallet strong { font-size: .78rem; }
+
+.iconButton {
+  width: 40px;
+  padding: 0;
+  position: relative;
+  color: var(--cream);
+  cursor: pointer;
+}
+
+.iconButton svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+}
+
+.iconButton i {
+  position: absolute;
+  width: 22px;
+  height: 2px;
+  background: #ff766d;
+  transform: rotate(-45deg);
+}
+
+.exitButton {
+  padding: 0 14px;
+  color: #d7dfd4;
+  font-size: .67rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  transition: border-color .18s ease, color .18s ease;
+}
+
+.exitButton:hover { border-color: var(--moss); color: var(--lime); transform: translate(-1px, -1px); box-shadow: 4px 4px 0 #070c08; }
+
+.worldShell {
+  width: min(1480px, 100%);
+  height: calc(100vh - 142px);
+  min-height: 640px;
+  max-height: 820px;
+  margin: 0 auto;
+  position: relative;
+  display: grid;
+  place-items: center;
+  border: 3px solid #3a503b;
+  border-radius: 2px;
+  background: #111a13;
+  box-shadow: 8px 8px 0 #050906, inset 0 0 0 4px #0b110d;
+  overflow: hidden;
+}
+
+.mapViewport {
+  height: min(calc(100% - 24px), 800px);
+  aspect-ratio: 5 / 4;
+  position: relative;
+  overflow: hidden;
+  border: 4px solid #263b29;
+  border-radius: 0;
+  background: #42badd;
+  box-shadow: 0 0 0 2px #0b120d, 7px 7px 0 rgba(0, 0, 0, .5);
+}
+
+.mapImage {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.mapViewport::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+  box-shadow: inset 0 0 50px rgba(7, 19, 10, .25);
+}
+
+.objectiveCard,
+.discoveryCard {
+  position: absolute;
+  z-index: 10;
+  border: 2px solid #405d41;
+  background: #152219;
+  box-shadow: 5px 5px 0 rgba(3, 7, 4, .88), inset 0 0 0 2px #0f1912;
+}
+
+.objectiveCard {
+  top: 28px;
+  left: 28px;
+  width: 260px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 0;
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+}
+
+.objectiveNumber {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 2px solid #637d3f;
+  border-radius: 0;
+  background: #293822;
+  color: var(--lime);
+  font-size: .68rem;
+  font-weight: 900;
+}
+
+.objectiveCard small,
+.discoveryCard > span {
+  display: block;
+  color: var(--moss);
+  font-size: .52rem;
+  font-weight: 900;
+  letter-spacing: .12em;
+}
+
+.objectiveCard strong { display: block; margin: 2px 0 4px; font-size: .8rem; }
+.objectiveCard p { margin: 0; color: #b6c1b4; font-size: .62rem; line-height: 1.4; }
+
+.discoveryCard {
+  right: 28px;
+  bottom: 28px;
+  width: 190px;
+  padding: 14px;
+  border-radius: 0;
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+}
+
+.discoveryCard strong { display: block; margin: 4px 0 9px; font-size: 1.25rem; }
+.discoveryCard div { height: 7px; overflow: hidden; border: 1px solid #455447; background: #202e23; }
+.discoveryCard i { width: 12%; height: 100%; display: block; background: var(--lime); }
+
+.player {
+  position: absolute;
+  z-index: 5;
+  left: 49%;
+  top: 70%;
+  width: 64px;
+  height: 64px;
+  transform: translate(-50%, -50%);
+  background-repeat: no-repeat;
+  background-size: 256px 64px;
+  image-rendering: pixelated;
+  animation: idle 1s steps(4) infinite;
+  filter: drop-shadow(0 9px 3px rgba(22, 46, 18, .34));
+}
+
+.playerName {
+  position: absolute;
+  left: 50%;
+  bottom: -10px;
+  transform: translateX(-50%);
+  padding: 3px 6px;
+  border-radius: 4px;
+  background: #17251a;
+  color: var(--cream);
+  font-size: .43rem;
+  font-weight: 900;
+  letter-spacing: .1em;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, .3);
+}
+
+.ambientActor {
+  position: absolute;
+  z-index: 4;
+  width: 64px;
+  height: 64px;
+  padding: 0;
+  border: 0;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-size: auto 64px;
+  image-rendering: pixelated;
+  cursor: pointer;
+  filter: drop-shadow(0 8px 3px rgba(24, 44, 17, .28));
+  transform-origin: bottom center;
+}
+
+.actorFrames4 { animation: actorIdle4 1.15s steps(4) infinite; }
+.actorFrames5 { animation: actorIdle5 1.35s steps(5) infinite; }
+.actorFrames6 { animation: actorIdle6 1.45s steps(6) infinite; }
+.actorFrames8 { animation: actorIdle8 1.65s steps(8) infinite; }
+
+.ambientActor:hover,
+.ambientActor:focus-visible,
+.actorActive {
+  z-index: 9;
+  filter: drop-shadow(0 7px 3px rgba(24, 44, 17, .3)) drop-shadow(0 0 8px rgba(240, 255, 176, .65));
+}
+
+.ambientActor:focus-visible { outline: 2px solid var(--lime); outline-offset: 4px; border-radius: 8px; }
+
+.actorName {
+  position: absolute;
+  left: 50%;
+  bottom: -7px;
+  opacity: 0;
+  transform: translate(-50%, 3px);
+  padding: 3px 6px;
+  border: 1px solid rgba(255, 255, 255, .14);
+  border-radius: 0;
+  background: #111d14;
+  color: var(--cream);
+  font-size: .42rem;
+  font-weight: 900;
+  white-space: nowrap;
+  transition: opacity .15s ease, transform .15s ease;
+}
+
+.ambientActor:hover .actorName,
+.ambientActor:focus-visible .actorName,
+.actorActive .actorName {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.actorReaction {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 3px);
+  width: 172px;
+  padding: 8px 9px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 7px) scale(.96);
+  border: 1px solid rgba(255, 255, 255, .2);
+  border-radius: 0;
+  background: #121d15;
+  color: #e9efdf;
+  font-size: .49rem;
+  font-weight: 700;
+  line-height: 1.45;
+  text-align: left;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, .48);
+  clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px));
+  transition: opacity .16s ease, transform .16s ease;
+}
+
+.actorReaction::after {
+  content: "";
+  position: absolute;
+  left: 14px;
+  top: 100%;
+  border: 5px solid transparent;
+  border-top-color: rgba(18, 29, 21, .95);
+}
+
+.actorActive .actorReaction {
+  opacity: 1;
+  transform: translate(-50%, 0) scale(1);
+}
+
+.landmark {
+  position: absolute;
+  z-index: 8;
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  transform: translate(-50%, -50%);
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+
+.landmarkPulse {
+  position: absolute;
+  inset: 1px;
+  border: 2px solid var(--lime);
+  border-radius: 0;
+  clip-path: polygon(25% 0, 75% 0, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0 75%, 0 25%);
+  animation: pulse 1.6s ease-out infinite;
+}
+
+.landmarkIcon {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 4px solid #fff4b3;
+  border-radius: 0;
+  clip-path: polygon(8px 0, calc(100% - 8px) 0, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0 calc(100% - 8px), 0 8px);
+  background: var(--gold);
+  color: #2b2811;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 1.05rem;
+  font-weight: 950;
+  box-shadow: 5px 5px 0 rgba(64, 49, 7, .65);
+  animation: hover 1.1s ease-in-out infinite alternate;
+}
+
+.landmarkIcon b { font: inherit; }
+
+.landmarkLabel {
+  position: absolute;
+  width: 180px;
+  top: calc(100% + 12px);
+  right: -6px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  padding: 9px 10px;
+  border: 2px solid #506151;
+  border-radius: 0;
+  background: #111c14;
+  color: var(--cream);
+  text-align: left;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, .58);
+  clip-path: polygon(0 0, calc(100% - 7px) 0, 100% 7px, 100% 100%, 7px 100%, 0 calc(100% - 7px));
+  transition: transform .16s ease, border-color .16s ease;
+}
+
+.landmark:hover .landmarkLabel,
+.landmark:focus-visible .landmarkLabel { transform: translateY(-3px); border-color: var(--lime); }
+.landmarkLabel small { grid-column: 1 / -1; color: var(--gold); font-size: .44rem; font-style: normal; font-weight: 900; letter-spacing: .12em; }
+.landmarkLabel strong { margin-top: 2px; overflow: hidden; font-size: .61rem; text-overflow: ellipsis; white-space: nowrap; }
+.landmarkLabel i { align-self: end; color: var(--lime); font-size: .48rem; font-style: normal; }
+
+.mapHint {
+  position: absolute;
+  z-index: 7;
+  left: 50%;
+  bottom: 17px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transform: translateX(-50%);
+  padding: 7px 11px;
+  border: 2px solid #3b4e3c;
+  border-radius: 0;
+  background: #17231a;
+  color: #e1e7db;
+  font-size: .53rem;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, .5);
+}
+
+.mapHint span { color: var(--lime); font-weight: 900; }
+
+.gameFooter {
+  width: min(1480px, 100%);
+  margin: 10px auto 0;
+  display: flex;
+  justify-content: space-between;
+  color: #718071;
+  font-size: .52rem;
+  letter-spacing: .04em;
+}
+
+.gameFooter span:last-child { display: flex; align-items: center; gap: 7px; }
+.gameFooter i { width: 3px; height: 3px; border-radius: 50%; background: #526052; }
+.gameFooter kbd { padding: 2px 5px; border: 1px solid #344235; border-radius: 4px; background: #1a281d; color: #afbcac; font: inherit; }
+
+.dialogScrim {
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 32px;
+  background: rgba(4, 8, 5, .72);
+  backdrop-filter: blur(8px);
+  animation: fadeIn .18s ease-out;
+}
+
+.dialog {
+  width: min(760px, calc(100vw - 64px));
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  border: 3px solid #536f55;
+  border-radius: 0;
+  overflow: hidden;
+  background: #1a281d;
+  box-shadow: 8px 8px 0 rgba(2, 6, 3, .8), 0 0 0 4px #0b120d;
+  clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px), 0 10px);
+  animation: dialogIn .22s cubic-bezier(.2, .8, .2, 1);
+}
+
+.dialogArt {
+  min-height: 430px;
+  position: relative;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background:
+    radial-gradient(circle, rgba(220, 243, 106, .35), transparent 34%),
+    linear-gradient(150deg, #3d5632, #152318);
+}
+
+.dialogArt::before,
+.dialogArt::after {
+  content: "";
+  position: absolute;
+  width: 180px;
+  height: 180px;
+  border: 1px solid rgba(220, 243, 106, .18);
+  transform: rotate(45deg);
+}
+
+.dialogArt::after { width: 125px; height: 125px; }
+
+.dialogArt small {
+  position: absolute;
+  left: 19px;
+  bottom: 18px;
+  color: var(--lime);
+  font-size: .5rem;
+  font-weight: 900;
+  letter-spacing: .16em;
+}
+
+.beaconCore {
+  z-index: 2;
+  width: 46px;
+  height: 46px;
+  border: 7px solid #fffbd5;
+  transform: rotate(45deg);
+  background: var(--gold);
+  box-shadow: 0 0 25px var(--gold), 0 0 65px rgba(220, 243, 106, .7);
+}
+
+.beaconRing {
+  position: absolute;
+  z-index: 1;
+  width: 105px;
+  height: 105px;
+  border: 2px dashed rgba(255, 255, 255, .5);
+  border-radius: 50%;
+  animation: rotate 12s linear infinite;
+}
+
+.dialogBody { padding: 25px 28px 27px; }
+
+.dialogTopline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--moss);
+  font-size: .53rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .15em;
+}
+
+.dialogTopline button {
+  width: 31px;
+  height: 31px;
+  border: 2px solid #455f47;
+  border-radius: 0;
+  background: #233426;
+  color: #c8d1c6;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.dialogBody h2 {
+  margin: 22px 0 10px;
+  color: var(--cream);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 2rem;
+  line-height: 1;
+  letter-spacing: -.05em;
+}
+
+.dialogBody > p { margin: 0; color: #b8c3b6; font-size: .71rem; line-height: 1.65; }
+
+.missionBrief {
+  margin: 19px 0;
+  padding: 12px 14px;
+  border-left: 3px solid var(--lime);
+  border-top: 1px solid #304633;
+  border-right: 1px solid #304633;
+  border-bottom: 1px solid #304633;
+  background: #223226;
+}
+
+.missionBrief span { display: block; margin-bottom: 3px; color: var(--moss); font-size: .48rem; font-weight: 900; text-transform: uppercase; letter-spacing: .12em; }
+.missionBrief strong { font-size: .68rem; }
+
+.dialogMeta {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid #344536;
+  border-radius: 0;
+  background: #344536;
+}
+
+.dialogMeta > span { padding: 10px 11px; background: #1e2d21; }
+.dialogMeta small, .dialogMeta strong { display: block; }
+.dialogMeta small { color: #7f907e; font-size: .43rem; letter-spacing: .08em; }
+.dialogMeta strong { margin-top: 3px; font-size: .64rem; }
+.rewardText { color: var(--gold); }
+
+.dialogActions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 22px; }
+.dialogActions > * { min-height: 42px; display: inline-flex; align-items: center; justify-content: center; padding: 0 16px; border-radius: 0; font-size: .62rem; font-weight: 900; text-transform: uppercase; letter-spacing: .04em; cursor: pointer; }
+.secondaryAction { border: 1px solid #415243; background: transparent; color: #abb7a9; }
+.primaryAction { gap: 12px; border: 2px solid #efff9a; background: var(--lime); color: #14200f; box-shadow: 4px 4px 0 #516719; }
+.primaryAction:hover { background: #edff81; }
+.primaryAction span { font-size: 1rem; }
+
+@keyframes idle {
+  from { background-position: 0 0; }
+  to { background-position: -256px 0; }
+}
+
+@keyframes actorIdle4 {
+  from { background-position: 0 0; }
+  to { background-position: -256px 0; }
+}
+
+@keyframes actorIdle5 {
+  from { background-position: 0 0; }
+  to { background-position: -320px 0; }
+}
+
+@keyframes actorIdle6 {
+  from { background-position: 0 0; }
+  to { background-position: -384px 0; }
+}
+
+@keyframes actorIdle8 {
+  from { background-position: 0 0; }
+  to { background-position: -512px 0; }
+}
+
+@keyframes pulse {
+  0% { opacity: .9; transform: scale(.7); }
+  80%, 100% { opacity: 0; transform: scale(1.6); }
+}
+
+@keyframes hover {
+  from { transform: translateY(0); }
+  to { transform: translateY(-4px); }
+}
+
+@keyframes rotate { to { transform: rotate(360deg); } }
+@keyframes fadeIn { from { opacity: 0; } }
+@keyframes dialogIn { from { opacity: 0; transform: translateY(14px) scale(.98); } }
+
+@media (max-height: 820px) {
+  .gameRoot { padding-top: 14px; }
+  .topBar { min-height: 54px; margin-bottom: 10px; }
+  .worldShell { height: calc(100vh - 112px); min-height: 560px; }
+  .gameFooter { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .player, .ambientActor, .landmarkPulse, .landmarkIcon, .beaconRing, .dialogScrim, .dialog { animation: none; }
+}

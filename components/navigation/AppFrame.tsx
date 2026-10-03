@@ -16,6 +16,10 @@ const navigation: { href: string; label: string; icon: IconName }[] = [
 export function AppFrame({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
+  if (pathname.startsWith("/game")) {
+    return children;
+  }
+
   return (
     <div className="product-shell">
       <header className="product-header">
