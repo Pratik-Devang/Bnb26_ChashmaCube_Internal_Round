@@ -34,6 +34,34 @@ MISCONCEPTIONS = [
 
 EXERCISES = [
     Exercise(
+        id="starting-value-01",
+        concept_id="concept-variables",
+        title="Add a bonus to a score",
+        prompt="Write add_bonus(score) so it returns the starting score plus 10 points.",
+        difficulty="beginner",
+        starter_code="def add_bonus(score):\n    # Add 10 points and return the new score\n    return score",
+        test_cases=[
+            {"args": [0], "expected": 10},
+            {"args": [7], "expected": 17},
+            {"args": [-2], "expected": 8},
+        ],
+        exercise_type=ExerciseType.PRACTICE,
+    ),
+    Exercise(
+        id="condition-choice-01",
+        concept_id="concept-conditions",
+        title="Choose an age label",
+        prompt="Write age_label(age) so it returns 'adult' for ages 18 and over, and 'minor' otherwise.",
+        difficulty="beginner",
+        starter_code="def age_label(age):\n    # Choose a label with an if/else\n    pass",
+        test_cases=[
+            {"args": [18], "expected": "adult"},
+            {"args": [17], "expected": "minor"},
+            {"args": [42], "expected": "adult"},
+        ],
+        exercise_type=ExerciseType.PRACTICE,
+    ),
+    Exercise(
         id="inclusive-sum-01",
         concept_id="concept-loop-boundaries",
         title="Add every number",
@@ -74,6 +102,48 @@ EXERCISES = [
             {"args": [9, 4], "expected": 2},
         ],
         exercise_type=ExerciseType.FAR_TRANSFER,
+    ),
+    Exercise(
+        id="count-even-01",
+        concept_id="concept-accumulators",
+        title="Count the even numbers",
+        prompt="Write count_evens(numbers) so it returns how many values in the list are even.",
+        difficulty="beginner",
+        starter_code="def count_evens(numbers):\n    count = 0\n    for number in numbers:\n        # Count each even number\n        pass\n    return count",
+        test_cases=[
+            {"args": [[2, 5, 8, 9]], "expected": 2},
+            {"args": [[-4, 3, 0]], "expected": 2},
+            {"args": [[]], "expected": 0},
+        ],
+        exercise_type=ExerciseType.PRACTICE,
+    ),
+    Exercise(
+        id="countdown-total-01",
+        concept_id="concept-while-loops",
+        title="Sum a countdown",
+        prompt="Write countdown_total(start) to return the sum from start down to 1. Return 0 when start is 0.",
+        difficulty="beginner",
+        starter_code="def countdown_total(start):\n    current = start\n    total = 0\n    while current > 0:\n        # Add current, then move toward zero\n        pass\n    return total",
+        test_cases=[
+            {"args": [4], "expected": 10},
+            {"args": [1], "expected": 1},
+            {"args": [0], "expected": 0},
+        ],
+        exercise_type=ExerciseType.PRACTICE,
+    ),
+    Exercise(
+        id="longest-word-01",
+        concept_id="concept-loop-mastery",
+        title="Find the longest word",
+        prompt="Write longest_word(words) to return the first longest word from a nonempty list.",
+        difficulty="beginner",
+        starter_code="def longest_word(words):\n    best = words[0]\n    for word in words:\n        # Keep the longer word\n        pass\n    return best",
+        test_cases=[
+            {"args": [["sun", "planet", "moon"]], "expected": "planet"},
+            {"args": [["oak", "elm", "ash"]], "expected": "oak"},
+            {"args": [["single"]], "expected": "single"},
+        ],
+        exercise_type=ExerciseType.PRACTICE,
     ),
 ]
 

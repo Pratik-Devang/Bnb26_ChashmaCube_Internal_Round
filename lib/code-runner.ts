@@ -121,6 +121,59 @@ function deterministicFallbackRun(code, testCases) {
           count++;
         }
         actual = count;
+      } else if (funcName === "add_bonus") {
+        const score = Number(args[0]);
+        const addsBonus = /score\\s*\\+\\s*10/.test(code) || /score\\s*\\+=\\s*10/.test(code);
+        const returnsScore = /return\\s+score\\b/.test(code);
+        actual = returnsScore ? (addsBonus ? score + 10 : score) : null;
+      } else if (funcName === "age_label") {
+        const age = Number(args[0]);
+        const threshold = code.match(/age\\s*(>=|>)\\s*(\\d+)/);
+        if (!threshold) {
+          actual = null;
+        } else {
+          const cutoff = Number(threshold[2]);
+          const isAdult = threshold[1] === ">=" ? age >= cutoff : age > cutoff;
+          actual = isAdult ? "adult" : "minor";
+        }
+      } else if (funcName === "count_evens") {
+        const numbers = Array.isArray(args[0]) ? args[0] : [];
+        const evenCheck = /number\\s*%\\s*2\\s*==\\s*0/.test(code) || /number\\s*%\\s*2\\s*!=\\s*1/.test(code);
+        const oddCheck = /number\\s*%\\s*2\\s*==\\s*1/.test(code);
+        const increment = /count\\s*\\+=\\s*1/.test(code) || /count\\s*=\\s*count\\s*\\+\\s*1/.test(code);
+        const returnsCount = /return\\s+count\\b/.test(code);
+        const initial = code.match(/count\\s*=\\s*(-?\\d+)/);
+        let count = initial ? Number(initial[1]) : 0;
+        if (increment && (evenCheck || oddCheck)) {
+          for (const number of numbers) {
+            if (evenCheck ? Number(number) % 2 === 0 : Number(number) % 2 === 1) count++;
+          }
+        }
+        actual = returnsCount ? count : null;
+      } else if (funcName === "countdown_total") {
+        const start = Math.max(0, Number(args[0]) || 0);
+        const decrements = /current\\s*-=?\\s*1/.test(code) || /current\\s*=\\s*current\\s*-\\s*1/.test(code);
+        const addsCurrent = /total\\s*\\+=\\s*current/.test(code) || /total\\s*=\\s*total\\s*\\+\\s*current/.test(code);
+        const overwritesTotal = /total\\s*=\\s*current/.test(code);
+        const returnsTotal = /return\\s+total\\b/.test(code);
+        if (!decrements && start > 0) {
+          throw new Error("Loop state does not move toward the stopping condition.");
+        }
+        if (overwritesTotal) actual = returnsTotal && start > 0 ? 1 : 0;
+        else if (addsCurrent) actual = returnsTotal ? (start * (start + 1)) / 2 : null;
+        else actual = returnsTotal ? 0 : null;
+      } else if (funcName === "longest_word") {
+        const words = Array.isArray(args[0]) ? args[0] : [];
+        const comparesLength = /len\\s*\\(\\s*word\\s*\\)\\s*>\\s*len\\s*\\(\\s*best\\s*\\)/.test(code);
+        const updatesBest = /best\\s*=\\s*word/.test(code);
+        const returnsBest = /return\\s+best\\b/.test(code);
+        if (!words.length) {
+          actual = null;
+        } else if (comparesLength && updatesBest && returnsBest) {
+          actual = words.reduce((best, word) => String(word).length > String(best).length ? word : best, words[0]);
+        } else {
+          actual = words[0];
+        }
       } else {
         throw new Error("Function '" + funcName + "' not recognized by deterministic runner. Pyodide required.");
       }
