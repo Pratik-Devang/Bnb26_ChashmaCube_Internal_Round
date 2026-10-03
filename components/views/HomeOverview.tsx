@@ -1,15 +1,78 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { learner, learningModules, quests as initialQuests } from "@/lib/mock-data";
+import { useEffect, useState } from "react";
+import {
+  learner as defaultLearner,
+  learningModules as defaultModules,
+  quests as defaultQuests,
+  statistics as defaultStatistics,
+} from "@/lib/mock-data";
+import { completeQuest, getLearningPlan } from "@/lib/api";
 import { Icon } from "@/components/ui/Icon";
 import { PageHeader } from "@/components/ui/PageHeader";
+import type { DashboardStatistics, Learner, LearningModule, Quest } from "@/types/learning";
 
 export function HomeOverview() {
-  const [quests, setQuests] = useState(initialQuests);
-  const activeLesson = learningModules.find((item) => item.status === "active")!;
-  const completed = quests.filter((quest) => quest.status === "completed").length;
+  const [learner, setLearner] = useState<Learner>(defaultLearner);
+  const [modules, setModules] = useState<LearningModule[]>(defaultModules);
+  const [quests, setQuests] = useState<Quest[]>(defaultQuests);
+  const [statistics, setStatistics] = useState<DashboardStatistics>(defaultStatistics);
+  const [completingQuestId, setCompletingQuestId] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchPlan() {
+      try {
+        const plan = await getLearningPlan("learner-demo");
+        if (isMounted && plan) {
+          setLearner(plan.learner);
+          setModules(plan.modules);
+          setQuests(plan.quests);
+          setStatistics(plan.statistics);
+        }
+      } catch {
+        // Fallback gracefully to default seed state
+      }
+    }
+    fetchPlan();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const handleQuestClick = async (questId: string) => {
+    if (completingQuestId) return;
+    setCompletingQuestId(questId);
+    try {
+      const result = await completeQuest(questId, learner.id);
+      setQuests((items) =>
+        items.map((item) => (item.id === questId ? { ...item, status: "completed" } : item))
+      );
+      setLearner((prev) => ({
+        ...prev,
+        xp: result.learnerXp,
+      }));
+    } catch {
+      // Optimistic completion in mock fallback mode
+      setQuests((items) =>
+        items.map((item) => (item.id === questId ? { ...item, status: "completed" } : item))
+      );
+      const quest = quests.find((q) => q.id === questId);
+      if (quest) {
+        setLearner((prev) => ({
+          ...prev,
+          xp: prev.xp + quest.xpReward,
+        }));
+      }
+    } finally {
+      setCompletingQuestId(null);
+    }
+  };
+
+  const activeLesson = modules.find((item) => item.status === "active") ?? modules[2] ?? defaultModules[2];
+  const completedCount = quests.filter((quest) => quest.status === "completed").length;
+  const loopMastery = activeLesson.progress || 64;
 
   return (
     <main className="route-page home-page">
@@ -25,7 +88,9 @@ export function HomeOverview() {
           <div className="plan-toolbar">
             <div><span className="page-eyebrow">CURRENT MODULE</span><h2>Loops & iteration</h2></div>
             <div className="compact-stats" aria-label="Learning snapshot">
-              <span><strong>6</strong> lessons</span><span><strong>2</strong> mastered</span><span><strong>64%</strong> mastery</span>
+              <span><strong>{statistics.totalConcepts}</strong> lessons</span>
+              <span><strong>{statistics.mastered}</strong> mastered</span>
+              <span><strong>{loopMastery}%</strong> mastery</span>
             </div>
           </div>
 
@@ -34,7 +99,10 @@ export function HomeOverview() {
               <span className="lesson-kicker"><i /> READY · 8 MIN</span>
               <h2>{activeLesson.title}</h2>
               <p>{activeLesson.description}</p>
-              <div className="hero-progress"><span><i style={{ width: `${activeLesson.progress}%` }} /></span><strong>{activeLesson.progress}%</strong></div>
+              <div className="hero-progress">
+                <span><i style={{ width: `${activeLesson.progress}%` }} /></span>
+                <strong>{activeLesson.progress}%</strong>
+              </div>
               <Link href="/learn/inclusive-sum-01" className="solid-action"><Icon name="play" />Continue lesson</Link>
             </div>
             <div className="boundary-preview" aria-label="Range one to five stops before five">
@@ -47,11 +115,11 @@ export function HomeOverview() {
           </article>
 
           <div className="mini-path" aria-label="Next lessons">
-            {learningModules.slice(0, 4).map((module, index) => (
-              <article key={module.id} className={`mini-path-card tone-${module.accent}`}>
+            {modules.slice(0, 4).map((module, index) => (
+              <article key={module.id} className={`mini-path-card tone-${module.accent || "lilac"}`}>
                 <span>{module.status === "completed" ? "✓" : index + 1}</span>
                 <div><small>{module.status}</small><strong>{module.title}</strong></div>
-                <b>{module.progress ? `${module.progress}%` : `+${module.xpReward}`}</b>
+                <b>{module.progress ? `${module.progress}%` : `+${module.xpReward || 100}`}</b>
               </article>
             ))}
           </div>
@@ -76,15 +144,28 @@ export function HomeOverview() {
           <article className="day-streak-card"><Icon name="flame" /><div><strong>{learner.streak} day streak</strong><span>One focused session keeps it going.</span></div></article>
 
           <section className="quest-overview">
-            <div className="section-heading"><div><span>DAILY QUESTS</span><h2>{completed}/{quests.length} complete</h2></div><span className="round-count">{quests.length - completed}</span></div>
+            <div className="section-heading">
+              <div><span>DAILY QUESTS</span><h2>{completedCount}/{quests.length} complete</h2></div>
+              <span className="round-count">{quests.length - completedCount}</span>
+            </div>
             <div className="home-quests">
-              {quests.map((quest) => (
-                <button key={quest.id} className={quest.status === "completed" ? "done" : ""} onClick={() => setQuests((items) => items.map((item) => item.id === quest.id ? { ...item, status: "completed" } : item))} disabled={quest.status === "completed"}>
-                  <span>{quest.status === "completed" ? "✓" : quest.icon}</span>
-                  <div><strong>{quest.title}</strong><small>+{quest.xpReward} XP</small></div>
-                  <i>{quest.status === "completed" ? "Done" : "Mark"}</i>
-                </button>
-              ))}
+              {quests.map((quest) => {
+                const isDone = quest.status === "completed";
+                const isPending = completingQuestId === quest.id;
+                return (
+                  <button
+                    key={quest.id}
+                    className={isDone ? "done" : ""}
+                    onClick={() => handleQuestClick(quest.id)}
+                    disabled={isDone || isPending}
+                    aria-label={`Claim quest: ${quest.title}`}
+                  >
+                    <span>{isDone ? "✓" : quest.icon || "📘"}</span>
+                    <div><strong>{quest.title}</strong><small>+{quest.xpReward} XP</small></div>
+                    <i>{isDone ? "Done" : isPending ? "Claiming..." : "Claim"}</i>
+                  </button>
+                );
+              })}
             </div>
           </section>
 
