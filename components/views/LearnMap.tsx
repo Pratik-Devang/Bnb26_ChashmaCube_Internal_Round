@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { learningModules } from "@/lib/mock-data";
 import { Icon } from "@/components/ui/Icon";
@@ -43,7 +44,19 @@ export function LearnMap() {
           <p>{active.beginnerNote}</p>
           <div className="focus-meter"><span><i style={{ width: `${active.progress}%` }} /></span><strong>{active.progress}%</strong></div>
           <dl><div><dt>Reward</dt><dd>+{active.xpReward} XP</dd></div><div><dt>Format</dt><dd>{active.status === "active" ? "Mini-game" : "Lesson"}</dd></div><div><dt>Time</dt><dd>8 min</dd></div></dl>
-          <button className="solid-action" disabled={active.status === "locked"}><Icon name={active.status === "locked" ? "lock" : "play"} />{active.status === "locked" ? "Finish earlier stops" : active.status === "completed" ? "Practice again" : "Start this lesson"}</button>
+          {active.status === "locked" ? (
+            <button className="solid-action" disabled>
+              <Icon name="lock" /> Finish earlier stops
+            </button>
+          ) : (
+            <Link
+              href="/learn/inclusive-sum-01"
+              className="solid-action"
+            >
+              <Icon name="play" />
+              {active.status === "completed" ? "Practice again" : "Start this lesson"}
+            </Link>
+          )}
           {active.status === "active" ? <div className="gentle-note"><Icon name="brain" /><span><strong>Why this lesson?</strong>Your last answer suggests the final step of a range deserves a closer look.</span></div> : null}
         </aside>
       </div>

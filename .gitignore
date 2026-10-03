@@ -19,3 +19,4 @@ htmlcov/
 .venv/
 relearn-ml/artifacts/*.joblib
 relearn-ml/artifacts/*.pkl
+relearn-api/tmp/

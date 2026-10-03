@@ -35,7 +35,7 @@ export function HomeOverview() {
               <h2>{activeLesson.title}</h2>
               <p>{activeLesson.description}</p>
               <div className="hero-progress"><span><i style={{ width: `${activeLesson.progress}%` }} /></span><strong>{activeLesson.progress}%</strong></div>
-              <Link href="/learn" className="solid-action"><Icon name="play" />Continue lesson</Link>
+              <Link href="/learn/inclusive-sum-01" className="solid-action"><Icon name="play" />Continue lesson</Link>
             </div>
             <div className="boundary-preview" aria-label="Range one to five stops before five">
               <span className="preview-code">range(1, 5)</span>
