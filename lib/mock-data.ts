@@ -174,6 +174,34 @@ export const statistics: DashboardStatistics = {
 };
 
 export const exerciseCatalog: Record<string, Exercise> = {
+  "starting-value-01": {
+    id: "starting-value-01",
+    conceptId: "concept-variables",
+    title: "Add a bonus to a score",
+    prompt: "Write add_bonus(score) so it returns the starting score plus 10 points.",
+    difficulty: "beginner",
+    starterCode: "def add_bonus(score):\n    # Add 10 points and return the new score\n    return score",
+    testCases: [
+      { args: [0], expected: 10 },
+      { args: [7], expected: 17 },
+      { args: [-2], expected: 8 },
+    ],
+    exerciseType: "PRACTICE",
+  },
+  "condition-choice-01": {
+    id: "condition-choice-01",
+    conceptId: "concept-conditions",
+    title: "Choose an age label",
+    prompt: "Write age_label(age) so it returns 'adult' for ages 18 and over, and 'minor' otherwise.",
+    difficulty: "beginner",
+    starterCode: "def age_label(age):\n    # Choose a label with an if/else\n    pass",
+    testCases: [
+      { args: [18], expected: "adult" },
+      { args: [17], expected: "minor" },
+      { args: [42], expected: "adult" },
+    ],
+    exerciseType: "PRACTICE",
+  },
   "inclusive-sum-01": {
     id: "inclusive-sum-01",
     conceptId: "concept-loop-boundaries",
@@ -215,6 +243,48 @@ export const exerciseCatalog: Record<string, Exercise> = {
       { args: [9, 4], expected: 2 },
     ],
     exerciseType: "FAR_TRANSFER",
+  },
+  "count-even-01": {
+    id: "count-even-01",
+    conceptId: "concept-accumulators",
+    title: "Count the even numbers",
+    prompt: "Write count_evens(numbers) so it returns how many values in the list are even.",
+    difficulty: "beginner",
+    starterCode: "def count_evens(numbers):\n    count = 0\n    for number in numbers:\n        # Count each even number\n        pass\n    return count",
+    testCases: [
+      { args: [[2, 5, 8, 9]], expected: 2 },
+      { args: [[-4, 3, 0]], expected: 2 },
+      { args: [[]], expected: 0 },
+    ],
+    exerciseType: "PRACTICE",
+  },
+  "countdown-total-01": {
+    id: "countdown-total-01",
+    conceptId: "concept-while-loops",
+    title: "Sum a countdown",
+    prompt: "Write countdown_total(start) to return the sum from start down to 1. Return 0 when start is 0.",
+    difficulty: "beginner",
+    starterCode: "def countdown_total(start):\n    current = start\n    total = 0\n    while current > 0:\n        # Add current, then move toward zero\n        pass\n    return total",
+    testCases: [
+      { args: [4], expected: 10 },
+      { args: [1], expected: 1 },
+      { args: [0], expected: 0 },
+    ],
+    exerciseType: "PRACTICE",
+  },
+  "longest-word-01": {
+    id: "longest-word-01",
+    conceptId: "concept-loop-mastery",
+    title: "Find the longest word",
+    prompt: "Write longest_word(words) to return the first longest word from a nonempty list.",
+    difficulty: "beginner",
+    starterCode: "def longest_word(words):\n    best = words[0]\n    for word in words:\n        # Keep the longer word\n        pass\n    return best",
+    testCases: [
+      { args: [["sun", "planet", "moon"]], expected: "planet" },
+      { args: [["oak", "elm", "ash"]], expected: "oak" },
+      { args: [["single"]], expected: "single" },
+    ],
+    exerciseType: "PRACTICE",
   },
 };
 

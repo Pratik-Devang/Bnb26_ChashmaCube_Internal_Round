@@ -44,18 +44,11 @@ export function LearnMap() {
           <p>{active.beginnerNote}</p>
           <div className="focus-meter"><span><i style={{ width: `${active.progress}%` }} /></span><strong>{active.progress}%</strong></div>
           <dl><div><dt>Reward</dt><dd>+{active.xpReward} XP</dd></div><div><dt>Format</dt><dd>{active.status === "active" ? "Mini-game" : "Lesson"}</dd></div><div><dt>Time</dt><dd>8 min</dd></div></dl>
-          {active.status === "locked" ? (
-            <button className="solid-action" disabled>
-              <Icon name="lock" /> Finish earlier stops
-            </button>
-          ) : (
-            <Link
-              href="/learn/inclusive-sum-01"
-              className="solid-action"
-            >
-              <Icon name="play" />
-              {active.status === "completed" ? "Practice again" : "Start this lesson"}
-            </Link>
+          {active.status === "locked" ? <button className="solid-action" disabled><Icon name="lock" />Finish earlier stops</button> : (
+            <div className="lesson-actions">
+              <Link className="solid-action" href={`/topics/${active.id}?mode=lesson`}><Icon name="play" />{active.status === "completed" ? "Review this lesson" : "Start this lesson"}</Link>
+              <Link className="quiet-action" href={`/topics/${active.id}?mode=practice`}><Icon name="target" />Practice again</Link>
+            </div>
           )}
           {active.status === "active" ? <div className="gentle-note"><Icon name="brain" /><span><strong>Why this lesson?</strong>Your last answer suggests the final step of a range deserves a closer look.</span></div> : null}
         </aside>

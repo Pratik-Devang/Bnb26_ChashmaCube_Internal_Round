@@ -47,7 +47,7 @@ alembic upgrade head
 python -m app.seed.demo_data
 ```
 
-The seed command is repeatable and restores the deterministic demo learner, concepts, misconceptions, three boundary exercises, intervention content, quests, and initial progress state. It does not create ML training examples.
+The seed command is repeatable and restores the deterministic demo learner, concepts, misconceptions, one starter coding exercise for each of the six learning topics, two boundary transfer exercises, intervention content, quests, and initial progress state. It does not create ML training examples.
 
 ## Architecture boundaries
 
