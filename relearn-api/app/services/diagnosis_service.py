@@ -29,6 +29,24 @@ class RuleBasedDiagnosisProvider:
         if syntax_evidence is not None:
             return self._uncertain(syntax_evidence)
 
+        if attempt.test_results.get("failed") == 0 and int(attempt.test_results.get("passed", 0)) > 0:
+            return DiagnosisPrediction(
+                misconception_code=MisconceptionCode.CORRECT,
+                learner_friendly_name="Ready for the next step",
+                confidence=0.99,
+                class_probabilities={
+                    MisconceptionCode.CORRECT: 0.99,
+                    MisconceptionCode.UNCERTAIN: 0.01,
+                },
+                evidence=[
+                    DiagnosisEvidence(
+                        type=EvidenceType.TEST,
+                        message="The submitted solution passed every predefined test.",
+                    )
+                ],
+                model_version=self.model_version,
+            )
+
         boundary_match = re.search(
             r"range\s*\(\s*1\s*,\s*(?P<end>[A-Za-z_]\w*)\s*\)",
             attempt.submitted_code,

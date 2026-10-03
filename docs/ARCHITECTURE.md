@@ -2,7 +2,7 @@
 
 ## Scope
 
-The hackathon system is designed as a modular monolith with three future application areas: `relearn-web` for the Next.js experience, `relearn-api` for the FastAPI application, and `relearn-ml` for dataset preparation, training, evaluation, and classifier artifacts. PostgreSQL remains the source of truth. Only `relearn-web` is implemented in the current scaffold.
+The hackathon system is implemented as a modular monolith with three application areas: the root Next.js experience, `relearn-api` for the FastAPI application, and `relearn-ml` for dataset preparation, training, evaluation, and classifier artifacts. PostgreSQL is the source of truth. The frontend and versioned backend API are implemented; browser code execution, frontend-to-API integration, and the trained classifier artifact remain follow-up work.
 
 ```text
 relearn/
@@ -40,9 +40,9 @@ Untrusted learner code never runs on the application server. A future Pyodide ad
 
 ### FastAPI modular monolith
 
-The future backend uses Python, FastAPI, Pydantic, SQLAlchemy 2, Alembic, and PostgreSQL. It owns exercises, attempts, normalized classifier input, diagnoses, interventions, reassessments, mastery rules, XP, quests, progress, and model metrics. The classifier remains behind this API rather than being exposed to the browser.
+The backend uses Python, FastAPI, Pydantic, SQLAlchemy 2, Alembic, and PostgreSQL. It owns exercises, attempts, normalized classifier input, diagnoses, interventions, reassessments, mastery rules, XP, quests, progress, and model metrics. The classifier remains behind this API rather than being exposed to the browser.
 
-Planned modules:
+Implemented modules:
 
 ```text
 relearn-api/app/

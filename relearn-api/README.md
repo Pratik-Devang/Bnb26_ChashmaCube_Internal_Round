@@ -2,7 +2,26 @@
 
 FastAPI modular monolith for exercises, learner attempts, misconception diagnoses, interventions, reassessments, progress, quests, and XP.
 
-This first backend batch contains the application foundation and a replaceable diagnosis-provider interface. The temporary rule-based provider performs static inspection only. It does **not** execute learner code; predefined Python tests remain the responsibility of the browser’s restricted Pyodide worker.
+The backend exposes the complete hackathon API surface for learning plans, exercises, attempts, diagnoses, interventions, reassessments, progress, quests, XP, and model metrics. A replaceable diagnosis-provider interface currently uses a deterministic rule-based provider until the trained artifact is connected. It does **not** execute learner code; predefined Python tests remain the responsibility of the browser’s restricted Pyodide worker.
+
+## API surface
+
+All product endpoints are under `/api/v1`:
+
+- `GET /learning-plan`
+- `GET /exercises/{exercise_id}`
+- `POST /attempts`
+- `POST /attempts/{attempt_id}/diagnose`
+- `GET /diagnoses/{diagnosis_id}`
+- `POST /diagnoses/{diagnosis_id}/intervention`
+- `POST /interventions/{intervention_id}/complete`
+- `POST /reassessments`
+- `GET /learners/{learner_id}/progress`
+- `GET /learners/{learner_id}/quests`
+- `POST /quests/{quest_id}/complete`
+- `GET /model/metrics`
+
+Diagnosis and intervention creation are idempotent. Quest rewards are granted only once. Reassessment state changes follow the deterministic resolution rules in `docs/ARCHITECTURE.md`.
 
 ## Local setup
 
@@ -35,7 +54,7 @@ The seed command is repeatable and restores the deterministic demo learner, conc
 - `app/api/` owns HTTP routing only.
 - `app/schemas/` defines Pydantic transport and service contracts.
 - `app/services/` owns diagnosis, intervention, progress, and quest rules.
-- Database models and repositories will be added in the next batch.
+- SQLAlchemy models, Alembic migrations, and database-backed API workflows are implemented.
 - The ML classifier will implement `DiagnosisProvider`; API routes will not import model-specific code.
 
 ## Configuration
