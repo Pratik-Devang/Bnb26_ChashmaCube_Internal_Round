@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { learningModules } from "@/lib/mock-data";
 import { Icon } from "@/components/ui/Icon";
 import { PageHeader } from "@/components/ui/PageHeader";
+import islandScout from "@/2d_assets/First Island/Characters/Character_8/Idle.png";
 
 export function LearnMap() {
   const [query, setQuery] = useState("");
@@ -25,21 +26,24 @@ export function LearnMap() {
       <div className="learn-layout">
         <section className="learning-map" aria-label="Python concept path">
           <div className="map-line" aria-hidden="true" />
-          {modules.map((module, index) => (
-            <button key={module.id} className={`map-stop stop-${module.status} ${selected === module.id ? "selected" : ""}`} onClick={() => setSelected(module.id)} disabled={module.status === "locked"}>
-              <span className="map-node">{module.status === "completed" ? "✓" : module.status === "locked" ? <Icon name="lock" /> : index + 1}</span>
-              <span className={`map-card tone-${module.accent}`}>
-                <i>{module.icon}</i>
-                <span><small>{module.status}</small><strong>{module.title}</strong><em>{module.description}</em></span>
-                <b>{module.progress ? `${module.progress}%` : `+${module.xpReward} XP`}</b>
-              </span>
-            </button>
-          ))}
+          {modules.map((module, index) => {
+            const islandCard = module.id === "variables";
+            return (
+              <button key={module.id} className={`map-stop stop-${module.status} ${islandCard ? "first-island-stop" : ""} ${selected === module.id ? "selected" : ""}`} onClick={() => setSelected(module.id)} disabled={module.status === "locked"}>
+                <span className={`map-node ${islandCard ? "first-island-node" : ""}`}>{islandCard ? "01" : module.status === "completed" ? "✓" : module.status === "locked" ? <Icon name="lock" /> : index + 1}</span>
+                <span className={`map-card tone-${module.accent} ${islandCard ? "first-island-card" : ""}`}>
+                  <i className={islandCard ? "island-scout-portrait" : ""}>{islandCard ? <span className="island-scout-sprite" style={{ backgroundImage: `url(${islandScout.src})` }} /> : module.icon}</i>
+                  <span><small>{islandCard ? "WORLD 01 · VARIABLES & VALUES" : module.status}</small><strong>{module.title}</strong><em>{module.description}</em></span>
+                  <b>{islandCard ? "ENTER →" : module.progress ? `${module.progress}%` : `+${module.xpReward} XP`}</b>
+                </span>
+              </button>
+            );
+          })}
           {!modules.length ? <div className="map-empty">No concepts match that search.</div> : null}
         </section>
 
-        <aside className="lesson-focus">
-          <span className="focus-icon">{active.icon}</span>
+        <aside className={`lesson-focus ${isFirstIsland ? "first-island-focus" : ""}`}>
+          <span className={`focus-icon ${isFirstIsland ? "island-scout-portrait" : ""}`}>{isFirstIsland ? <span className="island-scout-sprite" style={{ backgroundImage: `url(${islandScout.src})` }} /> : active.icon}</span>
           <span className="page-eyebrow">SELECTED CONCEPT</span>
           <h2>{active.title}</h2>
           <p>{active.beginnerNote}</p>

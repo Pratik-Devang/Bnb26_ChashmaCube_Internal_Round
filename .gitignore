@@ -20,4 +20,7 @@ htmlcov/
 relearn-ml/artifacts/*.joblib
 relearn-ml/artifacts/*.pkl
 relearn-api/tmp/
-.2d_assets/
+public/pyodide/
+2d_assets/__MACOSX/
+2d_assets/**/*.zip
+2d_assets/**/*.psd

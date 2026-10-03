@@ -134,6 +134,28 @@ h1, h2, h3, p { margin-top: 0; }
 .map-stop.selected .map-card { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(31,39,58,.14); }
 .map-stop.stop-active .map-node { color: var(--white); background: var(--ink); box-shadow: 0 0 0 3px var(--lilac), 0 0 0 5px var(--ink); }
 .map-stop.stop-locked { opacity: .55; cursor: not-allowed; }.map-stop.stop-locked .map-node { background: #c8c9c4; box-shadow: 0 0 0 2px #9b9c98; }
+.first-island-stop { width: 84%; }
+.first-island-node { width: 50px; height: 56px; border: 3px solid #e9c779; border-radius: 50% 50% 7px 7px; background: linear-gradient(#5b3827, #2e1a15) !important; color: #ffe5a2; font: 900 .68rem ui-monospace, Consolas, monospace; box-shadow: inset 0 0 0 3px #7b4f30, 4px 5px 0 #b99b69 !important; transform: rotate(-2deg); }
+.first-island-card { min-height: 122px; position: relative; isolation: isolate; overflow: hidden; grid-template-columns: 72px 1fr auto; padding: 18px 20px; border: 4px double #654127; border-radius: 2px; background: linear-gradient(100deg, #e9cd8e, #f8e6b2 48%, #dfbd79); color: #382319; box-shadow: 0 0 0 3px #9a7045, 7px 8px 0 #c5b18f; clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px), 0 10px); }
+.first-island-card::before { content: ""; position: absolute; z-index: -1; inset: 8px; border: 1px solid rgba(91,55,32,.38); background: repeating-linear-gradient(0deg, transparent 0 20px, rgba(104,66,35,.045) 20px 21px); pointer-events: none; }
+.first-island-card::after { content: "⚔  QUEST OF THE FIRST ISLAND  ⚔"; position: absolute; z-index: -1; right: 18px; bottom: 8px; color: rgba(83,48,27,.48); font: 900 .46rem Georgia, serif; letter-spacing: .14em; }
+.island-scout-portrait { display: grid !important; place-items: center; overflow: hidden; background: radial-gradient(circle at 50% 60%, #7c9b4d 0 38%, #24351f 39%) !important; image-rendering: pixelated; }
+.first-island-card > .island-scout-portrait { width: 62px; height: 70px; border: 4px ridge #b38245; border-radius: 50% 50% 4px 4px; box-shadow: inset 0 0 0 2px #3b251a, 3px 4px 0 rgba(61,37,23,.3); }
+.island-scout-sprite { width: 64px; height: 64px; display: block; flex: 0 0 auto; background-repeat: no-repeat; background-size: auto 64px; background-position: 0 0; image-rendering: pixelated; animation: islandScoutIdle 1.65s steps(8) infinite; filter: drop-shadow(0 5px 2px rgba(32,20,12,.3)); }
+.first-island-card small { color: #75451f; font: 900 .53rem Georgia, serif; letter-spacing: .12em; }
+.first-island-card strong { font-family: Georgia, "Times New Roman", serif; font-size: 1.28rem; letter-spacing: -.025em; }
+.first-island-card em { max-width: 390px; color: #63462f; font-family: Georgia, "Times New Roman", serif; font-weight: 650; }
+.first-island-card > b { align-self: center; padding: 9px 11px; border: 3px double #e8c876; border-radius: 2px; background: linear-gradient(#55301e, #301b14); color: #ffe4a0; font: 900 .58rem Georgia, serif; letter-spacing: .08em; box-shadow: 3px 4px 0 rgba(63,37,21,.3); }
+.map-stop.selected .first-island-card { transform: translate(-2px, -3px); box-shadow: 0 0 0 3px #9a7045, 9px 10px 0 #ad9877; }
+.first-island-focus { border: 5px double #674326; border-radius: 3px; background: linear-gradient(115deg, #ead092, #f8e7b8 58%, #d7af68); color: #382319; box-shadow: 0 0 0 3px #9a7045, 8px 9px 0 #c4b394; clip-path: polygon(12px 0, calc(100% - 12px) 0, 100% 12px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 12px 100%, 0 calc(100% - 12px), 0 12px); }
+.first-island-focus .focus-icon.island-scout-portrait { width: 78px; height: 84px; border: 4px ridge #ae7a3d; border-radius: 50% 50% 4px 4px; background: radial-gradient(circle at 50% 60%, #78974a 0 39%, #273620 40%) !important; box-shadow: inset 0 0 0 2px #3b251a, 4px 5px 0 rgba(74,45,25,.28); transform: rotate(-1deg); }
+.first-island-focus .page-eyebrow, .first-island-focus dt { color: #7a4a25; font-family: Georgia, "Times New Roman", serif; }
+.first-island-focus h2 { font-family: Georgia, "Times New Roman", serif; }
+.first-island-focus > p { color: #634a35; font-family: Georgia, "Times New Roman", serif; font-weight: 600; }
+.first-island-focus .focus-meter > span { border: 2px solid #604126; border-radius: 0; background: #f7e8bc; }
+.first-island-focus .focus-meter i { background: #6d873f; }
+.first-island-focus .solid-action { border: 3px double #f1d584; border-radius: 2px; background: linear-gradient(#59331f, #301a13); color: #ffe6a4; font-family: Georgia, "Times New Roman", serif; box-shadow: 4px 5px 0 #98703d; }
+@keyframes islandScoutIdle { from { background-position: 0 0; } to { background-position: -512px 0; } }
 .map-empty { position: relative; margin: 100px auto; text-align: center; color: var(--muted); }
 .lesson-focus { position: sticky; top: 20px; padding: 28px; border: 1px solid #7e9ce2; border-radius: 27px; background: var(--lilac); box-shadow: var(--shadow); }
 .focus-icon { width: 64px; height: 64px; display: grid; place-items: center; margin-bottom: 28px; border-radius: 20px; background: var(--white); font-size: 2rem; transform: rotate(4deg); }
