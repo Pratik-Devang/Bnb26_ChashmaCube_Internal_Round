@@ -1,0 +1,32 @@
+from __future__ import annotations
+
+from functools import lru_cache
+
+from pydantic import Field, field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        env_prefix="RELEARN_",
+        extra="ignore",
+    )
+
+    environment: str = "development"
+    database_url: str = "postgresql+psycopg://relearn:relearn@localhost:5432/relearn"
+    cors_origins: list[str] = Field(default_factory=lambda: ["http://localhost:3000"])
+    diagnosis_provider: str = "rule-based"
+
+    @field_validator("cors_origins", mode="before")
+    @classmethod
+    def parse_cors_origins(cls, value: object) -> object:
+        if isinstance(value, str) and not value.strip().startswith("["):
+            return [origin.strip() for origin in value.split(",") if origin.strip()]
+        return value
+
+
+@lru_cache
+def get_settings() -> Settings:
+    return Settings()
