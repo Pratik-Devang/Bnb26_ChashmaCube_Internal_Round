@@ -17,6 +17,7 @@ import type {
   InterventionCompletion,
   LearnerConceptState,
   LearningPlanResponse,
+  MLDiagnoseResponse,
   ModelMetrics,
   Quest,
   QuestCompletion,
@@ -361,3 +362,82 @@ export async function getModelMetrics(): Promise<ModelMetrics> {
   }
   return apiFetch<ModelMetrics>("/api/v1/model/metrics");
 }
+
+export async function diagnoseCode(
+  code: string,
+  previousMisconceptionId?: number | null
+): Promise<MLDiagnoseResponse> {
+  const targetBase = NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+  const url = `${normalizeBaseUrl(targetBase)}/diagnose`;
+
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        code,
+        previous_misconception_id: previousMisconceptionId ?? undefined,
+      }),
+    });
+
+    if (res.ok) {
+      return (await res.json()) as MLDiagnoseResponse;
+    }
+  } catch {
+    // Backend fetch failed, proceed to fallback mock
+  }
+
+  // Fallback prediction if server is offline
+  const isParens = code.includes("return(") || code.includes("return (");
+  const topId = isParens ? 31 : 15;
+  const isResolved =
+    previousMisconceptionId !== null &&
+    previousMisconceptionId !== undefined &&
+    topId !== previousMisconceptionId;
+
+  return mockDelay({
+    top_prediction: {
+      id: topId,
+      misconception: isParens
+        ? "Student believes that the `return` statement requires parentheses around its argument."
+        : "Student believes Python sequences use 1-based indexing instead of 0-based indexing.",
+      score: isParens ? 0.305 : 0.28,
+    },
+    alternatives: [
+      {
+        id: 56,
+        misconception: "Student uses incorrect argument count or mismatches positional and keyword arguments.",
+        score: -0.527,
+      },
+      {
+        id: 46,
+        misconception: "Student misplaces indentation causing block association errors.",
+        score: -0.835,
+      },
+    ],
+    intervention: isParens
+      ? {
+          title: "Understanding return statements",
+          explanation: "In Python, parentheses are not required around the value returned by a function.",
+          example: "return a + b",
+          check: "Try rewriting the return statement without parentheses.",
+        }
+      : {
+          title: "Python uses zero-based indexing",
+          explanation: "The first element of a Python list is at index 0, not index 1.",
+          example: "numbers[0]",
+          check: "Which index accesses the first element?",
+        },
+    reassessment:
+      previousMisconceptionId !== null && previousMisconceptionId !== undefined
+        ? {
+            status: isResolved ? "resolved" : "unresolved",
+            misconception_id: previousMisconceptionId,
+          }
+        : null,
+  });
+}
+
