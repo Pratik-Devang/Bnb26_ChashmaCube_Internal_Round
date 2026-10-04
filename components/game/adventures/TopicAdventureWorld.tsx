@@ -18,11 +18,14 @@ import { firstIslandActors } from "@/lib/game/first-island/content";
 import { chapelViewports } from "@/lib/game/chapel-viewport";
 import { ChurchMapCanvas } from "../ChurchMapCanvas";
 import { ChurchExteriorCanvas } from "../ChurchExteriorCanvas";
+import { useAccount } from "@/components/auth/AccountProvider";
+import { CharacterDialogue, type CharacterConversation, type DialoguePortrait } from "../dialogs/CharacterDialogue";
 import { answerAdventureQuestion, finishAdventureLesson, topicNames, worldPath, type AdventureProgress, type AdventureWorld, type CurriculumTrack } from "@/lib/game/curriculum";
 import styles from "./Adventure.module.css";
 
 type Position = { x: number; y: number };
 type Guide = Position & { name: string; lesson: number; sprite: typeof traveler };
+const portraitFor = (name: string): DialoguePortrait => name === "Beach Cartographer" ? "elder" : name.includes("Keeper") ? "keeper" : name === "Grounds Guide" || name === "Treasure Guide" ? "ranger" : "scout";
 const distance = (a: Position, b: Position) => Math.hypot(a.x - b.x, a.y - b.y);
 const ambientSprites = { traveler, slime, emberbug, bristleback: boar, fox, mossling, scout, caveKeeper };
 const spriteStyle = (sheet: typeof traveler): CSSProperties => ({
@@ -35,6 +38,9 @@ const islandGuides: Guide[] = [
   { name: "Trail Fox", lesson: 2, x: 40, y: 29, sprite: fox },
   { name: "Island Scout", lesson: 3, x: 78, y: 34, sprite: scout },
 ];
+const islandVisitors: Guide[] = firstIslandActors
+  .filter((actor) => actor.sprite === "caveKeeper")
+  .map((actor) => ({ name: actor.name, lesson: -1, ...actor.position, sprite: caveKeeper }));
 const chapelGuides: Guide[] = [
   { name: "Grounds Guide", lesson: 0, x: 34, y: 70, sprite: traveler },
   { name: "Lever Guide", lesson: 1, x: 72, y: 60, sprite: traveler },
@@ -43,6 +49,7 @@ const chapelGuides: Guide[] = [
 ];
 
 export function TopicAdventureWorld({ world, track, initialProgress }: { world: AdventureWorld; track: CurriculumTrack; initialProgress: AdventureProgress }) {
+  const { learner } = useAccount();
   const chapel = world === "chapel-of-choices";
   const [inside, setInside] = useState(false);
   const viewport = chapelViewports[inside ? "interior" : "exterior"];
@@ -50,6 +57,19 @@ export function TopicAdventureWorld({ world, track, initialProgress }: { world: 
   const [moving, setMoving] = useState(false);
   const [progress, setProgress] = useState(initialProgress);
   const [guide, setGuide] = useState<Guide | null>(null);
+  const [conversation, setConversation] = useState<(CharacterConversation & { target?: Guide }) | null>(() => ({
+    speaker: chapel ? "Grounds Guide" : "Beach Cartographer", portrait: chapel ? "ranger" : "elder", label: "Begin exploring",
+    lines: initialProgress.completedLessonIds.length ? [
+      `Welcome back, ${learner.name}. Your ${topicNames[track.topic]} journey at ${track.difficulty} difficulty is right where you left it.`,
+      initialProgress.completed ? "You have finished this adventure. Revisit the guides to refresh what you learned, or choose another topic from the top bar." : `You have learned from ${initialProgress.completedLessonIds.length} of our three guides. Follow the next numbered marker, then bring what you learn to ${chapel ? "the Chapel Keeper" : "the Island Scout"}.`,
+      "Move with WASD or the arrow keys. Come close to a guide and press E, or click them. You can always return to a lesson.",
+    ] : [
+      `Welcome, ${learner.name}, to ${chapel ? "the Chapel of Choices" : "The First Island"}. Every explorer here has something to teach you. Today, your journey is about ${topicNames[track.topic]}, at ${track.difficulty} difficulty.`,
+      `Meet the three numbered guides in order. Each will share one idea. ${chapel ? "Start with me on the grounds; then walk to the temple gates to enter the sanctuary." : "Start with me on the beach, then find Bristleback in the clearing and the Trail Fox farther north."}`,
+      `After the lessons, ${chapel ? "the Chapel Keeper" : "the Island Scout"} will give you a trial and a new situation to think through. A wrong answer is a clue: read the explanation and try again.`,
+      "Use WASD or the arrow keys to move. Walk close to a guide and press E or click them to talk. Lessons earn 10 coins each; finish both checks for 50 more. Your journal is saved to your account.",
+    ],
+  }));
   const [choice, setChoice] = useState<number | null>(null);
   const [feedback, setFeedback] = useState("");
   const [busy, setBusy] = useState(false);
@@ -57,7 +77,7 @@ export function TopicAdventureWorld({ world, track, initialProgress }: { world: 
   const [message, setMessage] = useState("Follow the numbered guides. Move with WASD or arrows, then press E to interact.");
   const dialog = useRef<HTMLDialogElement>(null);
   const movementTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const guides = chapel ? chapelGuides.filter((item) => inside ? item.lesson !== 0 : item.lesson === 0) : islandGuides;
+  const guides = chapel ? chapelGuides.filter((item) => inside ? item.lesson !== 0 : item.lesson === 0) : [...islandGuides, ...islandVisitors];
   const nextIndex = progress.completedLessonIds.length;
   const nextGuide = (chapel ? chapelGuides : islandGuides)[Math.min(nextIndex, 3)];
   const lesson = guide && guide.lesson < 3 ? track.lessons[guide.lesson] : null;
@@ -66,9 +86,32 @@ export function TopicAdventureWorld({ world, track, initialProgress }: { world: 
 
   const closeDialog = () => { if (!busy) { setGuide(null); setFeedback(""); setChoice(null); } };
   const interact = (target: Guide) => {
-    if (busy || guide) return;
+    if (busy || guide || conversation) return;
     if (distance(position, target) > 11) { setMessage(`Walk closer to ${target.name}, then press E.`); return; }
-    if (target.lesson > nextIndex) { setMessage(`${target.name}: First visit ${nextGuide.name} for “${track.lessons[nextIndex]?.title}”.`); return; }
+    if (target.lesson < 0) {
+      setConversation({ speaker: target.name, portrait: "keeper", label: "Return to exploring", lines: [
+        `A visitor! I’m ${target.name}. These cliffs have seen plenty of explorers get stuck. The ones who return with questions are the ones who find their way.`,
+        progress.completed ? "You’ve finished this trail. Visit a guide again whenever an idea feels hazy, or choose a new topic for your next journey." : `Your next stop is ${nextGuide.name}. ${nextIndex < 3 ? `Ask about “${track.lessons[nextIndex].title}”.` : "The final trial is waiting."} Follow the numbered trail and take one idea at a time.`,
+      ] });
+      return;
+    }
+    const human = chapel || target.sprite === traveler || target.sprite === scout;
+    if (target.lesson > nextIndex) {
+      const direction = `First visit ${nextGuide.name} for “${track.lessons[nextIndex]?.title}”. That idea will help you understand what comes next. I’ll be here when you’re ready.`;
+      if (human) setConversation({ speaker: target.name, portrait: portraitFor(target.name), lines: [direction], label: "Find the earlier guide" });
+      else setMessage(`${target.name}: ${direction}`);
+      return;
+    }
+    if (human) {
+      setConversation({ speaker: target.name, portrait: portraitFor(target.name), target, label: target.lesson === 3 ? progress.completed ? "Review adventure" : "Begin the trial" : "Open lesson", lines: target.lesson === 3 ? [
+        progress.completed ? "Your trial is already complete. It’s good to see you return with a curious mind." : `You have met every guide. Now let’s see how you use ${topicNames[track.topic]} for yourself.`,
+        "We’ll start with one question, then change the situation for a second check. Take your time. If you stumble, I’ll explain the idea so you can try again.",
+      ] : [
+        `Hello, ${learner.name}. I’m ${target.name}. ${progress.completedLessonIds.includes(track.lessons[target.lesson].id) ? "Back for another look? You’re always welcome." : "You’ve come to the right place."}`,
+        `Let’s explore “${track.lessons[target.lesson].title}”. ${track.lessons[target.lesson].body}`,
+      ] });
+      return;
+    }
     setChoice(null); setFeedback(""); setError(""); setGuide(target);
   };
 
@@ -79,7 +122,7 @@ export function TopicAdventureWorld({ world, track, initialProgress }: { world: 
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (guide || busy || (event.target as HTMLElement)?.closest("input,textarea,select,a")) return;
+      if (guide || conversation || busy || (event.target as HTMLElement)?.closest("input,textarea,select,a")) return;
       const key = event.key.toLowerCase();
       if (key === "e") {
         event.preventDefault();
@@ -138,13 +181,18 @@ export function TopicAdventureWorld({ world, track, initialProgress }: { world: 
     <section className={`${styles.map} ${chapel ? styles.chapelMap : ""}`} style={chapel ? { aspectRatio: viewport.ratio, width: `min(100%, calc(max(520px, 100dvh - 190px) * ${viewport.ratio}))` } : undefined} aria-label="Learning adventure map" tabIndex={0}>
       <div className={chapel ? styles.scenePlane : styles.islandPlane} style={chapel ? viewport.plane : undefined}>
       {chapel ? inside ? <ChurchMapCanvas className={styles.canvas} /> : <ChurchExteriorCanvas className={styles.canvas} /> : <Image src={islandMap} alt="Island with forests, a beach, and a hilltop camp" className={styles.mapImage} unoptimized priority />}
-      {guides.map((item) => <button type="button" key={item.name} onClick={() => interact(item)} className={styles.actor} style={{ ...spriteStyle(item.sprite), left: `${item.x}%`, top: `${item.y}%` }} aria-label={`Talk to ${item.name}`}><b>{item.lesson < nextIndex || progress.completed ? "✓" : item.lesson === 3 ? "!" : item.lesson + 1}</b><span>{item.name}</span></button>)}
-      {!chapel && firstIslandActors.filter((actor) => !islandGuides.some((item) => item.name === actor.name)).map((actor) => <span key={actor.id} className={styles.ambient} style={{ ...spriteStyle(ambientSprites[actor.sprite]), left: `${actor.position.x}%`, top: `${actor.position.y}%` }} aria-hidden="true" />)}
+      {guides.map((item) => <button type="button" key={item.name} onClick={() => interact(item)} className={styles.actor} style={{ ...spriteStyle(item.sprite), left: `${item.x}%`, top: `${item.y}%` }} aria-label={`Talk to ${item.name}`}><b>{item.lesson < 0 ? "…" : item.lesson < nextIndex || progress.completed ? "✓" : item.lesson === 3 ? "!" : item.lesson + 1}</b><span>{item.name}</span></button>)}
+      {!chapel && firstIslandActors.filter((actor) => !guides.some((item) => item.name === actor.name)).map((actor) => <span key={actor.id} className={styles.ambient} style={{ ...spriteStyle(ambientSprites[actor.sprite]), left: `${actor.position.x}%`, top: `${actor.position.y}%` }} aria-hidden="true" />)}
       {chapel && !inside && nextIndex > 0 && <span className={styles.gateMarker} style={{ left: "50%", top: "54%" }}>ENTER ↓</span>}
       <div className={styles.player} style={{ ...spriteStyle(moving ? explorerWalk : explorer), left: `${position.x}%`, top: `${position.y}%` }}><span>YOU</span></div>
       </div>
     </section>
     <footer className={styles.worldFooter}><p role="status">{message}</p><span>WASD / arrows · E to interact{chapel && inside ? " · E at the lower doorway to exit" : ""}</span></footer>
+    {conversation && <CharacterDialogue conversation={conversation} onDismiss={() => setConversation(null)} onComplete={() => {
+      const target = conversation.target;
+      setConversation(null);
+      if (target) { setChoice(null); setFeedback(""); setError(""); setGuide(target); }
+    }} />}
     <dialog ref={dialog} className={styles.dialog} onCancel={(event) => { event.preventDefault(); closeDialog(); }}>
       <header><small>{guide?.name} / {track.difficulty}</small><button disabled={busy} onClick={closeDialog} aria-label="Close lesson">×</button></header>
       {error && <p className={styles.error} role="alert">{error}</p>}
