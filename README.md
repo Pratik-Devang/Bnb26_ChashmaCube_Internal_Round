@@ -2,7 +2,7 @@
 
 Re:Learn is a game-oriented learning experience for beginner Python learners. It turns an incorrect solution into a friendly diagnosis, a short targeted learning game, and a transfer question that checks whether the idea now makes sense.
 
-This directory contains the frontend scaffold only. It uses Next.js 16, React 19, TypeScript, the App Router, plain CSS, React state, and mock data. There is no authentication, database, model inference, backend integration, or server-side Python execution in this version.
+This repository contains the Next.js learner experience, a PostgreSQL-backed FastAPI modular monolith, and the initial misconception-dataset workspace. The frontend still uses mock data until the integration batch connects `lib/api.ts`; learner code execution and trained-model inference remain separate follow-up work.
 
 ## Architecture
 
@@ -13,6 +13,7 @@ This directory contains the frontend scaffold only. It uses Next.js 16, React 19
 - `lib/mock-data.ts` is the single source for temporary learner, lesson, quest, exercise, and diagnosis content.
 - `lib/api.ts` is the typed boundary for the future FastAPI backend. React components should call this module rather than using URLs directly.
 - `lib/code-runner.ts` defines the future Pyodide Web Worker adapter. Pyodide is intentionally not installed yet.
+- `relearn-api/` implements the versioned learning, attempts, diagnosis, intervention, reassessment, progress, quest, XP, and model-metrics endpoints.
 
 The full system design and endpoint contracts live in [`../docs/ARCHITECTURE.md`](../docs/ARCHITECTURE.md) and [`../docs/API_CONTRACTS.md`](../docs/API_CONTRACTS.md).
 

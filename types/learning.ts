@@ -1,6 +1,8 @@
 export type ModuleStatus = "completed" | "active" | "upcoming" | "locked";
 export type QuestStatus = "open" | "completed";
+
 export type ConceptState = "resolved" | "improving" | "needs-practice" | "untested";
+export type ConceptStatus = "UNTESTED" | "NEEDS_PRACTICE" | "IMPROVING" | "RESOLVED";
 
 export type Misconception =
   | "CORRECT"
@@ -14,10 +16,12 @@ export type Misconception =
 export type AttemptType = "INITIAL" | "NEAR_TRANSFER" | "FAR_TRANSFER";
 
 export interface ExerciseTestCase {
-  input: Record<string, unknown>;
+  input?: Record<string, unknown>;
+  args?: unknown[];
   expected: unknown;
   actual?: unknown;
   passed?: boolean;
+  error?: string;
 }
 
 export interface Exercise {
@@ -25,16 +29,25 @@ export interface Exercise {
   conceptId: string;
   title: string;
   prompt: string;
-  difficulty: "beginner" | "intermediate";
+  difficulty: "beginner" | "intermediate" | string;
   starterCode: string;
   testCases: ExerciseTestCase[];
-  exerciseType: "practice" | "near-transfer" | "far-transfer";
+  exerciseType: "practice" | "near-transfer" | "far-transfer" | "PRACTICE" | "NEAR_TRANSFER" | "FAR_TRANSFER";
+}
+
+export interface TestCaseResult {
+  input?: Record<string, unknown>;
+  args?: unknown[];
+  expected: unknown;
+  actual?: unknown;
+  passed: boolean;
+  error?: string;
 }
 
 export interface TestResults {
   passed: number;
   failed: number;
-  cases: Required<Pick<ExerciseTestCase, "input" | "expected" | "actual" | "passed">>[];
+  cases: TestCaseResult[];
 }
 
 export interface AttemptRequest {
@@ -51,6 +64,8 @@ export interface AttemptResponse {
   id: string;
   learnerId: string;
   exerciseId: string;
+  attemptType?: AttemptType;
+  parentAttemptId?: string | null;
   createdAt: string;
 }
 
@@ -73,16 +88,28 @@ export interface DiagnosisResult {
 
 export interface Intervention {
   id: string;
+  diagnosisId?: string;
   type: string;
   title: string;
   estimatedMinutes: number;
+  content?: Record<string, unknown>;
+  completedAt?: string | null;
 }
 
 export interface DiagnosisResponse {
   attemptId: string;
   diagnosis: DiagnosisResult;
   intervention: Intervention;
-  reassessmentExerciseId: string;
+  reassessmentExerciseId?: string | null;
+  conceptStatus?: ConceptStatus | null;
+}
+
+export interface InterventionCompletion {
+  interventionId: string;
+  completed: boolean;
+  completedAt: string;
+  nearTransferExerciseId?: string | null;
+  farTransferExerciseId?: string | null;
 }
 
 export interface ReassessmentRequest extends AttemptRequest {
@@ -100,15 +127,17 @@ export interface Learner {
 
 export interface LearningModule {
   id: string;
+  conceptCode?: string;
   title: string;
   description: string;
-  beginnerNote: string;
+  beginnerNote?: string;
   status: ModuleStatus;
   progress: number;
-  xpReward: number;
-  accent: "cyan" | "mint" | "lilac" | "pink" | "yellow" | "white";
-  icon: string;
+  xpReward?: number;
+  accent?: "cyan" | "mint" | "lilac" | "pink" | "yellow" | "white";
+  icon?: string;
   misconception?: Misconception;
+  displayOrder?: number;
 }
 
 export interface Quest {
@@ -116,9 +145,33 @@ export interface Quest {
   title: string;
   description: string;
   xpReward: number;
+  questType?: string;
   status: QuestStatus;
-  accent: "cyan" | "mint" | "lilac" | "pink" | "yellow";
-  icon: string;
+  progress?: number;
+  completedAt?: string | null;
+  accent?: "cyan" | "mint" | "lilac" | "pink" | "yellow";
+  icon?: string;
+}
+
+export interface QuestCompletion {
+  quest: Quest;
+  learnerXp: number;
+  xpAwarded: number;
+}
+
+export interface ConceptProgress {
+  conceptId: string;
+  concept: string;
+  status: ConceptStatus;
+  masteryScore: number;
+  evidenceCount: number;
+  lastMisconceptionCode?: string | null;
+  updatedAt: string;
+}
+
+export interface ProgressResponse {
+  learnerId: string;
+  concepts: ConceptProgress[];
 }
 
 export interface LearnerConceptState {
@@ -149,4 +202,56 @@ export interface LearningPlanResponse {
   modules: LearningModule[];
   quests: Quest[];
   statistics: DashboardStatistics;
+}
+
+export interface ModelMetrics {
+  id: string;
+  name: string;
+  datasetVersion: string;
+  metrics: Record<string, unknown>;
+  createdAt: string;
+}
+
+export interface ApiErrorShape {
+  code: string;
+  message: string;
+  details?: Record<string, unknown> | null;
+}
+
+export interface PredictionItem {
+  id: number;
+  misconception: string;
+  score: number;
+}
+
+export interface InterventionDetail {
+  title: string;
+  explanation: string;
+  example: string;
+  check: string;
+}
+
+export interface ReassessmentResult {
+  status: "resolved" | "unresolved";
+  misconception_id: number;
+}
+
+export interface AlternativeItem {
+  misconception_id?: number;
+  misconception: string;
+  confidence?: "high" | "medium" | "low" | string;
+  score?: number;
+  id?: number;
+}
+
+export interface MLDiagnoseResponse {
+  misconception_id?: number;
+  misconception?: string;
+  confidence?: "high" | "medium" | "low" | string;
+  evidence?: string;
+  alternatives?: AlternativeItem[];
+  model_confident?: boolean;
+  top_prediction?: PredictionItem;
+  intervention?: InterventionDetail;
+  reassessment?: ReassessmentResult | null;
 }

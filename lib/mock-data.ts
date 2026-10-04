@@ -21,26 +21,26 @@ export const learner: Learner = {
 export const learningModules: LearningModule[] = [
   {
     id: "variables",
-    title: "Variables & values",
-    description: "Give information a name so your program can remember it.",
-    beginnerNote: "Think of a variable as a labeled box that can hold a value.",
+    title: "The First Island",
+    description: "Explore the island and learn variables and values from its inhabitants.",
+    beginnerNote: "Travel from teacher to teacher in order, then complete the Island Scout's coding trial.",
     status: "completed",
     progress: 100,
-    xpReward: 80,
+    xpReward: 110,
     accent: "cyan",
-    icon: "📦",
+    icon: "🏝️",
     misconception: "CORRECT",
   },
   {
     id: "conditions",
-    title: "Conditions",
+    title: "The Chapel of Choices",
     description: "Help your code choose what to do next.",
     beginnerNote: "An if statement asks a yes-or-no question before running code.",
     status: "completed",
     progress: 100,
     xpReward: 90,
     accent: "mint",
-    icon: "🔀",
+    icon: "⛪",
     misconception: "CORRECT",
   },
   {
@@ -173,18 +173,140 @@ export const statistics: DashboardStatistics = {
   inProgress: learningModules.filter((module) => module.status === "active").length,
 };
 
-export const activeExercise: Exercise = {
-  id: "inclusive-sum-01",
-  conceptId: "loop-boundaries",
-  title: "Add every number",
-  prompt: "Write a loop that adds every whole number from 1 through n.",
-  difficulty: "beginner",
-  starterCode: "def inclusive_sum(n):\n    total = 0\n    # Write your loop here\n    return total",
-  testCases: [
-    { input: { n: 5 }, expected: 15 },
-    { input: { n: 3 }, expected: 6 },
-  ],
-  exerciseType: "practice",
+export const exerciseCatalog: Record<string, Exercise> = {
+  "starting-value-01": {
+    id: "starting-value-01",
+    conceptId: "concept-variables",
+    title: "Add a bonus to a score",
+    prompt: "Write add_bonus(score) so it returns the starting score plus 10 points.",
+    difficulty: "beginner",
+    starterCode: "def add_bonus(score):\n    # Add 10 points and return the new score\n    return score",
+    testCases: [
+      { args: [0], expected: 10 },
+      { args: [7], expected: 17 },
+      { args: [-2], expected: 8 },
+    ],
+    exerciseType: "PRACTICE",
+  },
+  "condition-choice-01": {
+    id: "condition-choice-01",
+    conceptId: "concept-conditions",
+    title: "Choose an age label",
+    prompt: "Write age_label(age) so it returns 'adult' for ages 18 and over, and 'minor' otherwise.",
+    difficulty: "beginner",
+    starterCode: "def age_label(age):\n    # Choose a label with an if/else\n    pass",
+    testCases: [
+      { args: [18], expected: "adult" },
+      { args: [17], expected: "minor" },
+      { args: [42], expected: "adult" },
+    ],
+    exerciseType: "PRACTICE",
+  },
+  "inclusive-sum-01": {
+    id: "inclusive-sum-01",
+    conceptId: "concept-loop-boundaries",
+    title: "Add every number",
+    prompt: "Write inclusive_sum(n) so it returns the sum of every whole number from 1 through n.",
+    difficulty: "beginner",
+    starterCode: "def inclusive_sum(n):\n    total = 0\n    # Add your loop here\n    return total",
+    testCases: [
+      { args: [1], expected: 1 },
+      { args: [5], expected: 15 },
+      { args: [8], expected: 36 },
+    ],
+    exerciseType: "PRACTICE",
+  },
+  "list-traversal-04": {
+    id: "list-traversal-04",
+    conceptId: "concept-loop-boundaries",
+    title: "Visit every item",
+    prompt: "Write add_items(values) so it adds every number in the list, including the final item.",
+    difficulty: "beginner",
+    starterCode: "def add_items(values):\n    total = 0\n    # Visit every index\n    return total",
+    testCases: [
+      { args: [[4]], expected: 4 },
+      { args: [[2, 3, 5]], expected: 10 },
+      { args: [[1, 1, 1, 7]], expected: 10 },
+    ],
+    exerciseType: "NEAR_TRANSFER",
+  },
+  "multiples-through-n-02": {
+    id: "multiples-through-n-02",
+    conceptId: "concept-loop-boundaries",
+    title: "Count landing tiles",
+    prompt: "Write count_multiples(n, step) to count multiples of step from step through n, including n when it is a multiple.",
+    difficulty: "beginner",
+    starterCode: "def count_multiples(n, step):\n    count = 0\n    # Count every landing tile\n    return count",
+    testCases: [
+      { args: [6, 3], expected: 2 },
+      { args: [10, 2], expected: 5 },
+      { args: [9, 4], expected: 2 },
+    ],
+    exerciseType: "FAR_TRANSFER",
+  },
+  "count-even-01": {
+    id: "count-even-01",
+    conceptId: "concept-accumulators",
+    title: "Count the even numbers",
+    prompt: "Write count_evens(numbers) so it returns how many values in the list are even.",
+    difficulty: "beginner",
+    starterCode: "def count_evens(numbers):\n    count = 0\n    for number in numbers:\n        # Count each even number\n        pass\n    return count",
+    testCases: [
+      { args: [[2, 5, 8, 9]], expected: 2 },
+      { args: [[-4, 3, 0]], expected: 2 },
+      { args: [[]], expected: 0 },
+    ],
+    exerciseType: "PRACTICE",
+  },
+  "countdown-total-01": {
+    id: "countdown-total-01",
+    conceptId: "concept-while-loops",
+    title: "Sum a countdown",
+    prompt: "Write countdown_total(start) to return the sum from start down to 1. Return 0 when start is 0.",
+    difficulty: "beginner",
+    starterCode: "def countdown_total(start):\n    current = start\n    total = 0\n    while current > 0:\n        # Add current, then move toward zero\n        pass\n    return total",
+    testCases: [
+      { args: [4], expected: 10 },
+      { args: [1], expected: 1 },
+      { args: [0], expected: 0 },
+    ],
+    exerciseType: "PRACTICE",
+  },
+  "longest-word-01": {
+    id: "longest-word-01",
+    conceptId: "concept-loop-mastery",
+    title: "Find the longest word",
+    prompt: "Write longest_word(words) to return the first longest word from a nonempty list.",
+    difficulty: "beginner",
+    starterCode: "def longest_word(words):\n    best = words[0]\n    for word in words:\n        # Keep the longer word\n        pass\n    return best",
+    testCases: [
+      { args: [["sun", "planet", "moon"]], expected: "planet" },
+      { args: [["oak", "elm", "ash"]], expected: "oak" },
+      { args: [["single"]], expected: "single" },
+    ],
+    exerciseType: "PRACTICE",
+  },
+};
+
+export const activeExercise: Exercise = exerciseCatalog["inclusive-sum-01"];
+
+export const mockIntervention = {
+  id: "intervention-123",
+  type: "RANGE_PATH_GAME",
+  title: "Help Byte reach the final tile",
+  estimatedMinutes: 2,
+  content: {
+    type: "RANGE_PATH_GAME",
+    title: "Help Byte reach the final tile",
+    estimatedMinutes: 2,
+    instructions: "Choose an endpoint that lets Byte visit every required tile.",
+    rounds: [
+      { start: 1, requiredLastTile: 5, choices: [5, 6, 7], correctStop: 6 },
+      { start: 2, requiredLastTile: 8, choices: [8, 9, 10], correctStop: 9 },
+    ],
+    nearTransferExerciseId: "list-traversal-04",
+    farTransferExerciseId: "multiples-through-n-02",
+  },
 };
 
 export const mockDiagnosisResponse: DiagnosisResponse = {
@@ -208,11 +330,8 @@ export const mockDiagnosisResponse: DiagnosisResponse = {
     },
     modelVersion: "baseline-demo-v0",
   },
-  intervention: {
-    id: "intervention-123",
-    type: "RANGE_PATH_GAME",
-    title: "Help Byte reach the final tile",
-    estimatedMinutes: 2,
-  },
+  intervention: mockIntervention,
   reassessmentExerciseId: "list-traversal-04",
+  conceptStatus: "NEEDS_PRACTICE",
 };
+

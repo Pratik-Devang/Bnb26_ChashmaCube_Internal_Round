@@ -1,0 +1,842 @@
+[
+  {
+    "id": "variables-easy",
+    "topic": "variables",
+    "difficulty": "easy",
+    "lessons": [
+      {
+        "id": "lesson-1",
+        "title": "Names remember values",
+        "body": "Assignment evaluates the right side, then stores its result under the name on the left. Read = as ‘gets’, not ‘is equal to’.",
+        "code": "coins = 4\nprint(coins)",
+        "takeaway": "The output is 4. Quotes would make coins literal text."
+      },
+      {
+        "id": "lesson-2",
+        "title": "Values have types",
+        "body": "Numbers support arithmetic. Quoted text is a string, even when it contains digits. Joining two strings does not add two numbers.",
+        "code": "print(3 + 2)\nprint(\"3\" + \"2\")",
+        "takeaway": "The outputs are 5 and 32."
+      },
+      {
+        "id": "lesson-3",
+        "title": "Reassign a name",
+        "body": "A later assignment replaces the earlier value. Python executes statements from top to bottom.",
+        "code": "coins = 4\ncoins = coins + 2\nprint(coins)",
+        "takeaway": "The new value is 6; the right side uses the old value."
+      }
+    ],
+    "questions": [
+      {
+        "id": "check-1",
+        "prompt": "What does this print?",
+        "code": "gems = 3\ngems = gems + 4\nprint(gems)",
+        "options": [
+          "3",
+          "7",
+          "4"
+        ],
+        "answer": 1,
+        "feedback": "The second assignment reads the old 3, adds 4, and stores 7. Assignment changes the value.",
+        "kind": "challenge"
+      },
+      {
+        "id": "check-2",
+        "prompt": "Now use text instead of coins. What is printed?",
+        "code": "label = \"2\"\nlabel = label + \"5\"\nprint(label)",
+        "options": [
+          "7",
+          "25",
+          "2"
+        ],
+        "answer": 1,
+        "feedback": "Both values are strings. + joins their characters to form 25; it does not perform numeric addition.",
+        "kind": "transfer"
+      }
+    ]
+  },
+  {
+    "id": "variables-medium",
+    "topic": "variables",
+    "difficulty": "medium",
+    "lessons": [
+      {
+        "id": "lesson-1",
+        "title": "Copies are not live formulas",
+        "body": "Assigning one integer name to another uses the current value. Later reassignment of the source name does not recompute the destination.",
+        "code": "a = 6\nb = a\na = 9\nprint(b)",
+        "takeaway": "b remains 6."
+      },
+      {
+        "id": "lesson-2",
+        "title": "Convert deliberately",
+        "body": "Convert a numeric string with int before arithmetic. Conversion returns a value; it does not change the original variable unless assigned.",
+        "code": "raw = \"8\"\namount = int(raw)\nprint(amount + 1)",
+        "takeaway": "raw is still a string; amount is an integer."
+      },
+      {
+        "id": "lesson-3",
+        "title": "Swap without losing a value",
+        "body": "A temporary name preserves an old value. Tuple assignment evaluates every right-hand expression before assigning the targets.",
+        "code": "left = 2\nright = 9\nleft, right = right, left\nprint(left, right)",
+        "takeaway": "The outputs are 9 and 2."
+      }
+    ],
+    "questions": [
+      {
+        "id": "check-1",
+        "prompt": "Choose the replacement for ??? that adds one numerically.",
+        "code": "raw = \"7\"\nresult = ???\nprint(result)",
+        "options": [
+          "raw + \"1\"",
+          "int(raw) + 1",
+          "int(raw + \"1\")"
+        ],
+        "answer": 1,
+        "feedback": "Convert raw before adding. Joining first makes 71, while numeric conversion followed by + 1 makes 8.",
+        "kind": "challenge"
+      },
+      {
+        "id": "check-2",
+        "prompt": "A copied value appears in a new situation. What prints?",
+        "code": "stock = 12\nreserved = stock\nstock = 5\nprint(reserved, stock)",
+        "options": [
+          "5 5",
+          "12 5",
+          "12 12"
+        ],
+        "answer": 1,
+        "feedback": "reserved retains the integer value 12. Reassigning stock does not update reserved.",
+        "kind": "transfer"
+      }
+    ]
+  },
+  {
+    "id": "variables-hard",
+    "topic": "variables",
+    "difficulty": "hard",
+    "lessons": [
+      {
+        "id": "lesson-1",
+        "title": "Evaluate before assigning",
+        "body": "All right-hand expressions in a multiple assignment use the old bindings. This matters when one expression refers to a name also being updated.",
+        "code": "a, b = 2, 5\na, b = b, a + b\nprint(a, b)",
+        "takeaway": "The result is 5 7, not 5 10."
+      },
+      {
+        "id": "lesson-2",
+        "title": "Aliasing is different from reassignment",
+        "body": "Two names can refer to the same mutable list. Mutating the list is visible through both names. Rebinding one name is not a mutation.",
+        "code": "a = [1]\nb = a\na.append(2)\na = [9]\nprint(b)",
+        "takeaway": "b sees [1, 2], not [9]."
+      },
+      {
+        "id": "lesson-3",
+        "title": "Make an independent outer list",
+        "body": "list.copy creates a different outer list. Appending to that copy does not append to the original. Nested elements are still shared by a shallow copy.",
+        "code": "a = [3]\nb = a.copy()\nb.append(4)\nprint(a, b)",
+        "takeaway": "The lists are [3] and [3, 4]."
+      }
+    ],
+    "questions": [
+      {
+        "id": "check-1",
+        "prompt": "What are the final values?",
+        "code": "a, b = 3, 7\na, b = b, a + b\nprint(a, b)",
+        "options": [
+          "7 14",
+          "7 10",
+          "3 10"
+        ],
+        "answer": 1,
+        "feedback": "The right side is evaluated with a=3 and b=7 before either target changes.",
+        "kind": "challenge"
+      },
+      {
+        "id": "check-2",
+        "prompt": "Which value survives the rebinding?",
+        "code": "pack = [2]\nshared = pack\npack.append(5)\npack = [8]\nprint(shared)",
+        "options": [
+          "[8]",
+          "[2]",
+          "[2, 5]"
+        ],
+        "answer": 2,
+        "feedback": "append mutates the shared list; the later assignment only rebinds pack. shared still refers to [2, 5].",
+        "kind": "transfer"
+      }
+    ]
+  },
+  {
+    "id": "conditions-easy",
+    "topic": "conditions",
+    "difficulty": "easy",
+    "lessons": [
+      {
+        "id": "lesson-1",
+        "title": "Ask a True or False question",
+        "body": "A comparison such as >= produces a boolean. == compares values; = assigns a value.",
+        "code": "keys = 2\nprint(keys >= 1)\nprint(keys == 1)",
+        "takeaway": "The results are True then False."
+      },
+      {
+        "id": "lesson-2",
+        "title": "Choose one branch",
+        "body": "An if/else selects one of two blocks. The colon starts the block; indentation groups its instructions.",
+        "code": "open_gate = True\nif open_gate:\n    print(\"enter\")\nelse:\n    print(\"wait\")",
+        "takeaway": "Only enter is printed."
+      },
+      {
+        "id": "lesson-3",
+        "title": "Notice the boundary",
+        "body": "A strict > excludes equality. >= includes it. Test exactly the threshold before trusting a condition.",
+        "code": "age = 12\nprint(age > 12)\nprint(age >= 12)",
+        "takeaway": "At the boundary, the two comparisons differ."
+      }
+    ],
+    "questions": [
+      {
+        "id": "check-1",
+        "prompt": "What is printed?",
+        "code": "coins = 4\nif coins >= 5:\n    print(\"open\")\nelse:\n    print(\"wait\")",
+        "options": [
+          "open",
+          "wait",
+          "open then wait"
+        ],
+        "answer": 1,
+        "feedback": "4 >= 5 is False, so only the else block runs.",
+        "kind": "challenge"
+      },
+      {
+        "id": "check-2",
+        "prompt": "A gate includes the boundary age. Choose its condition.",
+        "code": "age = 10\n# Admit every age of 10 or more.",
+        "options": [
+          "age > 10",
+          "age >= 10",
+          "age == 10"
+        ],
+        "answer": 1,
+        "feedback": ">= includes 10 and all larger ages. == would incorrectly exclude older explorers.",
+        "kind": "transfer"
+      }
+    ]
+  },
+  {
+    "id": "conditions-medium",
+    "topic": "conditions",
+    "difficulty": "medium",
+    "lessons": [
+      {
+        "id": "lesson-1",
+        "title": "First matching branch wins",
+        "body": "An if/elif/else chain stops at the first true condition. Put more specific thresholds before broader ones.",
+        "code": "score = 85\nif score >= 90:\n    print(\"A\")\nelif score >= 70:\n    print(\"B\")\nelse:\n    print(\"C\")",
+        "takeaway": "Only B is printed."
+      },
+      {
+        "id": "lesson-2",
+        "title": "Combine requirements",
+        "body": "and requires both tests to be true. or requires at least one. Parentheses make your intended grouping clear.",
+        "code": "has_key = True\nhas_pass = False\nprint(has_key and has_pass)\nprint(has_key or has_pass)",
+        "takeaway": "The outputs are False and True."
+      },
+      {
+        "id": "lesson-3",
+        "title": "Separate if statements",
+        "body": "Two if statements are checked independently. An elif is only checked when the preceding if was false.",
+        "code": "x = 4\nif x > 0:\n    print(\"positive\")\nif x % 2 == 0:\n    print(\"even\")",
+        "takeaway": "Both messages print."
+      }
+    ],
+    "questions": [
+      {
+        "id": "check-1",
+        "prompt": "Which branch runs?",
+        "code": "score = 95\nif score >= 70:\n    print(\"B\")\nelif score >= 90:\n    print(\"A\")",
+        "options": [
+          "A",
+          "B",
+          "B then A"
+        ],
+        "answer": 1,
+        "feedback": "The first condition already matches 95. Python skips the elif; reorder the thresholds to award A.",
+        "kind": "challenge"
+      },
+      {
+        "id": "check-2",
+        "prompt": "Choose the test requiring BOTH a key and enough coins.",
+        "code": "has_key = True\ncoins = 2\n# Need a key and at least 3 coins.",
+        "options": [
+          "has_key or coins >= 3",
+          "has_key and coins >= 3",
+          "not has_key and coins >= 3"
+        ],
+        "answer": 1,
+        "feedback": "and enforces both requirements. or would admit someone satisfying only one.",
+        "kind": "transfer"
+      }
+    ]
+  },
+  {
+    "id": "conditions-hard",
+    "topic": "conditions",
+    "difficulty": "hard",
+    "lessons": [
+      {
+        "id": "lesson-1",
+        "title": "Short-circuit guards",
+        "body": "and stops as soon as its left operand is false. Use that to guard an operation that would otherwise fail.",
+        "code": "divisor = 0\nsafe = divisor != 0 and 12 / divisor > 2\nprint(safe)",
+        "takeaway": "False is printed without dividing by zero."
+      },
+      {
+        "id": "lesson-2",
+        "title": "Truthiness and returned operands",
+        "body": "and and or return operands, not necessarily boolean objects. Empty strings and zero are falsy.",
+        "code": "name = \"\"\nshown = name or \"guest\"\nprint(shown)",
+        "takeaway": "or returns guest because name is falsy."
+      },
+      {
+        "id": "lesson-3",
+        "title": "Group complex decisions",
+        "body": "not binds before and, and binds before or. Parentheses document a requirement and avoid accidental access paths.",
+        "code": "member = False\nadmin = True\nactive = False\nprint((member or admin) and active)",
+        "takeaway": "The active requirement applies to both roles."
+      }
+    ],
+    "questions": [
+      {
+        "id": "check-1",
+        "prompt": "Which expression safely checks the quotient?",
+        "code": "n = 0\n# Do not divide by zero.",
+        "options": [
+          "12 / n > 2 and n != 0",
+          "n != 0 and 12 / n > 2",
+          "n == 0 and 12 / n > 2"
+        ],
+        "answer": 1,
+        "feedback": "The guard must come first and be False for zero so Python skips the division.",
+        "kind": "challenge"
+      },
+      {
+        "id": "check-2",
+        "prompt": "What value does this store?",
+        "code": "nickname = \"\"\nbackup = \"scout\"\nname = nickname or backup\nprint(name)",
+        "options": [
+          "True",
+          "scout",
+          "empty string"
+        ],
+        "answer": 1,
+        "feedback": "or returns the first truthy operand, or the last operand. It returns the string scout here.",
+        "kind": "transfer"
+      }
+    ]
+  },
+  {
+    "id": "loops-easy",
+    "topic": "loops",
+    "difficulty": "easy",
+    "lessons": [
+      {
+        "id": "lesson-1",
+        "title": "Visit a range",
+        "body": "range(start, stop) includes start and excludes stop. Think of stop as the first forbidden value.",
+        "code": "for n in range(1, 4):\n    print(n)",
+        "takeaway": "The outputs are 1, 2, 3 on separate lines."
+      },
+      {
+        "id": "lesson-2",
+        "title": "Repeat a block",
+        "body": "Only indented instructions repeat. An instruction after the block runs once after all iterations.",
+        "code": "for n in range(2):\n    print(\"step\")\nprint(\"done\")",
+        "takeaway": "step prints twice; done prints once."
+      },
+      {
+        "id": "lesson-3",
+        "title": "Keep a running total",
+        "body": "Initialize before the loop. Each iteration updates the accumulated value.",
+        "code": "total = 0\nfor n in range(1, 4):\n    total += n\nprint(total)",
+        "takeaway": "The running totals are 1, 3, and 6."
+      }
+    ],
+    "questions": [
+      {
+        "id": "check-1",
+        "prompt": "What total is printed?",
+        "code": "total = 0\nfor n in range(1, 4):\n    total += n\nprint(total)",
+        "options": [
+          "10",
+          "6",
+          "4"
+        ],
+        "answer": 1,
+        "feedback": "range stops before 4, so the sum is 1+2+3=6.",
+        "kind": "challenge"
+      },
+      {
+        "id": "check-2",
+        "prompt": "Choose a range that visits 2, 3, 4, and 5.",
+        "code": "# The final visited value must be 5.",
+        "options": [
+          "range(2, 5)",
+          "range(2, 6)",
+          "range(1, 5)"
+        ],
+        "answer": 1,
+        "feedback": "Use stop=6 because the stop value is excluded.",
+        "kind": "transfer"
+      }
+    ]
+  },
+  {
+    "id": "loops-medium",
+    "topic": "loops",
+    "difficulty": "medium",
+    "lessons": [
+      {
+        "id": "lesson-1",
+        "title": "Step sizes change visits",
+        "body": "range accepts a step. Starting at 1 with a step of 2 visits odd numbers until the excluded stop.",
+        "code": "print(list(range(1, 7, 2)))",
+        "takeaway": "The values are [1, 3, 5]."
+      },
+      {
+        "id": "lesson-2",
+        "title": "A while loop needs progress",
+        "body": "A while condition is checked before every iteration. Updating its controlling variable prevents an unintended infinite loop.",
+        "code": "fuel = 3\nwhile fuel > 0:\n    fuel -= 1\nprint(fuel)",
+        "takeaway": "The loop stops at 0."
+      },
+      {
+        "id": "lesson-3",
+        "title": "Skip or stop",
+        "body": "continue skips the remaining instructions in the current iteration. break exits the loop entirely.",
+        "code": "total = 0\nfor n in range(4):\n    if n == 2:\n        continue\n    total += n\nprint(total)",
+        "takeaway": "The total is 4 from 0+1+3."
+      }
+    ],
+    "questions": [
+      {
+        "id": "check-1",
+        "prompt": "Where should total = 0 go to accumulate all values?",
+        "code": "for n in range(1, 4):\n    total = 0\n    total += n\nprint(total)",
+        "options": [
+          "Before the for loop",
+          "After total += n",
+          "Keep it inside"
+        ],
+        "answer": 0,
+        "feedback": "Inside the loop it resets on each iteration. Initialize once before the loop to retain earlier additions.",
+        "kind": "challenge"
+      },
+      {
+        "id": "check-2",
+        "prompt": "How many times does this loop execute?",
+        "code": "fuel = 5\nwhile fuel > 0:\n    fuel -= 2",
+        "options": [
+          "2",
+          "3",
+          "5"
+        ],
+        "answer": 1,
+        "feedback": "The body runs with fuel 5, 3, and 1. It then becomes -1 and the next condition is False.",
+        "kind": "transfer"
+      }
+    ]
+  },
+  {
+    "id": "loops-hard",
+    "topic": "loops",
+    "difficulty": "hard",
+    "lessons": [
+      {
+        "id": "lesson-1",
+        "title": "Nested loops multiply work",
+        "body": "For each outer value, the inner loop starts again. Count pairs rather than adding the iteration counts.",
+        "code": "count = 0\nfor a in range(2):\n    for b in range(3):\n        count += 1\nprint(count)",
+        "takeaway": "There are 2×3=6 pairs."
+      },
+      {
+        "id": "lesson-2",
+        "title": "Loop else means no break",
+        "body": "A for/else runs its else block only if the loop ends without break, even for an empty iterable.",
+        "code": "for n in [1, 3]:\n    if n % 2 == 0:\n        break\nelse:\n    print(\"no even value\")",
+        "takeaway": "No break occurs, so the else runs."
+      },
+      {
+        "id": "lesson-3",
+        "title": "Separate filtered accumulation",
+        "body": "A filter decides which values contribute; it does not reset the total. Trace both the chosen values and the accumulator.",
+        "code": "total = 0\nfor a in range(3):\n    for b in range(2):\n        if a != b:\n            total += a\nprint(total)",
+        "takeaway": "The contributing a values are 0, 1, 2, 2, giving 5."
+      }
+    ],
+    "questions": [
+      {
+        "id": "check-1",
+        "prompt": "What count is printed?",
+        "code": "count = 0\nfor a in range(3):\n    for b in range(2):\n        count += 1\nprint(count)",
+        "options": [
+          "5",
+          "6",
+          "3"
+        ],
+        "answer": 1,
+        "feedback": "Each of the three outer iterations runs the two inner iterations again: 3×2=6.",
+        "kind": "challenge"
+      },
+      {
+        "id": "check-2",
+        "prompt": "What prints for this empty search?",
+        "code": "for item in []:\n    if item == \"key\":\n        break\nelse:\n    print(\"missing\")",
+        "options": [
+          "Nothing",
+          "missing",
+          "An error"
+        ],
+        "answer": 1,
+        "feedback": "The iterable is empty, so there is no break. The loop else still executes.",
+        "kind": "transfer"
+      }
+    ]
+  },
+  {
+    "id": "lists-easy",
+    "topic": "lists",
+    "difficulty": "easy",
+    "lessons": [
+      {
+        "id": "lesson-1",
+        "title": "Ordered collections",
+        "body": "A list stores an ordered sequence. Indexing starts at zero, so index 1 refers to the second item.",
+        "code": "bag = [\"key\", \"map\", \"gem\"]\nprint(bag[1])",
+        "takeaway": "The output is map."
+      },
+      {
+        "id": "lesson-2",
+        "title": "Length is not the final index",
+        "body": "len counts items. A nonempty list's final positive index is len(list)-1.",
+        "code": "bag = [\"key\", \"map\"]\nprint(len(bag))\nprint(bag[-1])",
+        "takeaway": "There are 2 items; the last is map."
+      },
+      {
+        "id": "lesson-3",
+        "title": "Append changes the list",
+        "body": "append adds one item at the end of the same list.",
+        "code": "bag = [\"key\"]\nbag.append(\"gem\")\nprint(bag)",
+        "takeaway": "The result is ['key', 'gem']."
+      }
+    ],
+    "questions": [
+      {
+        "id": "check-1",
+        "prompt": "Which item is printed?",
+        "code": "bag = [\"rope\", \"key\", \"map\"]\nprint(bag[1])",
+        "options": [
+          "rope",
+          "key",
+          "map"
+        ],
+        "answer": 1,
+        "feedback": "Index 0 is rope and index 1 is key. Python indexes from zero.",
+        "kind": "challenge"
+      },
+      {
+        "id": "check-2",
+        "prompt": "Which expression reads the last item after appending?",
+        "code": "bag = [\"bread\"]\nbag.append(\"water\")",
+        "options": [
+          "bag[len(bag)]",
+          "bag[-1]",
+          "bag[0]"
+        ],
+        "answer": 1,
+        "feedback": "-1 selects the last item. len(bag) is 2, which is beyond the valid positive indices 0 and 1.",
+        "kind": "transfer"
+      }
+    ]
+  },
+  {
+    "id": "lists-medium",
+    "topic": "lists",
+    "difficulty": "medium",
+    "lessons": [
+      {
+        "id": "lesson-1",
+        "title": "Slices exclude the stop",
+        "body": "A slice [start:stop] includes start and excludes stop. It returns a new outer list.",
+        "code": "items = [10, 20, 30, 40]\nprint(items[1:3])",
+        "takeaway": "The slice is [20, 30]."
+      },
+      {
+        "id": "lesson-2",
+        "title": "Methods and return values",
+        "body": "append mutates the list and returns None. Do not assign its return value back to the list.",
+        "code": "items = [1]\nresult = items.append(2)\nprint(items, result)",
+        "takeaway": "items is [1, 2]; result is None."
+      },
+      {
+        "id": "lesson-3",
+        "title": "Transform every item",
+        "body": "A comprehension builds a new list from an expression applied to each item. An optional if filters items first.",
+        "code": "values = [1, 2, 3]\ndoubled = [n * 2 for n in values if n > 1]\nprint(doubled)",
+        "takeaway": "The result is [4, 6]."
+      }
+    ],
+    "questions": [
+      {
+        "id": "check-1",
+        "prompt": "Choose a fix that keeps items as a list.",
+        "code": "items = [1]\nitems = items.append(2)",
+        "options": [
+          "items.append(2)",
+          "items = print(2)",
+          "items = 2"
+        ],
+        "answer": 0,
+        "feedback": "append mutates items directly and returns None. Remove the assignment to preserve the list binding.",
+        "kind": "challenge"
+      },
+      {
+        "id": "check-2",
+        "prompt": "Which result does this slice produce?",
+        "code": "values = [4, 8, 12, 16]\nprint(values[1:3])",
+        "options": [
+          "[4, 8, 12]",
+          "[8, 12]",
+          "[8, 12, 16]"
+        ],
+        "answer": 1,
+        "feedback": "Indices 1 and 2 are included; the stop index 3 is excluded.",
+        "kind": "transfer"
+      }
+    ]
+  },
+  {
+    "id": "lists-hard",
+    "topic": "lists",
+    "difficulty": "hard",
+    "lessons": [
+      {
+        "id": "lesson-1",
+        "title": "A shallow copy shares inner lists",
+        "body": "copy makes a new outer list but keeps references to the same inner objects.",
+        "code": "a = [[1], [2]]\nb = a.copy()\nb[0].append(3)\nprint(a)",
+        "takeaway": "a becomes [[1, 3], [2]] because the inner list is shared."
+      },
+      {
+        "id": "lesson-2",
+        "title": "Avoid mutation while iterating",
+        "body": "Removing items shifts later indices. The iterator can skip a value that shifts into an already-visited position.",
+        "code": "values = [1, 2, 3, 4]\nkept = [n for n in values if n % 2 == 0]\nprint(kept)",
+        "takeaway": "Build a filtered list to avoid skipped items."
+      },
+      {
+        "id": "lesson-3",
+        "title": "Repetition can share references",
+        "body": "Repeating a list of mutable objects repeats references, not independent nested copies.",
+        "code": "grid = [[0]] * 2\ngrid[0][0] = 9\nprint(grid)",
+        "takeaway": "Both rows show [9]. Use a comprehension for independent rows."
+      }
+    ],
+    "questions": [
+      {
+        "id": "check-1",
+        "prompt": "What is printed?",
+        "code": "a = [[1], [2]]\nb = a.copy()\nb[0].append(5)\nprint(a[0])",
+        "options": [
+          "[1]",
+          "[1, 5]",
+          "[5]"
+        ],
+        "answer": 1,
+        "feedback": "The outer copy is independent but the inner list a[0] is shared with b[0].",
+        "kind": "challenge"
+      },
+      {
+        "id": "check-2",
+        "prompt": "Choose two independent rows.",
+        "code": "# Changing one row should not change the other.",
+        "options": [
+          "[[0]] * 2",
+          "[[0] for _ in range(2)]",
+          "row = [0]; grid = [row, row]"
+        ],
+        "answer": 1,
+        "feedback": "The comprehension creates a new inner list per iteration; repetition and reusing row share references.",
+        "kind": "transfer"
+      }
+    ]
+  },
+  {
+    "id": "functions-easy",
+    "topic": "functions",
+    "difficulty": "easy",
+    "lessons": [
+      {
+        "id": "lesson-1",
+        "title": "Define, then call",
+        "body": "def describes a reusable block. Its body does not run until you call the function.",
+        "code": "def greet():\n    print(\"hello\")\ngreet()",
+        "takeaway": "The call prints hello once."
+      },
+      {
+        "id": "lesson-2",
+        "title": "Parameters receive arguments",
+        "body": "A parameter is a local name that receives the supplied argument. Different calls can use different values.",
+        "code": "def double(n):\n    return n * 2\nprint(double(3))",
+        "takeaway": "n receives 3 and the result is 6."
+      },
+      {
+        "id": "lesson-3",
+        "title": "Return sends a value back",
+        "body": "return provides the call's value. print displays text. A function that finishes without return returns None.",
+        "code": "def add_one(n):\n    return n + 1\nanswer = add_one(4)\nprint(answer)",
+        "takeaway": "The caller receives 5."
+      }
+    ],
+    "questions": [
+      {
+        "id": "check-1",
+        "prompt": "What value is printed?",
+        "code": "def double(n):\n    return n * 2\nprint(double(4))",
+        "options": [
+          "4",
+          "8",
+          "None"
+        ],
+        "answer": 1,
+        "feedback": "The argument 4 becomes n and return sends back 8.",
+        "kind": "challenge"
+      },
+      {
+        "id": "check-2",
+        "prompt": "Choose the body that lets the caller use the result.",
+        "code": "def add_one(n):\n    # Choose the body.\nresult = add_one(6)",
+        "options": [
+          "print(n + 1)",
+          "return n + 1",
+          "n + 1"
+        ],
+        "answer": 1,
+        "feedback": "Only return supplies the calculated value to result. Printing or evaluating alone leaves the return value as None.",
+        "kind": "transfer"
+      }
+    ]
+  },
+  {
+    "id": "functions-medium",
+    "topic": "functions",
+    "difficulty": "medium",
+    "lessons": [
+      {
+        "id": "lesson-1",
+        "title": "Local names stay local",
+        "body": "Assigning to a parameter rebinds a local name. It does not reassign the caller's integer variable.",
+        "code": "def grow(n):\n    n += 2\n    return n\nsize = 3\nnew_size = grow(size)\nprint(size, new_size)",
+        "takeaway": "The output is 3 5."
+      },
+      {
+        "id": "lesson-2",
+        "title": "Every return path matters",
+        "body": "A branch that reaches the end without return produces None. Decide what every possible input should return.",
+        "code": "def sign(n):\n    if n > 0:\n        return 1\n    return 0\nprint(sign(-2))",
+        "takeaway": "A fallback return covers inputs that miss the if."
+      },
+      {
+        "id": "lesson-3",
+        "title": "Compose results",
+        "body": "A function call can be an argument to another call. Evaluate the inner call first.",
+        "code": "def add_one(n):\n    return n + 1\nprint(add_one(add_one(2)))",
+        "takeaway": "The inner result is 3 and the final result is 4."
+      }
+    ],
+    "questions": [
+      {
+        "id": "check-1",
+        "prompt": "What is the missing-path result?",
+        "code": "def reward(n):\n    if n > 0:\n        return 10\nprint(reward(0))",
+        "options": [
+          "0",
+          "10",
+          "None"
+        ],
+        "answer": 2,
+        "feedback": "The condition is false and execution reaches the end without return, so the function returns None.",
+        "kind": "challenge"
+      },
+      {
+        "id": "check-2",
+        "prompt": "What remains in the caller?",
+        "code": "def bump(n):\n    n += 1\n    return n\nlevel = 4\nnext_level = bump(level)\nprint(level, next_level)",
+        "options": [
+          "5 5",
+          "4 5",
+          "4 4"
+        ],
+        "answer": 1,
+        "feedback": "The parameter n is local. The call returns 5 without rebinding the caller's level.",
+        "kind": "transfer"
+      }
+    ]
+  },
+  {
+    "id": "functions-hard",
+    "topic": "functions",
+    "difficulty": "hard",
+    "lessons": [
+      {
+        "id": "lesson-1",
+        "title": "Defaults are created once",
+        "body": "A mutable default is shared across calls. Use None and create a fresh list inside the function when each call should be independent.",
+        "code": "def collect(item, bag=None):\n    if bag is None:\n        bag = []\n    bag.append(item)\n    return bag",
+        "takeaway": "The None sentinel avoids a shared default list."
+      },
+      {
+        "id": "lesson-2",
+        "title": "Mutation crosses the boundary",
+        "body": "Reassigning a parameter is local. Mutating the object referenced by a parameter can affect the caller.",
+        "code": "def add_item(items):\n    items.append(7)\nbag = [2]\nadd_item(bag)\nprint(bag)",
+        "takeaway": "The same bag object now contains [2, 7]."
+      },
+      {
+        "id": "lesson-3",
+        "title": "Base cases stop recursion",
+        "body": "Recursive calls must reach a base case. Each caller resumes with the returned result, so trace calls down and returns up.",
+        "code": "def total(n):\n    if n == 0:\n        return 0\n    return n + total(n - 1)\nprint(total(3))",
+        "takeaway": "The returned sum is 3+2+1+0=6 for nonnegative inputs."
+      }
+    ],
+    "questions": [
+      {
+        "id": "check-1",
+        "prompt": "What prints on the second call?",
+        "code": "def collect(x, bag=[]):\n    bag.append(x)\n    return bag\ncollect(1)\nprint(collect(2))",
+        "options": [
+          "[2]",
+          "[1, 2]",
+          "[]"
+        ],
+        "answer": 1,
+        "feedback": "The default list was created once and reused. The first call's mutation survives into the second call.",
+        "kind": "challenge"
+      },
+      {
+        "id": "check-2",
+        "prompt": "What does the caller see?",
+        "code": "def update(items):\n    items.append(3)\n    items = [9]\nbag = [1]\nupdate(bag)\nprint(bag)",
+        "options": [
+          "[9]",
+          "[1]",
+          "[1, 3]"
+        ],
+        "answer": 2,
+        "feedback": "append changes the caller's list. The later assignment only rebinds the local parameter.",
+        "kind": "transfer"
+      }
+    ]
+  }
+]

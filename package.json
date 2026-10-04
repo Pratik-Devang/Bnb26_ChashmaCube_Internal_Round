@@ -4,12 +4,16 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:api": "relearn-api\\.venv\\Scripts\\python.exe -m uvicorn app.main:app --app-dir relearn-api --reload --port 8000",
+    "dev:full": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start-local.ps1",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "setup:pyodide": "node -e \"const fs=require('fs');const p='public/pyodide';fs.mkdirSync(p,{recursive:true});fs.readdirSync('node_modules/pyodide').forEach(f=>fs.copyFileSync('node_modules/pyodide/'+f, p+'/'+f));console.log('Pyodide copied to public/pyodide/')\""
   },
   "dependencies": {
     "next": "^16.0.0",
+    "pyodide": "^314.0.7",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },

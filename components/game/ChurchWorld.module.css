@@ -1,0 +1,78 @@
+.root { min-height: 100vh; padding: 20px 34px 14px; color: #eee9d9; background: radial-gradient(ellipse at 50% 14%, #39483c, #171e19 68%); font-family: Arial, sans-serif; }
+.header { width: min(1480px, 100%); min-height: 66px; display: flex; align-items: center; justify-content: space-between; gap: 20px; margin: 0 auto 16px; padding: 0 16px; border: 2px solid #485949; background: #1b261e; box-shadow: 5px 5px 0 #0c110d; }
+.brand { display: flex; align-items: center; gap: 10px; color: #f4f0df; text-decoration: none; }.brand > span { width: 36px; height: 36px; display: grid; place-items: center; border: 2px solid #b3cb7c; background: #516c3e; color: white; font-weight: 950; }.brand strong { font-size: .94rem; }.brand small { display: block; margin-top: 3px; color: #aeb9a9; font-size: .55rem; letter-spacing: .14em; }
+.location { display: flex; align-items: center; gap: 10px; }.location > span { color: #e3bd70; font-size: 1.4rem; }.location small, .location strong { display: block; }.location small { color: #9cac95; font-size: .52rem; font-weight: 900; letter-spacing: .14em; }.location strong { margin-top: 3px; font-size: .76rem; }.back { padding: 10px 13px; border: 1px solid #536853; color: #edf3e5; font-size: .7rem; font-weight: 800; text-decoration: none; }.back:hover { border-color: #c0d58c; color: #d6ec9d; }
+.frame { position: relative; width: min(1480px, 100%); height: min(78vh, 820px); min-height: 540px; display: grid; place-items: center; margin: auto; overflow: hidden; border: 4px solid #394a3a; background: #121812; box-shadow: 8px 8px 0 #090d0a, inset 0 0 0 4px #1e2c21; }
+.scene { position: relative; width: min(92vh, 92vw, 960px); max-width: 100%; aspect-ratio: 1; overflow: hidden; border: 3px solid #5d5b4d; background: #171913; box-shadow: 0 0 0 4px #101611, 8px 8px 0 rgba(0,0,0,.5); image-rendering: pixelated; }
+.mapCanvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; image-rendering: pixelated; }
+.objectiveMarker { position: absolute; z-index: 7; width: 30px; height: 30px; display: grid; place-items: center; transform: translate(-50%, -135%); border: 3px solid #30291c; border-radius: 50%; background: #f1cb61; color: #30291c; font-size: 1.1rem; font-weight: 950; box-shadow: 0 0 0 3px #f4e8b0, 2px 4px 0 rgba(0,0,0,.45); animation: markerPulse .8s steps(2) infinite alternate; pointer-events: none; }
+.treasureBadge { position: absolute; z-index: 7; transform: translate(-50%, -160%); padding: 4px 6px; border: 2px solid #46351e; background: #e6c776; color: #302719; font-size: .46rem; font-weight: 950; letter-spacing: .08em; box-shadow: 2px 3px 0 rgba(0,0,0,.45); white-space: nowrap; }
+.player { position: absolute; z-index: 5; width: 9.4%; height: 9.4%; transform: translate(-50%, -50%); background-repeat: no-repeat; background-position: 0 0; background-size: 600% 100%; image-rendering: pixelated; filter: drop-shadow(0 7px 2px rgba(0,0,0,.4)); animation: idle-bob .95s ease-in-out infinite alternate; }.player span { position: absolute; left: 50%; bottom: -5px; transform: translateX(-50%); padding: 2px 5px; background: #182019; color: #f0e8d5; font-size: .42rem; font-weight: 950; letter-spacing: .1em; }.walking { background-size: 700% 100%; animation: walk .56s steps(7) infinite; }
+.facingLeft { scale: -1 1; }.facingLeft span { transform: translateX(-50%) scaleX(-1); }
+.guideCharacter { position: absolute; z-index: 6; width: 9.4%; height: 9.4%; transform: translate(-50%, -50%); background-repeat: no-repeat; background-position: 0 0; background-size: 600% 100%; image-rendering: pixelated; filter: drop-shadow(0 7px 2px rgba(0,0,0,.45)); animation: idle-bob 1.15s ease-in-out infinite alternate; }.guideCharacter span { position: absolute; left: 50%; bottom: -5px; transform: translateX(-50%); padding: 3px 5px; border: 1px solid #efe0aa; background: #313924; color: #f8edc6; font-size: .42rem; font-weight: 950; letter-spacing: .08em; white-space: nowrap; }
+.controls { position: absolute; z-index: 8; left: 50%; bottom: 12px; display: flex; align-items: center; gap: 8px; transform: translateX(-50%); padding: 8px 11px; border: 2px solid #514d3e; background: #1c231c; color: #e5dfc9; font-size: .55rem; white-space: nowrap; box-shadow: 3px 3px 0 rgba(0,0,0,.4); }.controls b { color: #d9c17d; font-size: .5rem; }.controls i { width: 3px; height: 3px; border-radius: 50%; background: #828573; }
+.quest, .status { position: absolute; z-index: 9; width: 225px; padding: 14px; border: 2px solid #4b5c4a; background: #1c281f; box-shadow: 5px 5px 0 rgba(0,0,0,.56), inset 0 0 0 2px #141c16; }.quest { top: 20px; left: 20px; }.status { right: 20px; bottom: 20px; }.quest small, .status > span { color: #d9c17d; font-size: .5rem; font-weight: 950; letter-spacing: .13em; }.quest strong, .status strong { display: block; margin-top: 5px; font-size: .86rem; }.quest p, .status p { margin: 7px 0 0; color: #b5c0b1; font-size: .66rem; line-height: 1.5; }.status button { margin-top: 10px; padding: 8px 10px; border: 1px solid #8a805e; background: #3b4431; color: #eee5cc; font-size: .61rem; font-weight: 850; cursor: pointer; }.status button:hover { background: #505c3e; }
+.footer { width: min(1480px, 100%); display: flex; justify-content: space-between; margin: 17px auto 0; color: #a5b09f; font-size: .65rem; }.footer kbd { margin: 0 2px; padding: 3px 6px; border: 1px solid #536553; background: #202b23; color: #e8e5d7; font: inherit; }
+.saveState { display: block; margin-top: 9px; color: #d9c17d; font-size: .5rem; font-weight: 900; letter-spacing: .1em; }
+.gateScreen { width: min(620px, calc(100% - 40px)); margin: 12vh auto 0; padding: 42px; border: 4px double #847454; background: #202a22; box-shadow: 10px 10px 0 #080d09; text-align: center; }
+.gateScreen > span { color: #d8bf79; font-size: .6rem; font-weight: 950; letter-spacing: .14em; }
+.gateScreen h1 { margin: 14px 0 10px; color: #f2e7c9; font: 700 clamp(1.8rem, 5vw, 2.8rem) Georgia, serif; }
+.gateScreen p { color: #bdc6b7; line-height: 1.65; }
+.gateScreen a { display: inline-block; margin-top: 18px; padding: 11px 15px; border: 2px solid #dfc574; background: #dbbd6b; color: #252418; font-size: .75rem; font-weight: 900; text-decoration: none; }
+@keyframes walk { from { background-position: 0 0; } to { background-position: 100% 0; } }
+@keyframes idle-bob { from { transform: translate(-50%, -50%) translateY(0); } to { transform: translate(-50%, -50%) translateY(-2px); } }
+@keyframes markerPulse { from { transform: translate(-50%, -135%); } to { transform: translate(-50%, -155%); } }
+.scrim { position: fixed; z-index: 20; inset: 0; display: grid; place-items: center; padding: 20px; background: rgba(7,10,8,.78); backdrop-filter: blur(5px); }
+.lesson { width: min(700px, 100%); padding: 26px; border: 3px solid #847454; outline: 4px solid #182019; background: #202a22; box-shadow: 9px 9px 0 rgba(0,0,0,.6); color: #eee9d9; }
+.lessonHeading { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; }.lessonHeading small { color: #d8bf79; font-size: .58rem; font-weight: 950; letter-spacing: .13em; }.lessonHeading h1 { margin: 7px 0 0; font-size: clamp(1.45rem, 4vw, 2.1rem); letter-spacing: -.04em; }.lessonHeading > button { width: 36px; height: 36px; border: 1px solid #65715f; background: #172019; color: #eee9d9; font-size: 1.4rem; cursor: pointer; }
+.lesson > p { color: #c5cbbb; font-size: .88rem; line-height: 1.65; }.lesson code { padding: 1px 4px; background: #121a14; color: #e4ce8a; font-family: ui-monospace, Consolas, monospace; }.lesson pre { overflow-x: auto; margin: 18px 0; padding: 17px; border: 1px solid #53654e; background: #101712; color: #e7efdb; font: 700 .83rem/1.6 ui-monospace, Consolas, monospace; }
+.exampleHeading { margin: 18px 0 0; color: #e4ce8a; font-size: .9rem; }
+.expectedOutput { display: flex; align-items: baseline; gap: 12px; margin-top: -8px; padding: 11px 14px; border-left: 4px solid #91ba72; background: #18271b; color: #d6ebc6; font-size: .78rem; }.expectedOutput code { color: #e7efdb; white-space: pre-wrap; }.guidePagination { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 20px; }.guidePagination > span { color: #b5c0b1; font-size: .75rem; font-weight: 800; }.guidePagination button:disabled { opacity: .42; cursor: not-allowed; }
+.completionDialog { position: relative; width: min(640px, 100%); max-height: calc(100vh - 40px); overflow-y: auto; text-align: center; }
+.completionClose { position: absolute; top: 12px; right: 12px; width: 36px; height: 36px; border: 1px solid #65715f; background: #172019; color: #eee9d9; font-size: 1.35rem; cursor: pointer; }
+.completionIcon { width: 62px; height: 62px; display: grid; place-items: center; margin: 0 auto 16px; border: 3px solid #f4e8b0; background: #e6c776; color: #302719; font-size: 2rem; font-weight: 950; box-shadow: 4px 4px 0 #46351e; }
+.completionEyebrow { display: block; margin-top: 4px; color: #d8bf79; font-size: .58rem; font-weight: 950; letter-spacing: .13em; }
+.completionDialog h1 { margin: 10px 0; font-size: clamp(1.7rem, 5vw, 2.4rem); }
+.completionDialog > p { max-width: 470px; margin: 0 auto; }
+.completionActions { display: grid; gap: 10px; margin-top: 22px; }
+.completionActions > * { min-height: 42px; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 14px; border: 1px solid #6a765c; background: #18221a; color: #e9ebdd; font-size: .74rem; font-weight: 850; text-align: center; text-decoration: none; cursor: pointer; }
+.completionActions .completionNext { border-color: #dfc574; background: #dbbd6b; color: #252418; }
+.completionActions > *:hover { filter: brightness(1.12); }
+.challengePrompt { margin-top: 20px; padding: 15px; border-left: 4px solid #d6b968; background: #293529; font-size: .84rem; line-height: 1.5; }.answers { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 13px; }.answers button, .closeLesson, .finishLesson { min-height: 40px; padding: 9px 13px; border: 1px solid #6a765c; background: #18221a; color: #e9ebdd; font-weight: 800; cursor: pointer; }.answers button:hover, .answers .answerSelected { border-color: #e1c773; background: #3a432e; }.correct, .tryAgain { margin-top: 12px; padding: 12px; border: 1px solid #74915f; background: #293b2d; color: #daf0c6; font-size: .78rem; line-height: 1.5; }.tryAgain { border-color: #a47758; background: #3b2e24; color: #f1d5bd; }.lessonActions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 17px; }.finishLesson { border-color: #dfc574; background: #dbbd6b; color: #252418; }.closeLesson:hover { background: #303c30; }
+@media (max-width: 900px) { .root { padding: 12px; }.frame { height: auto; min-height: 84vh; padding: 138px 12px 150px; }.scene { width: min(96vw, 880px); }.quest, .status { width: calc(50% - 26px); }.quest { top: 14px; left: 14px; }.status { right: 14px; bottom: 12px; }.footer { font-size: .56rem; } }
+@media (max-width: 560px) { .header { min-height: 58px; padding: 0 9px; }.brand small { font-size: .4rem; }.location { display: none; }.back { padding: 8px; font-size: .6rem; }.frame { padding: 129px 10px 155px; }.scene { width: min(100%, 420px); }.quest, .status { width: calc(100% - 28px); }.quest { left: 14px; }.status { right: 14px; bottom: 9px; }.quest p, .status p { font-size: .59rem; }.controls { gap: 5px; padding: 7px; font-size: .45rem; }.lesson { padding: 18px; }.lesson > p { font-size: .79rem; }.lesson pre { font-size: .72rem; }.footer { gap: 8px; font-size: .5rem; } }
+
+.oracleButton {
+  width: 38px;
+  height: 38px;
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fdba74;
+  border-radius: 4px;
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  color: #ffffff;
+  box-shadow: 0 0 14px rgba(249, 115, 22, 0.65), 3px 3px 0 #070c08;
+  font-size: 1.25rem;
+  cursor: pointer;
+  animation: oracleGlow 2s ease-in-out infinite alternate;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  user-select: none;
+}
+
+.oracleButton:hover {
+  transform: scale(1.1) translate(-1px, -1px);
+  box-shadow: 0 0 22px rgba(249, 115, 22, 0.95), 4px 4px 0 #070c08;
+}
+
+@keyframes oracleGlow {
+  0% {
+    box-shadow: 0 0 8px rgba(249, 115, 22, 0.45), 3px 3px 0 #070c08;
+    transform: scale(1);
+  }
+  100% {
+    box-shadow: 0 0 18px rgba(249, 115, 22, 0.9), 3px 3px 0 #070c08;
+    transform: scale(1.06);
+  }
+}
