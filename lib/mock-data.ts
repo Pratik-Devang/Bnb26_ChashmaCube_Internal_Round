@@ -33,7 +33,7 @@ export const learningModules: LearningModule[] = [
   },
   {
     id: "conditions",
-    title: "Conditions",
+    title: "The Chapel of Choices",
     description: "Help your code choose what to do next.",
     beginnerNote: "An if statement asks a yes-or-no question before running code.",
     status: "completed",

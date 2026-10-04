@@ -140,7 +140,14 @@ export async function getLearningPlan(learnerId = "learner-demo"): Promise<Learn
       statistics,
     });
   }
-  return apiFetch<LearningPlanResponse>(`/api/v1/learning-plan?learnerId=${encodeURIComponent(learnerId)}`);
+  const plan = await apiFetch<LearningPlanResponse>(`/api/v1/learning-plan?learnerId=${encodeURIComponent(learnerId)}`);
+  return {
+    ...plan,
+    modules: plan.modules.map((module) => ({
+      ...module,
+      title: module.conceptCode === "CONDITIONS" ? "The Chapel of Choices" : module.title,
+    })),
+  };
 }
 
 export async function getExercise(exerciseId: string): Promise<Exercise> {
