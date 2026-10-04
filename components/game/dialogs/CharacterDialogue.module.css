@@ -1,0 +1,30 @@
+.dialog { position: fixed; inset: auto 0 28px; margin: 0 auto; width: min(1260px,94vw); max-width: none; max-height: none; padding: 0; border: 0; background: transparent; color: #f1e8ce; overflow: visible; }
+.dialog::backdrop { background: linear-gradient(0deg,#070d0aba,transparent 75%); }
+.panel { position: relative; margin-left: 90px; min-height: 220px; border: 3px solid #c7b481; outline: 2px solid #252b20; background: repeating-linear-gradient(0deg,#ffffff02 0 2px,transparent 2px 6px),#17241ef5; box-shadow: inset 0 0 0 5px #111a16,inset 0 0 0 7px #655c40,7px 8px #060b09aa; padding: 38px 30px 20px 250px; }
+.panel::before,.panel::after { content: "◆"; position: absolute; right: 9px; color: #c7b481; font: 14px monospace; }
+.panel::before { top: 7px; }.panel::after { bottom: 7px; }
+.portrait { position: absolute; bottom: 3px; left: 0; width: 340px; height: 340px; z-index: 2; pointer-events: none; filter: drop-shadow(5px 0 #0a100bcc); }
+.portrait img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: bottom; image-rendering: pixelated; }
+.nameplate { position: absolute; left: 240px; top: -21px; padding: 9px 26px; border: 3px solid #c7b481; background: #37412b; color: #fff2ce; font: bold 1rem "Courier New",monospace; box-shadow: 3px 3px #10170f; }
+.close { position: absolute; top: 12px; right: 24px; background: transparent; color: #c7b481; font: 24px monospace; border: 0; cursor: pointer; }
+.copy { min-height: 108px; padding-right: 15px; }
+.copy p { margin: 0; font: 600 clamp(1rem,1.4vw,1.3rem)/1.75 "Courier New",monospace; text-shadow: 2px 2px #050b08; }
+.cursor { color: #dcc68f; }
+.panel footer { display: flex; justify-content: space-between; align-items: center; gap: 18px; margin-top: 20px; }
+.panel footer > span { color: #afaf92; font: .65rem monospace; }
+.panel footer i { display: inline-block; width: 20px; }
+.panel footer button { color: #f2deb1; padding: 10px 15px; background: #36402b; border: 1px solid #9d9667; cursor: pointer; font: bold .8rem monospace; }
+.panel footer b { margin-left: 15px; }
+.dialog button:focus-visible { outline: 2px solid #fff0b8; outline-offset: 4px; }
+.screenReader { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+@media (max-height: 650px) { .portrait { width: 250px; height: 250px; }.panel { padding-left: 175px; min-height: 180px; }.nameplate { left: 170px; }.copy { min-height: 70px; }.dialog { bottom: 18px; } }
+@media (max-width: 900px) { .portrait { width: 230px; height: 230px; }.panel { margin-left: 20px; padding-left: 210px; }.nameplate { left: 205px; }.panel footer > span { display: none; }.panel footer { justify-content: flex-end; } }
+@media (max-width: 600px) {
+  .dialog { bottom: 14px; }
+  .portrait { width: 140px; height: 140px; bottom: auto; top: -110px; }
+  .panel { margin-left: 0; padding: 42px 22px 18px; max-height: calc(100dvh - 155px); overflow-y: auto; }
+  .nameplate { position: relative; left: auto; top: auto; margin: -25px 24px 18px 100px; padding: 7px 9px; font-size: .8rem; }
+  .copy { min-height: 90px; padding-right: 0; }
+  .copy p { font-size: .95rem; line-height: 1.6; }
+  .close { right: 14px; }
+}

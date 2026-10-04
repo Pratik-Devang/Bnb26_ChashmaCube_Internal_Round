@@ -13,6 +13,12 @@ Opening `/game` or `/game/church` now shows topic and difficulty selection. The 
 
 First Island has three guides followed by the Scout. Chapel has its first guide outside; completing that lesson opens the gates, which teleport the explorer inside. The remaining guides and Keeper are inside. Either map can host any track without completing the other map first.
 
+## Character conversations
+
+Both topic-adventure maps welcome the explorer with a portrait conversation explaining the selected topic, difficulty, guide order, controls, and rewards. Human guides greet the player before opening their lesson or trial; locked encounters point to the earlier guide. The island's Cave Keeper offers directions without awarding progress. Animal guides retain their existing lesson interactions.
+
+`components/game/dialogs/CharacterDialogue.tsx` and its CSS module provide the shared bottom-screen dialogue, using the Talk/Calm portraits from `2d_assets/Dialogue_person/NPC_1` through `NPC_4`. Text reveals gradually unless reduced motion is enabled. E or the Continue button reveals/advances text; Escape or Close dismisses it. Movement pauses while talking. Greeting or skipping a conversation never completes a lesson. Legacy map routes remain unchanged.
+
 ## Persistence and APIs
 
 All endpoints below are under `/api/v1/auth/adventures` and require the current account session. Writes use the existing origin validation.
