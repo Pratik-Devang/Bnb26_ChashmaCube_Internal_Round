@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import firstIslandMap from "@/2d_assets/First Island/Tiled/Tiled_map.png";
+import ruinedChurchMap from "@/2d_assets/Church/Maps/Ruined_temple_exterior.png";
 import { useAccount } from "@/components/auth/AccountProvider";
 import { WorldDestinations } from "@/components/dashboard/WorldDestinations";
 import { Icon } from "@/components/ui/Icon";
@@ -84,7 +85,7 @@ export function HomeOverview() {
         description={hasStarted
           ? "Pick up at your next island guide. Everything you discover is saved to this account."
           : "Begin on The First Island, meet its teachers, and learn how Python remembers values."}
-        action={<Link className="quiet-action" href="/game">{hasStarted ? "Return to the island" : "Explore the first island"}</Link>}
+        action={<Link className="quiet-action" href={islandComplete ? "/game/church" : "/game"}>{islandComplete ? "Enter the next world" : hasStarted ? "Return to the island" : "Explore the first island"}</Link>}
       />
 
       <WorldDestinations firstIslandProgress={islandProgress} />
@@ -114,12 +115,12 @@ export function HomeOverview() {
                 <span><i style={{ width: `${journeyPercent}%` }} /></span>
                 <strong>{journeyPercent}%</strong>
               </div>
-              <Link href="/game" className="solid-action"><Icon name="play" />{hasStarted ? "Continue adventure" : "Enter the first island"}</Link>
+              <Link href={islandComplete ? "/game/church" : "/game"} className="solid-action"><Icon name="play" />{islandComplete ? "Enter the ruined church" : hasStarted ? "Continue adventure" : "Enter the first island"}</Link>
             </div>
 
-            <Link href="/game" className="island-dashboard-preview" aria-label="Open The First Island">
-              <Image src={firstIslandMap} alt="The First Island learning map" unoptimized priority />
-              <span><small>NEXT GUIDE</small><strong>{nextTeacher?.name ?? "Island Scout"}</strong></span>
+            <Link href={islandComplete ? "/game/church" : "/game"} className={`island-dashboard-preview${islandComplete ? " next-world-preview" : ""}`} aria-label={islandComplete ? "Open The Ruined Church" : "Open The First Island"}>
+              <Image src={islandComplete ? ruinedChurchMap : firstIslandMap} alt={islandComplete ? "The Ruined Church learning map" : "The First Island learning map"} unoptimized priority />
+              <span><small>{islandComplete ? "NEXT WORLD" : "NEXT GUIDE"}</small><strong>{islandComplete ? "The Ruined Church" : nextTeacher?.name ?? "Island Scout"}</strong></span>
             </Link>
           </article>
 
@@ -175,7 +176,7 @@ export function HomeOverview() {
           <section className="week-strip" aria-label="Account adventure status">
             <div><span className="page-eyebrow">YOUR ACCOUNT</span><strong>Level {learner.level}</strong></div>
             <p>{loadingProgress ? "Opening your adventure journal…" : islandComplete ? "The First Island is complete." : "The First Island is your next destination."}</p>
-            {!islandComplete && <Link href="/game" className="notice-board-link">{hasStarted ? "Continue island →" : "Begin adventure →"}</Link>}
+            <Link href={islandComplete ? "/game/church" : "/game"} className="notice-board-link">{islandComplete ? "Enter the ruined church →" : hasStarted ? "Continue island →" : "Begin adventure →"}</Link>
           </section>
         </aside>
       </div>
