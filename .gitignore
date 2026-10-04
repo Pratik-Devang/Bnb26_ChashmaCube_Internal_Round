@@ -23,4 +23,4 @@ relearn-api/tmp/
 public/pyodide/
 2d_assets/__MACOSX/
 2d_assets/**/*.zip
-2d_assets/**/*.psd
+2d_assets/**/*.psd
