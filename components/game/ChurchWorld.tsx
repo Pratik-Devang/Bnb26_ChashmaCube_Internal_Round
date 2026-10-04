@@ -1,13 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import playerIdle from "@/2d_characters/Wizard/Idle.png";
 import playerWalk from "@/2d_characters/Wizard/Walk.png";
 import guideIdle from "@/2d_characters/Archer/Idle.png";
 import { ChurchMapCanvas } from "./ChurchMapCanvas";
 import { ChurchExteriorCanvas } from "./ChurchExteriorCanvas";
 import { IslandOracleDialog } from "./dialogs/IslandOracleDialog";
+import { loadFirstIslandProgress } from "@/lib/game/first-island/progress";
+import { emptyChapelProgress, loadChapelProgress, saveChapelProgress } from "@/lib/game/chapel-of-choices/progress";
+import type { ChapelProgress } from "@/types/game";
 import styles from "./ChurchWorld.module.css";
 
 type Position = { x: number; y: number };
@@ -84,7 +87,52 @@ export function ChurchWorld() {
   const [activeProblem, setActiveProblem] = useState<ObjectiveTarget | null>(null);
   const [choice, setChoice] = useState<string | null>(null);
   const [oracleOpen, setOracleOpen] = useState(false);
+  const [chapelProgress, setChapelProgress] = useState<ChapelProgress>(emptyChapelProgress);
+  const [saveReady, setSaveReady] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
+  const [unlocked, setUnlocked] = useState(false);
   const movementTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    Promise.all([loadFirstIslandProgress(), loadChapelProgress()])
+      .then(([island, chapel]) => {
+        if (!active) return;
+        const canEnter = island.challengeCompleted && island.completedLessonIds.length === 6;
+        setUnlocked(canEnter);
+        setChapelProgress(chapel);
+        setIntroComplete(chapel.introComplete);
+        setObjectiveStep(chapel.completedObjectiveIds.length);
+        if (chapel.questCompleted) {
+          setMessage("The Chapel of Choices is complete. You may revisit its rooms or return to the learning path.");
+        } else if (chapel.introComplete) {
+          setMessage("Your chapel journal is restored. Enter the temple to continue the next Conditions objective.");
+        }
+        setSaveReady(true);
+      })
+      .catch(() => {
+        if (!active) return;
+        setSaveError("Your chapel journal could not be opened. Refresh to try again.");
+        setSaveReady(true);
+      });
+    return () => { active = false; };
+  }, []);
+
+  const persistProgress = useCallback(async (next: ChapelProgress) => {
+    setSaving(true);
+    try {
+      const saved = await saveChapelProgress(next);
+      setChapelProgress(saved);
+      setSaveError("");
+      return saved;
+    } catch {
+      setSaveError("That discovery was not saved. Try the interaction once more.");
+      return null;
+    } finally {
+      setSaving(false);
+    }
+  }, []);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -163,7 +211,7 @@ export function ChurchWorld() {
         }
         return;
       }
-      if (lessonOpen || guideOpen || completionOpen) return;
+      if (lessonOpen || guideOpen || completionOpen || !saveReady || !unlocked || saving) return;
       if (!direction) return;
       event.preventDefault();
       const next = {
@@ -180,7 +228,7 @@ export function ChurchWorld() {
     return () => {
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [completionOpen, guideOpen, guideTalkedStep, insideTemple, introComplete, lessonOpen, objectiveStep, position]);
+  }, [completionOpen, guideOpen, guideTalkedStep, insideTemple, introComplete, lessonOpen, objectiveStep, position, saveReady, saving, unlocked]);
 
   useEffect(() => () => {
     if (movementTimer.current) clearTimeout(movementTimer.current);
@@ -218,9 +266,11 @@ export function ChurchWorld() {
   const guidePageCount = guideLesson?.pages.length ?? 0;
   const objectiveNeedsGuide = !insideTemple || (targetForGuide !== null && guideTalkedStep !== objectiveStep);
   const markerPosition = !insideTemple ? (introComplete ? exteriorEntrance : exteriorGuide) : objectiveNeedsGuide ? guidePosition : targetPosition;
-  const finishGuideLesson = () => {
+  const finishGuideLesson = async () => {
     if (guideTopic === "intro") {
-      setIntroComplete(true);
+      const saved = await persistProgress({ ...chapelProgress, introComplete: true });
+      if (!saved) return;
+      setIntroComplete(saved.introComplete);
       setMessage("Great! Now walk to the temple entrance and press E. Your guide will meet you inside.");
     } else {
       setGuideTalkedStep(objectiveStep);
@@ -229,11 +279,38 @@ export function ChurchWorld() {
     setGuideOpen(false);
   };
 
+  const completeObjective = async () => {
+    if (choice !== correctChoice) return;
+    const completedObjectiveIds = chapelProgress.completedObjectiveIds.includes(problem)
+      ? chapelProgress.completedObjectiveIds
+      : [...chapelProgress.completedObjectiveIds, problem];
+    const saved = await persistProgress({ ...chapelProgress, introComplete: true, completedObjectiveIds, questCompleted: completedObjectiveIds.length === 3 });
+    if (!saved) return;
+
+    setLessonOpen(false);
+    setChoice(null);
+    setObjectiveStep(saved.completedObjectiveIds.length);
+    if (problem === "lever") setMessage("Lever pulled! Find the guide by the treasure, then unlock the chest on the left.");
+    else if (problem === "treasure") setMessage("Treasure unlocked! Find the final guide, then meet the Chapel Keeper beside the altar.");
+    else {
+      setMessage("You completed all three Conditions objectives. The Chapel Keeper is proud of your reasoning.");
+      setCompletionOpen(true);
+    }
+  };
+
+  if (!saveReady) {
+    return <main className={styles.root}><section className={styles.gateScreen}><span>WORLD 02</span><h1>Opening your chapel journal…</h1><p>{saveError || "The Keeper is finding your place in the story."}</p></section></main>;
+  }
+
+  if (!unlocked) {
+    return <main className={styles.root}><section className={styles.gateScreen}><span>WORLD 02 · {saveError ? "JOURNAL UNAVAILABLE" : "LOCKED"}</span><h1>The Chapel of Choices awaits.</h1><p>{saveError || "Complete all six First Island lessons and pass the Island Scout’s trial before entering this world."}</p><Link href="/game">Return to The First Island</Link></section></main>;
+  }
+
   return (
     <main className={styles.root}>
       <header className={styles.header}>
         <Link href="/learn" className={styles.brand}><span>R</span><strong>Re:Learn <small>· CONDITIONS QUEST</small></strong></Link>
-        <div className={styles.location}><span>✦</span><div><small>LOCATION</small><strong>{insideTemple ? "Inside the Temple" : "Temple Grounds"}</strong></div></div>
+        <div className={styles.location}><span>✦</span><div><small>THE CHAPEL OF CHOICES</small><strong>{insideTemple ? "Forgotten Sanctuary" : "Temple Grounds"}</strong></div></div>
         <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
           <button
             type="button"
@@ -260,7 +337,7 @@ export function ChurchWorld() {
           <div className={`${styles.player}${moving ? ` ${styles.walking}` : ""}${facingLeft ? ` ${styles.facingLeft}` : ""}`} style={{ left: `${position.x}%`, top: `${position.y}%`, backgroundImage: `url(${moving ? playerWalk.src : playerIdle.src})` }} aria-label="Your Wizard explorer" role="img"><span>YOU</span></div>
           <div className={styles.controls}><b>MOVE</b> WASD / ARROWS <i /> <b>INTERACT</b> E {insideTemple ? "with guide / objective / entrance" : introComplete ? "at temple entrance" : "with guide"}</div>
         </div>
-        <aside className={styles.status}><span>{insideTemple ? `CONDITIONS · OBJECTIVE ${Math.min(objectiveStep + 1, 3)} OF 3` : "TEMPLE GROUNDS"}</span><strong>{!insideTemple ? introComplete ? "Enter the temple" : "Find the guide" : objectiveStep === 0 ? "Pull the lever" : objectiveStep === 1 ? "Open the treasure" : objectiveStep === 2 ? "Meet the Chapel Keeper" : "Quest complete"}</strong><p>{message}</p><button onClick={() => setMessage(!insideTemple ? introComplete ? "Walk to the temple entrance and press E." : "Find the guide outside and press E to start the lesson." : objectiveStep === 0 ? "The lever is on the right side of the room. Talk to the guide first." : objectiveStep === 1 ? "The treasure chest is on the left. Talk to the guide first." : objectiveStep === 2 ? "Talk to the guide, then meet the Chapel Keeper." : "You completed every Conditions objective.")}>{objectiveStep < 3 ? "Where to go" : "Well done"}</button></aside>
+        <aside className={styles.status}><span>{insideTemple ? `CONDITIONS · OBJECTIVE ${Math.min(objectiveStep + 1, 3)} OF 3` : "TEMPLE GROUNDS"}</span><strong>{!insideTemple ? introComplete ? "Enter the temple" : "Find the guide" : objectiveStep === 0 ? "Pull the lever" : objectiveStep === 1 ? "Open the treasure" : objectiveStep === 2 ? "Meet the Chapel Keeper" : "Quest complete"}</strong><p>{saveError || message}</p><small className={styles.saveState}>{saving ? "SAVING JOURNAL…" : `${chapelProgress.coinsEarned} CHAPEL COINS`}</small><button onClick={() => setMessage(!insideTemple ? introComplete ? "Walk to the temple entrance and press E." : "Find the guide outside and press E to start the lesson." : objectiveStep === 0 ? "The lever is on the right side of the room. Talk to the guide first." : objectiveStep === 1 ? "The treasure chest is on the left. Talk to the guide first." : objectiveStep === 2 ? "Talk to the guide, then meet the Chapel Keeper." : "You completed every Conditions objective.")}>{objectiveStep < 3 ? "Where to go" : "Well done"}</button></aside>
       </section>
       <footer className={styles.footer}><span>Use <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> to move</span><span>Press <kbd>E</kbd> near the {insideTemple ? "guide, objective, or entrance" : introComplete ? "temple entrance" : "guide"}</span></footer>
       {guideOpen && guideLesson ? <div className={styles.scrim} role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setGuideOpen(false); }}>
@@ -274,7 +351,7 @@ export function ChurchWorld() {
             <span aria-live="polite">Page {guidePage + 1} of {guidePageCount}</span>
             {guidePage < guidePageCount - 1
               ? <button type="button" className={styles.finishLesson} onClick={() => setGuidePage((page) => Math.min(guidePageCount - 1, page + 1))}>Next</button>
-              : <button type="button" className={styles.finishLesson} onClick={finishGuideLesson}>{guideTopic === "intro" ? "I'm ready to enter" : "I'm ready to try"}</button>}
+              : <button type="button" className={styles.finishLesson} disabled={saving} onClick={finishGuideLesson}>{saving ? "Saving…" : guideTopic === "intro" ? "I'm ready to enter" : "I'm ready to try"}</button>}
           </div>
         </section>
       </div> : null}
@@ -289,13 +366,7 @@ export function ChurchWorld() {
             </div>
           </div>
           {choice ? <div className={choice === correctChoice ? styles.correct : styles.tryAgain} role="status">{choice === correctChoice ? problem === "keeper" ? "Correct! The keeper route matches its case, so the response is speak." : "Correct! Python runs the matching branch and skips the remaining ones." : "Try again. Trace the condition or match each case against the given value."}</div> : null}
-          <div className={styles.lessonActions}><button type="button" className={styles.closeLesson} onClick={() => setLessonOpen(false)}>Keep exploring</button>{choice === correctChoice ? <button type="button" className={styles.finishLesson} onClick={() => {
-            setLessonOpen(false);
-            setChoice(null);
-            if (problem === "lever") { setObjectiveStep(1); setMessage("Lever pulled! Go to the treasure chest on the left and press E to solve its problem."); }
-            else if (problem === "treasure") { setObjectiveStep(2); setMessage("Treasure unlocked! Go to the Chapel Keeper beside the altar and press E to finish."); }
-            else { setObjectiveStep(3); setMessage("You completed all three Conditions objectives. The Chapel Keeper is proud of your reasoning."); setCompletionOpen(true); }
-          }}>{problem === "keeper" ? "Finish quest" : problem === "lever" ? "Pull the lever" : "Unlock treasure"}</button> : null}</div>
+          <div className={styles.lessonActions}><button type="button" className={styles.closeLesson} onClick={() => setLessonOpen(false)}>Keep exploring</button>{choice === correctChoice ? <button type="button" className={styles.finishLesson} disabled={saving} onClick={completeObjective}>{saving ? "Saving…" : problem === "keeper" ? "Finish quest" : problem === "lever" ? "Pull the lever" : "Unlock treasure"}</button> : null}</div>
         </section>
       </div> : null}
       {completionOpen ? <div className={styles.scrim} role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setCompletionOpen(false); }}>
