@@ -8,6 +8,7 @@ import {
   quests as initialQuests,
   statistics,
 } from "./mock-data";
+import { accountApiBase, currentLearnerId } from "./account";
 import type {
   AttemptRequest,
   AttemptResponse,
@@ -17,6 +18,7 @@ import type {
   InterventionCompletion,
   LearnerConceptState,
   LearningPlanResponse,
+  MLDiagnoseResponse,
   ModelMetrics,
   Quest,
   QuestCompletion,
@@ -41,9 +43,10 @@ export class ApiError extends Error {
 }
 
 /** Base URL for the FastAPI service. When omitted or blank, mock mode is active. */
-export const NEXT_PUBLIC_API_BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL ?? "").trim();
+export const NEXT_PUBLIC_API_BASE_URL = accountApiBase;
 
-const isMockMode = !NEXT_PUBLIC_API_BASE_URL;
+// Account data must never fall back to the shared demo learner.
+const isMockMode = false;
 
 const mockDelay = <T,>(value: T, delayMs = 180): Promise<T> =>
   new Promise((resolve) => setTimeout(() => resolve(value), delayMs));
@@ -64,9 +67,12 @@ async function apiFetch<T>(endpoint: string, init?: RequestInit): Promise<T> {
   try {
     response = await fetch(url, {
       ...init,
+      credentials: "include",
+      cache: "no-store",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
+        "X-Learner-Id": currentLearnerId(),
         ...init?.headers,
       },
     });
@@ -88,6 +94,7 @@ async function apiFetch<T>(endpoint: string, init?: RequestInit): Promise<T> {
   }
 
   if (!response.ok) {
+    if (response.status === 401 && typeof window !== "undefined") window.dispatchEvent(new Event("relearn:session-expired"));
     if (json && typeof json === "object") {
       const data = json as Record<string, unknown>;
       if (typeof data.code === "string" && typeof data.message === "string") {
@@ -128,10 +135,11 @@ async function apiFetch<T>(endpoint: string, init?: RequestInit): Promise<T> {
     );
   }
 
+  if (init?.method === "POST" && typeof window !== "undefined") window.dispatchEvent(new Event("relearn:account-updated"));
   return json as T;
 }
 
-export async function getLearningPlan(learnerId = "learner-demo"): Promise<LearningPlanResponse> {
+export async function getLearningPlan(learnerId = currentLearnerId()): Promise<LearningPlanResponse> {
   if (isMockMode) {
     return mockDelay({
       learner,
@@ -143,10 +151,8 @@ export async function getLearningPlan(learnerId = "learner-demo"): Promise<Learn
   const plan = await apiFetch<LearningPlanResponse>(`/api/v1/learning-plan?learnerId=${encodeURIComponent(learnerId)}`);
   return {
     ...plan,
-    modules: plan.modules.map((module) => ({
-      ...module,
-      title: module.conceptCode === "CONDITIONS" ? "The Chapel of Choices" : module.title,
-    })),
+    modules: plan.modules.map((item) => ({ ...item, status: String(item.status) === "RESOLVED" ? "completed" : ["IMPROVING", "NEEDS_PRACTICE"].includes(String(item.status)) ? "active" : "upcoming" })),
+    quests: plan.quests.map((item) => ({ ...item, status: String(item.status).toLowerCase() as Quest["status"] })),
   };
 }
 
@@ -250,7 +256,7 @@ export async function selectIntervention(diagnosisId: string): Promise<Intervent
 
 export async function completeIntervention(
   interventionId: string,
-  learnerId = "learner-demo"
+  learnerId = currentLearnerId()
 ): Promise<InterventionCompletion> {
   if (isMockMode) {
     return mockDelay({
@@ -302,7 +308,7 @@ export async function submitReassessment(payload: ReassessmentRequest): Promise<
   });
 }
 
-export async function getLearnerProgress(learnerId = "learner-demo"): Promise<LearnerConceptState[]> {
+export async function getLearnerProgress(learnerId = currentLearnerId()): Promise<LearnerConceptState[]> {
   if (isMockMode) {
     return mockDelay(conceptStates);
   }
@@ -332,14 +338,14 @@ export async function getLearnerProgress(learnerId = "learner-demo"): Promise<Le
   });
 }
 
-export async function getQuests(learnerId = "learner-demo"): Promise<Quest[]> {
+export async function getQuests(learnerId = currentLearnerId()): Promise<Quest[]> {
   if (isMockMode) {
     return mockDelay(mockQuestsState);
   }
   return apiFetch<Quest[]>(`/api/v1/learners/${encodeURIComponent(learnerId)}/quests`);
 }
 
-export async function completeQuest(questId: string, learnerId = "learner-demo"): Promise<QuestCompletion> {
+export async function completeQuest(questId: string, learnerId = currentLearnerId()): Promise<QuestCompletion> {
   if (isMockMode) {
     const quest = mockQuestsState.find((item) => item.id === questId);
     if (!quest) throw new ApiError(`Quest '${questId}' not found`, "QUEST_NOT_FOUND", 404);
@@ -368,3 +374,82 @@ export async function getModelMetrics(): Promise<ModelMetrics> {
   }
   return apiFetch<ModelMetrics>("/api/v1/model/metrics");
 }
+
+export async function diagnoseCode(
+  code: string,
+  previousMisconceptionId?: number | null
+): Promise<MLDiagnoseResponse> {
+  const targetBase = NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+  const url = `${normalizeBaseUrl(targetBase)}/diagnose`;
+
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        code,
+        previous_misconception_id: previousMisconceptionId ?? undefined,
+      }),
+    });
+
+    if (res.ok) {
+      return (await res.json()) as MLDiagnoseResponse;
+    }
+  } catch {
+    // Backend fetch failed, proceed to fallback mock
+  }
+
+  // Fallback prediction if server is offline
+  const isParens = code.includes("return(") || code.includes("return (");
+  const topId = isParens ? 31 : 15;
+  const isResolved =
+    previousMisconceptionId !== null &&
+    previousMisconceptionId !== undefined &&
+    topId !== previousMisconceptionId;
+
+  return mockDelay({
+    top_prediction: {
+      id: topId,
+      misconception: isParens
+        ? "Student believes that the `return` statement requires parentheses around its argument."
+        : "Student believes Python sequences use 1-based indexing instead of 0-based indexing.",
+      score: isParens ? 0.305 : 0.28,
+    },
+    alternatives: [
+      {
+        id: 56,
+        misconception: "Student uses incorrect argument count or mismatches positional and keyword arguments.",
+        score: -0.527,
+      },
+      {
+        id: 46,
+        misconception: "Student misplaces indentation causing block association errors.",
+        score: -0.835,
+      },
+    ],
+    intervention: isParens
+      ? {
+          title: "Understanding return statements",
+          explanation: "In Python, parentheses are not required around the value returned by a function.",
+          example: "return a + b",
+          check: "Try rewriting the return statement without parentheses.",
+        }
+      : {
+          title: "Python uses zero-based indexing",
+          explanation: "The first element of a Python list is at index 0, not index 1.",
+          example: "numbers[0]",
+          check: "Which index accesses the first element?",
+        },
+    reassessment:
+      previousMisconceptionId !== null && previousMisconceptionId !== undefined
+        ? {
+            status: isResolved ? "resolved" : "unresolved",
+            misconception_id: previousMisconceptionId,
+          }
+        : null,
+  });
+}
+

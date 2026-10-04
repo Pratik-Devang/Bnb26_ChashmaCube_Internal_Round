@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:api": "relearn-api\\.venv\\Scripts\\python.exe -m uvicorn app.main:app --app-dir relearn-api --reload --port 8000",
+    "dev:full": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start-local.ps1",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",

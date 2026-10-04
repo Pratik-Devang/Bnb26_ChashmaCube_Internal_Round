@@ -217,3 +217,41 @@ export interface ApiErrorShape {
   message: string;
   details?: Record<string, unknown> | null;
 }
+
+export interface PredictionItem {
+  id: number;
+  misconception: string;
+  score: number;
+}
+
+export interface InterventionDetail {
+  title: string;
+  explanation: string;
+  example: string;
+  check: string;
+}
+
+export interface ReassessmentResult {
+  status: "resolved" | "unresolved";
+  misconception_id: number;
+}
+
+export interface AlternativeItem {
+  misconception_id?: number;
+  misconception: string;
+  confidence?: "high" | "medium" | "low" | string;
+  score?: number;
+  id?: number;
+}
+
+export interface MLDiagnoseResponse {
+  misconception_id?: number;
+  misconception?: string;
+  confidence?: "high" | "medium" | "low" | string;
+  evidence?: string;
+  alternatives?: AlternativeItem[];
+  model_confident?: boolean;
+  top_prediction?: PredictionItem;
+  intervention?: InterventionDetail;
+  reassessment?: ReassessmentResult | null;
+}

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import sys
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -213,8 +214,13 @@ async def main() -> None:
         await seed_demo_data(session)
     await dispose_engine()
 if __name__ == "__main__":
-    import sys
     if sys.platform == "win32":
-        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-    asyncio.run(main())
-
+        # Psycopg's async driver requires a selector loop on Windows.
+        loop = asyncio.SelectorEventLoop()
+        asyncio.set_event_loop(loop)
+        try:
+            loop.run_until_complete(main())
+        finally:
+            loop.close()
+    else:
+        asyncio.run(main())

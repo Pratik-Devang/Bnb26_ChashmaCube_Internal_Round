@@ -1,4 +1,5 @@
 from app.models.attempts import Attempt, Diagnosis
+from app.models.accounts import Account, AccountSession, WorldSave
 from app.models.base import Base
 from app.models.interventions import Intervention, LearnerConceptState
 from app.models.learning import Concept, Exercise, Misconception

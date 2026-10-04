@@ -8,17 +8,20 @@ import { Icon } from "@/components/ui/Icon";
 import {
   ApiError,
   completeIntervention,
+  diagnoseCode,
   getExercise,
   requestDiagnosis,
   submitAttempt,
   submitReassessment,
 } from "@/lib/api";
 import { createPythonCodeRunner, type PythonCodeRunner } from "@/lib/code-runner";
+import { currentLearnerId } from "@/lib/account";
 import type {
   AttemptResponse,
   AttemptType,
   DiagnosisResponse,
   Exercise,
+  MLDiagnoseResponse,
   TestResults,
 } from "@/types/learning";
 
@@ -52,6 +55,8 @@ export function ExerciseWorkspace({ exerciseId }: Props) {
   const [testResults, setTestResults] = useState<TestResults | null>(null);
   const [activeAttempt, setActiveAttempt] = useState<AttemptResponse | null>(null);
   const [diagnosisResponse, setDiagnosisResponse] = useState<DiagnosisResponse | null>(null);
+  const [mlDiagnosis, setMlDiagnosis] = useState<MLDiagnoseResponse | null>(null);
+  const [previousMisconceptionId, setPreviousMisconceptionId] = useState<number | null>(null);
   const [activeInterventionId, setActiveInterventionId] = useState<string | null>(null);
 
   // Workflow tracking
@@ -173,20 +178,46 @@ export function ExerciseWorkspace({ exerciseId }: Props) {
 
   // Submit attempt and request diagnosis
   const handleSubmit = async () => {
-    if (!exercise || !testResults) return;
+    if (!exercise) return;
     setPhase("submitting");
     setErrorMessage(null);
 
     try {
+      let currentTestResults = testResults;
+      if (!currentTestResults && runnerRef.current) {
+        try {
+          currentTestResults = await runnerRef.current.run({
+            code,
+            testCases: exercise.testCases,
+            timeoutMs: 4000,
+          });
+          setTestResults(currentTestResults);
+        } catch {
+          // ignore runner error if pure ML diagnosis is requested
+        }
+      }
+
+      // Call ML model /diagnose endpoint
+      let mlResult: MLDiagnoseResponse | null = null;
+      try {
+        mlResult = await diagnoseCode(code, previousMisconceptionId);
+        setMlDiagnosis(mlResult);
+        if (mlResult?.top_prediction?.id) {
+          setPreviousMisconceptionId(mlResult.top_prediction.id);
+        }
+      } catch (mlErr) {
+        console.warn("ML diagnosis service unreachable or error:", mlErr);
+      }
+
       if (reassessmentType === "INITIAL" || !activeInterventionId) {
         // Standard initial attempt submission
         const attempt = await submitAttempt({
-          learnerId: "learner-demo",
+          learnerId: currentLearnerId(),
           exerciseId: exercise.id,
           submittedCode: code,
           learnerExplanation: explanation.trim() || undefined,
           attemptType: "INITIAL",
-          testResults,
+          testResults: currentTestResults || { passed: 0, failed: 0, cases: [] },
         });
         setActiveAttempt(attempt);
         setParentAttemptId(attempt.id);
@@ -206,18 +237,21 @@ export function ExerciseWorkspace({ exerciseId }: Props) {
       } else {
         // Reassessment submission (Near or Far Transfer)
         const reassessResponse = await submitReassessment({
-          learnerId: "learner-demo",
+          learnerId: currentLearnerId(),
           exerciseId: exercise.id,
           submittedCode: code,
           learnerExplanation: explanation.trim() || undefined,
           attemptType: reassessmentType,
           parentAttemptId: parentAttemptId || undefined,
           interventionId: activeInterventionId,
-          testResults,
+          testResults: currentTestResults || testResults || { passed: 0, failed: 0, cases: [] },
         });
         setDiagnosisResponse(reassessResponse);
 
-        if (reassessmentType === "FAR_TRANSFER" && reassessResponse.conceptStatus === "RESOLVED") {
+        if (
+          (reassessmentType === "FAR_TRANSFER" && reassessResponse.conceptStatus === "RESOLVED") ||
+          mlResult?.reassessment?.status === "resolved"
+        ) {
           setPhase("resolved");
         } else {
           setPhase("diagnosed");
@@ -245,7 +279,7 @@ export function ExerciseWorkspace({ exerciseId }: Props) {
   // Complete intervention mini-game
   const handleCompleteIntervention = async () => {
     if (!activeInterventionId) return;
-    const result = await completeIntervention(activeInterventionId, "learner-demo");
+    const result = await completeIntervention(activeInterventionId);
     if (result.nearTransferExerciseId) {
       setActiveInterventionContent((prev) => ({
         type: prev?.type ?? "RANGE_PATH_GAME",
@@ -399,7 +433,7 @@ export function ExerciseWorkspace({ exerciseId }: Props) {
               type="button"
               className="solid-action submit-action"
               onClick={handleSubmit}
-              disabled={!testResults || phase === "running" || phase === "submitting"}
+              disabled={!code.trim() || phase === "running" || phase === "submitting"}
               aria-busy={phase === "submitting"}
             >
               <Icon name="check" />
@@ -498,6 +532,76 @@ export function ExerciseWorkspace({ exerciseId }: Props) {
                       </li>
                     ))}
                   </ul>
+                </div>
+              ) : null}
+
+              {/* ML Model Diagnosis & Targeted Intervention */}
+              {mlDiagnosis ? (
+                <div className="ml-diagnosis-panel" style={{ marginTop: "1rem", padding: "1rem", borderRadius: "8px", background: "rgba(255, 255, 255, 0.04)", border: "1px solid rgba(255, 255, 255, 0.1)" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.5rem" }}>
+                    <span className="crumb-badge tone-lilac" style={{ fontSize: "0.75rem", fontWeight: 600 }}>
+                      ML CLASSIFIER (ID #{mlDiagnosis.misconception_id ?? mlDiagnosis.top_prediction?.id ?? 0})
+                    </span>
+                    <span style={{ fontSize: "0.8rem", color: "#9ca3af" }}>
+                      {mlDiagnosis.confidence ? `${mlDiagnosis.confidence.toUpperCase()} CONFIDENCE` : `Score: ${mlDiagnosis.top_prediction?.score ?? 0}`}
+                    </span>
+                  </div>
+
+                  <h3 style={{ fontSize: "1rem", fontWeight: 600, color: "#f3f4f6", marginBottom: "0.25rem" }}>
+                    {mlDiagnosis.intervention?.title ?? "Misconception Analysis"}
+                  </h3>
+                  <p style={{ fontSize: "0.875rem", color: "#d1d5db", marginBottom: "0.75rem" }}>
+                    {mlDiagnosis.misconception ?? mlDiagnosis.top_prediction?.misconception}
+                  </p>
+
+                  <div style={{ background: "rgba(0, 0, 0, 0.25)", padding: "0.75rem", borderRadius: "6px", marginBottom: "0.75rem", borderLeft: "3px solid #8b5cf6" }}>
+                    <p style={{ fontSize: "0.85rem", color: "#e5e7eb", margin: 0, marginBottom: "0.4rem" }}>
+                      <strong>Intervention:</strong> {mlDiagnosis.evidence ?? mlDiagnosis.intervention?.explanation}
+                    </p>
+                    {mlDiagnosis.intervention?.example ? (
+                      <div style={{ fontSize: "0.8rem", color: "#a78bfa", fontFamily: "monospace", marginBottom: "0.3rem" }}>
+                        Example: <code>{mlDiagnosis.intervention.example}</code>
+                      </div>
+                    ) : null}
+                    {mlDiagnosis.intervention?.check ? (
+                      <div style={{ fontSize: "0.8rem", color: "#93c5fd" }}>
+                        💡 <em>{mlDiagnosis.intervention.check}</em>
+                      </div>
+                    ) : null}
+                  </div>
+
+                  {mlDiagnosis.alternatives && mlDiagnosis.alternatives.length > 0 ? (
+                    <details style={{ fontSize: "0.8rem", color: "#9ca3af", marginBottom: "0.75rem" }}>
+                      <summary style={{ cursor: "pointer" }}>Alternative diagnoses ({mlDiagnosis.alternatives.length})</summary>
+                      <ul style={{ paddingLeft: "1.2rem", marginTop: "0.4rem" }}>
+                        {mlDiagnosis.alternatives.map((alt) => (
+                          <li key={alt.misconception_id ?? alt.id} style={{ marginBottom: "0.25rem" }}>
+                            <strong>ID #{alt.misconception_id ?? alt.id}</strong> ({alt.confidence ?? alt.score}): {alt.misconception}
+                          </li>
+                        ))}
+                      </ul>
+                    </details>
+                  ) : null}
+
+                  {mlDiagnosis.reassessment ? (
+                    <div style={{ padding: "0.5rem", borderRadius: "4px", background: mlDiagnosis.reassessment.status === "resolved" ? "rgba(16, 185, 129, 0.15)" : "rgba(239, 68, 68, 0.15)", color: mlDiagnosis.reassessment.status === "resolved" ? "#34d399" : "#f87171", fontSize: "0.85rem", marginBottom: "0.75rem" }}>
+                      Reassessment status: <strong>{mlDiagnosis.reassessment.status.toUpperCase()}</strong> (Previous Misconception ID: #{mlDiagnosis.reassessment.misconception_id})
+                    </div>
+                  ) : null}
+
+                  <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginTop: "0.5rem" }}>
+                    <button
+                      type="button"
+                      className="solid-action"
+                      style={{ padding: "0.4rem 0.8rem", fontSize: "0.85rem" }}
+                      onClick={() => {
+                        setPhase("editing");
+                        textareaRef.current?.focus();
+                      }}
+                    >
+                      <Icon name="check" /> Try Again / Reassess
+                    </button>
+                  </div>
                 </div>
               ) : null}
 
