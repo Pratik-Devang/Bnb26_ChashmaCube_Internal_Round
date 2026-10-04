@@ -6,9 +6,8 @@ import { useEffect, useState } from "react";
 import firstIslandMap from "@/2d_assets/First Island/Tiled/Tiled_map.png";
 import ruinedChurchMap from "@/2d_assets/Church/Maps/Ruined_temple_exterior.png";
 import { useAccount } from "@/components/auth/AccountProvider";
-import { WorldDestinations } from "@/components/dashboard/WorldDestinations";
+import { AdventureHero } from "@/components/dashboard/AdventureHero";
 import { Icon } from "@/components/ui/Icon";
-import { PageHeader } from "@/components/ui/PageHeader";
 import { getLearningPlan } from "@/lib/api";
 import { firstIsland, orderedFirstIslandLessons } from "@/lib/game/first-island/content";
 import { emptyFirstIslandProgress, loadFirstIslandProgress } from "@/lib/game/first-island/progress";
@@ -79,16 +78,8 @@ export function HomeOverview() {
   return (
     <main className="route-page home-page">
       {error && <p className="action-error-banner" role="alert">{error}</p>}
-      <PageHeader
-        eyebrow={`WELCOME, ${learner.name.toUpperCase()} / ${firstIsland.chapter.toUpperCase()}`}
-        title={hasStarted ? "Continue your island journey." : "Your first adventure is ready."}
-        description={hasStarted
-          ? "Pick up at your next island guide. Everything you discover is saved to this account."
-          : "Begin on The First Island, meet its teachers, and learn how Python remembers values."}
-        action={<Link className="quiet-action" href={islandComplete ? "/game/church" : "/game"}>{islandComplete ? "Enter the next world" : hasStarted ? "Return to the island" : "Explore the first island"}</Link>}
-      />
-
-      <WorldDestinations firstIslandProgress={islandProgress} />
+      <AdventureHero name={learner.name} progress={islandProgress} loading={loadingProgress} />
+      <div className="adventure-section-heading"><span>YOUR SAVED JOURNEY</span><Link href="/learn">View world map ↗</Link></div>
 
       <div className="dashboard-grid">
         <section className="plan-workspace" aria-label="Current adventure">
