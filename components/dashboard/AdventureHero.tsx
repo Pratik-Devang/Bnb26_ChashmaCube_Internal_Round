@@ -6,6 +6,7 @@ import { useState } from "react";
 import { learningWorlds } from "@/lib/game/worlds";
 import { PixelSprite } from "@/components/ui/PixelSprite";
 import type { FirstIslandProgress } from "@/types/game";
+import { adventureHref, topicNames, type AdventureProgress } from "@/lib/game/curriculum";
 
 // Small bitmap lettering keeps the title crisp without an external font request.
 const glyphs: Record<string, string[]> = {
@@ -30,12 +31,12 @@ function PixelLine({ text }: { text: string }) {
   </svg>;
 }
 
-export function AdventureHero({ name, progress, loading }: { name: string; progress: FirstIslandProgress; loading: boolean }) {
+export function AdventureHero({ name, progress, loading, recentAdventure }: { name: string; progress: FirstIslandProgress; loading: boolean; recentAdventure?: AdventureProgress | null }) {
   const [selection, setSelection] = useState<number | null>(null);
   const complete = progress.completedLessonIds.length === 6 && progress.challengeCompleted;
-  const selected = selection ?? (complete ? 1 : 0);
+  const selected = selection ?? (recentAdventure ? recentAdventure.world === "first-island" ? 0 : 1 : complete ? 1 : 0);
   const world = learningWorlds[selected];
-  const started = progress.completedLessonIds.length > 0;
+  const resume = recentAdventure && selected === (recentAdventure.world === "first-island" ? 0 : 1) ? recentAdventure : null;
   return <section className="adventure-hero" aria-label="Your next adventure">
     <Image key={world.id} src={world.image} alt="" fill sizes="100vw" unoptimized priority className={`adventure-scene adventure-scene-${world.art}`} />
     <div className="adventure-vignette" />
@@ -44,10 +45,10 @@ export function AdventureHero({ name, progress, loading }: { name: string; progr
       <span className="adventure-welcome">WELCOME BACK, {name.toUpperCase()}</span>
       <h1 aria-label="Learn. Explore. Level up."><PixelLine text="LEARN. EXPLORE." /><PixelLine text="LEVEL UP." /></h1>
       <p>A little curiosity. A world of discovery.<br />Learn Python, meet your guides, and turn every mistake into your next move.</p>
-      <Link href={world.href} className="solid-action adventure-play"><span aria-hidden="true">▶</span>{selected === 0 ? started ? "Continue adventure" : "Begin adventure" : "Enter the chapel"}<span aria-hidden="true">↗</span></Link>
-      <span className="adventure-save-status">{loading ? "Loading your journey…" : selected === 0 ? `${progress.completedLessonIds.length}/6 guides discovered · ${progress.coinsEarned} coins earned` : "Chapter 02 · Conditions & choices"}</span>
+      <Link href={resume ? adventureHref(resume) : world.href} className="solid-action adventure-play"><span aria-hidden="true">▶</span>{resume ? resume.completed ? "Revisit adventure" : "Resume adventure" : "Choose topic & difficulty"}<span aria-hidden="true">↗</span></Link>
+      <span className="adventure-save-status">{loading ? "Loading your journey…" : resume ? `${topicNames[resume.track.split("-")[0]]} · ${resume.track.split("-")[1]} · ${resume.coinsEarned} coins` : "5 topics · 3 difficulty levels · Your own pace"}</span>
     </div>
-    <div className="adventure-guide"><PixelSprite character={selected === 0 ? "explorer" : "scout"} /><span>YOUR NEXT DESTINATION<strong>{world.name}</strong></span></div>
+    <div className="adventure-guide"><span className="adventure-guide-sprite"><PixelSprite character={selected === 0 ? "explorer" : "scout"} /></span><span>YOUR NEXT DESTINATION<strong>{world.name}</strong></span></div>
     <div className="adventure-selector" aria-label="Preview a world">
       {learningWorlds.map((item, index) => <button key={item.id} type="button" aria-pressed={selected === index} onClick={() => setSelection(index)} className={selected === index ? "selected" : ""}>
         <Image src={item.image} alt="" unoptimized sizes="200px" />

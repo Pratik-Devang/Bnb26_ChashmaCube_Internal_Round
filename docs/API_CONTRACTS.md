@@ -1,5 +1,7 @@
 # Re:Learn API contracts
 
+Topic-selection adventures add authenticated endpoints under `/api/v1/auth/adventures`. See [Topic adventures](TOPIC_ADVENTURES.md) for catalog, per-map/topic/difficulty saves, ordered lesson completion, answer checking, and current limitations.
+
 Base path: `/api/v1`. JSON uses camelCase at the HTTP boundary; the future Pydantic schemas may use aliases over snake_case Python fields. Error responses should include a stable `code`, a safe `message`, and optional field-level `details`.
 
 ## Endpoints

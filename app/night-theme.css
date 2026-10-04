@@ -117,3 +117,31 @@ body { background: #11130f; }
 @media (prefers-reduced-motion: reduce) {
   .adventure-selector button,.product-shell .solid-action { transition: none; }
 }
+
+/* Translate is independent of sprite frames and selected-card transforms. */
+.adventure-journal { margin: 28px 0; }
+.adventure-journal > div { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 18px; }
+.adventure-journal-card h2 { margin: 12px 0; }
+.adventure-journal-card p { color: #c2bba9; }
+.adventure-journal-stats { display: flex; flex-wrap: wrap; gap: 16px; font: .78rem monospace; color: #d4b277; }
+.adventure-evidence-note { margin-top: 18px; max-width: 650px; font-size: .8rem; line-height: 1.7; }
+@keyframes expedition-float {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -7px; }
+}
+@keyframes expedition-scene-enter {
+  from { opacity: .4; }
+  to { opacity: 1; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .adventure-guide-sprite { display: flex; animation: expedition-float 4.8s ease-in-out infinite; }
+  .adventure-selector button { animation: expedition-float 6s ease-in-out infinite; transition: border-color .2s, transform .2s; }
+  .adventure-selector button:nth-child(2) { animation-delay: -3s; }
+  .adventure-selector button:is(:hover,:focus-visible) { animation-play-state: paused; }
+  .adventure-scene { animation: expedition-scene-enter .6s ease-out; }
+  .world-postcard { transition: translate .25s ease, border-color .25s ease; }
+  .world-postcard:hover { translate: 0 -4px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}

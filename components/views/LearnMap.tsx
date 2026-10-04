@@ -8,7 +8,7 @@ export function LearnMap() {
   const stops = learningWorlds.map((world, index) => ({ world, x: index % 2 === 0 ? 29 : 72, y: 240 + index * 300 }));
   return (
     <main className={styles.atlas}>
-      <header className={styles.heading}>
+      <header className={styles.heading} data-scroll-reveal>
         <div><span>THE RE:LEARN ATLAS</span><h1>A world of discovery.</h1><p>Pick an island. Let curiosity lead the way.</p></div>
         <span className={styles.worldCount}>{String(learningWorlds.length).padStart(2, "0")} <small>WORLDS TO EXPLORE</small></span>
       </header>
@@ -24,7 +24,7 @@ export function LearnMap() {
         <span className={styles.seaLabel} aria-hidden="true">THE SEA OF POSSIBILITIES</span>
         <ol className={styles.destinations}>
           {stops.map(({ world, x, y }, index) => (
-            <li key={world.id} className={styles.destination} style={{ left: `${x}%`, top: y }}>
+            <li key={world.id} className={styles.destination} data-scroll-reveal style={{ left: `${x}%`, top: y }}>
               <Link href={world.href} className={styles.worldLink} aria-label={`Enter ${world.name}. ${world.label}`}>
                 <div className={`${styles.landscape} ${world.art === "church" ? styles.church : styles.island}`}><Image src={world.image} alt="" unoptimized className={styles.mapArt} /></div>
                 <span className={styles.number}>{String(index + 1).padStart(2, "0")}</span>

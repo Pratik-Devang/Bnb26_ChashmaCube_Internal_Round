@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { getLearnerProgress, getLearningPlan } from "@/lib/api";
 import { Icon } from "@/components/ui/Icon";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { AdventureJournal } from "@/components/dashboard/AdventureJournal";
 import { useAccount } from "@/components/auth/AccountProvider";
 import type { Learner, LearnerConceptState, LearningModule } from "@/types/learning";
 
@@ -70,6 +71,8 @@ export function ProgressView() {
         description="Mastery reflects repeated evidence across new questions—not a single perfect answer."
       />
 
+      <AdventureJournal />
+      <h2>Code-challenge mastery</h2>
       <section className="progress-hero">
         <div className="mastery-orbit" aria-label={`${loopMastery} percent loop mastery`}>
           <div>
