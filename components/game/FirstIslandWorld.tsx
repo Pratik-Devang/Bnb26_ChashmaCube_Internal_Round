@@ -39,13 +39,18 @@ export function FirstIslandWorld() {
   const [selectedActor, setSelectedActor] = useState<IslandActor | null>(null);
   const [lockedMessage, setLockedMessage] = useState<string | undefined>();
   const [challengeOpen, setChallengeOpen] = useState(false);
+  const [completionOpen, setCompletionOpen] = useState(false);
   const [activeAmbientId, setActiveAmbientId] = useState<string | null>(null);
   const [guidance, setGuidance] = useState("Use WASD or the arrow keys to reach the Beach Cartographer.");
   const [isMoving, setIsMoving] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const movementTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => setProgress(loadFirstIslandProgress()), []);
+  useEffect(() => {
+    const savedProgress = loadFirstIslandProgress();
+    setProgress(savedProgress);
+    setCompletionOpen(savedProgress.challengeCompleted);
+  }, []);
 
   const nextTeacher = useMemo(
     () => orderedFirstIslandLessons.find((actor) => actor.lesson && !progress.completedLessonIds.includes(actor.lesson.id)),
@@ -91,7 +96,7 @@ export function FirstIslandWorld() {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
-      if (target?.matches("textarea, input, select, button") || selectedActor || challengeOpen) return;
+      if (target?.matches("textarea, input, select, button") || selectedActor || challengeOpen || completionOpen) return;
       const key = event.key.toLowerCase();
       const movement: Record<string, MapPosition> = {
         arrowup: { x: 0, y: -1.25 }, w: { x: 0, y: -1.25 }, arrowdown: { x: 0, y: 1.25 }, s: { x: 0, y: 1.25 },
@@ -111,7 +116,7 @@ export function FirstIslandWorld() {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [challengeOpen, interactWithActor, playerPosition, selectedActor]);
+  }, [challengeOpen, completionOpen, interactWithActor, playerPosition, selectedActor]);
 
   useEffect(() => () => { if (movementTimer.current) clearTimeout(movementTimer.current); }, []);
 
@@ -130,6 +135,8 @@ export function FirstIslandWorld() {
     if (progress.challengeCompleted) return;
     updateProgress({ ...progress, challengeCompleted: true, coinsEarned: progress.coinsEarned + firstIsland.challenge.reward });
     setGuidance("The First Island is complete. Your variables foundation is secure.");
+    setChallengeOpen(false);
+    setCompletionOpen(true);
   };
 
   const currentObjective = nextTeacher
@@ -145,6 +152,7 @@ export function FirstIslandWorld() {
         <div className={styles.topActions}>
           <div className={styles.coinWallet} aria-label={`${progress.coinsEarned} coins`}><span className={styles.coin}>●</span><strong>{progress.coinsEarned}</strong></div>
           <button type="button" className={styles.iconButton} onClick={() => setSoundEnabled((value) => !value)} aria-label={soundEnabled ? "Mute game sounds" : "Enable game sounds"} aria-pressed={soundEnabled}><span aria-hidden="true">♪</span>{!soundEnabled && <i aria-hidden="true" />}</button>
+          <Link href="/church" className={styles.exitButton}>Explore church</Link>
           <Link href="/learn" className={styles.exitButton}>Learning path</Link>
         </div>
       </header>
@@ -175,6 +183,20 @@ export function FirstIslandWorld() {
       <footer className={styles.gameFooter}><span>{guidance}</span><span><kbd>WASD</kbd> move <i /> <kbd>E</kbd> interact</span></footer>
       {selectedActor ? <IslandLessonDialog actor={selectedActor} lockedMessage={lockedMessage} completed={Boolean(selectedActor.lesson && progress.completedLessonIds.includes(selectedActor.lesson.id))} onClose={() => { setSelectedActor(null); setLockedMessage(undefined); }} onComplete={completeSelectedLesson} /> : null}
       {challengeOpen ? <IslandScoutChallenge exerciseId={firstIsland.challenge.exerciseId} title={firstIsland.challenge.title} reward={firstIsland.challenge.reward} alreadyCompleted={progress.challengeCompleted} onClose={() => setChallengeOpen(false)} onComplete={completeChallenge} /> : null}
+      {completionOpen ? <div className={styles.dialogScrim} role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setCompletionOpen(false); }}>
+        <section className={`${styles.dialog} ${styles.completionDialog}`} role="dialog" aria-modal="true" aria-labelledby="island-complete-title">
+          <button className={styles.completionClose} type="button" onClick={() => setCompletionOpen(false)} aria-label="Close quest completion">×</button>
+          <span className={styles.completionIcon} aria-hidden="true">✓</span>
+          <small>THE FIRST ISLAND · VARIABLES &amp; VALUES</small>
+          <h2 id="island-complete-title">Quest completed!</h2>
+          <p>You finished every island lesson and passed the Scout’s final trial. Your next learning path is ready.</p>
+          <div className={styles.completionActions}>
+            <Link href="/church" className={styles.completionNext}>Next learning path: Conditions <span aria-hidden="true">→</span></Link>
+            <Link href="/learn" className={styles.completionSecondary}>View all learning paths</Link>
+            <button type="button" className={styles.completionSecondary} onClick={() => setCompletionOpen(false)}>Keep exploring the island</button>
+          </div>
+        </section>
+      </div> : null}
     </main>
   );
 }

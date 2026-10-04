@@ -13,6 +13,7 @@ export function LearnMap() {
   const modules = useMemo(() => learningModules.filter((item) => `${item.title} ${item.description} ${item.id}`.toLowerCase().includes(query.toLowerCase())), [query]);
   const active = learningModules.find((item) => item.id === selected) ?? learningModules[2];
   const isFirstIsland = active.id === "variables";
+  const isConditions = active.id === "conditions";
 
   return (
     <main className="route-page learn-page">
@@ -28,13 +29,14 @@ export function LearnMap() {
           <div className="map-line" aria-hidden="true" />
           {modules.map((module, index) => {
             const islandCard = module.id === "variables";
+            const conditionsCard = module.id === "conditions";
             return (
               <button key={module.id} className={`map-stop stop-${module.status} ${islandCard ? "first-island-stop" : ""} ${selected === module.id ? "selected" : ""}`} onClick={() => setSelected(module.id)} disabled={module.status === "locked"}>
                 <span className={`map-node ${islandCard ? "first-island-node" : ""}`}>{islandCard ? "01" : module.status === "completed" ? "✓" : module.status === "locked" ? <Icon name="lock" /> : index + 1}</span>
                 <span className={`map-card tone-${module.accent} ${islandCard ? "first-island-card" : ""}`}>
                   <i className={islandCard ? "island-scout-portrait" : ""}>{islandCard ? <span className="island-scout-sprite" style={{ backgroundImage: `url(${islandScout.src})` }} /> : module.icon}</i>
-                  <span><small>{islandCard ? "WORLD 01 · VARIABLES & VALUES" : module.status}</small><strong>{module.title}</strong><em>{module.description}</em></span>
-                  <b>{islandCard ? "ENTER →" : module.progress ? `${module.progress}%` : `+${module.xpReward} XP`}</b>
+                  <span><small>{islandCard ? "WORLD 01 · VARIABLES & VALUES" : conditionsCard ? "WORLD 02 · CHAPEL OF CHOICES" : module.status}</small><strong>{conditionsCard ? "The Chapel of Choices" : module.title}</strong><em>{module.description}</em></span>
+                  <b>{islandCard || conditionsCard ? "ENTER →" : module.progress ? `${module.progress}%` : `+${module.xpReward} XP`}</b>
                 </span>
               </button>
             );
@@ -53,6 +55,11 @@ export function LearnMap() {
             <div className="lesson-actions">
               {isFirstIsland ? (
                 <Link className="solid-action" href="/game"><Icon name="play" />Enter The First Island</Link>
+              ) : isConditions ? (
+                <>
+                  <Link className="solid-action" href="/church"><Icon name="play" />Enter the Chapel of Choices</Link>
+                  <Link className="quiet-action" href={`/topics/${active.id}?mode=practice`}><Icon name="target" />Practice with code</Link>
+                </>
               ) : (
                 <>
                   <Link className="solid-action" href={`/topics/${active.id}?mode=lesson`}><Icon name="play" />{active.status === "completed" ? "Review this lesson" : "Start this lesson"}</Link>
