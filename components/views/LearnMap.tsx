@@ -5,7 +5,7 @@ import styles from "./LearnMap.module.css";
 
 export function LearnMap() {
   const height = Math.max(740, learningWorlds.length * 300 + 160);
-  const stops = learningWorlds.map((world, index) => ({ world, x: index % 2 === 0 ? 29 : 72, y: height - 210 - index * 300 }));
+  const stops = learningWorlds.map((world, index) => ({ world, x: index % 2 === 0 ? 29 : 72, y: 240 + index * 300 }));
   return (
     <main className={styles.atlas}>
       <header className={styles.heading}>
