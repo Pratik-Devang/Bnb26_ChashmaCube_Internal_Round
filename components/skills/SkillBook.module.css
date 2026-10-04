@@ -1,7 +1,7 @@
 .library { --book-font: "Lucida Console", "Courier New", monospace; color: #f2e7c5; margin-bottom: 48px; font-family: var(--book-font); }
 .header { display: flex; justify-content: space-between; align-items: center; gap: 24px; padding: 8px 0 24px; }
 .eyebrow { font: 11px monospace; letter-spacing: .22em; color: #d6b773; }
-.library .header h1 { margin: 12px 0; font: bold clamp(28px, 4vw, 52px)/1.2 var(--book-font); letter-spacing: -.05em; text-shadow: 3px 3px #665131; }
+.library .header h1 { margin: 12px 0; font: normal clamp(21px, 2.7vw, 42px)/1.65 var(--book-font); letter-spacing: 0; filter: drop-shadow(3px 3px #665131); }
 .header p { margin: 0; color: #afa994; }
 .header p { max-width: 780px; font-size: 13px; line-height: 1.8; }
 .progressSummary { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 24px; padding: 24px; margin-bottom: 20px; border: 3px double #78673f; background: #24251a; }
@@ -64,14 +64,14 @@
 .paper { position: relative; display: flex; flex-direction: column; min-width: 0; }
 .paper header { text-align: center; border-bottom: 1px solid #a5854866; padding-bottom: 10px; margin-bottom: 10px; }
 .paper header > span { font: 9px monospace; letter-spacing: .16em; color: #795c2e; }
-.library .paper h2 { font: bold clamp(16px, 2vw, 27px)/1.25 var(--book-font); letter-spacing: -.06em; margin: 8px 0; color: #44321c; text-shadow: 1px 1px #fff0bb; }
+.library .paper h2 { font: normal clamp(12px, 1.5vw, 21px)/1.65 var(--book-font); letter-spacing: 0; margin: 8px 0; color: #44321c; filter: drop-shadow(1px 1px #fff0bb); }
 .paper header p { font-size: 11px; margin: 0; color: #775e39; line-height: 1.5; }
 .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(3, 1fr); gap: 10px 12px; flex: 1; min-height: 0; }
 .skill { border: 0; background: transparent; padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: #48351d; cursor: pointer; min-width: 0; }
 .iconFrame { position: relative; display: block; width: clamp(44px, 5.5vw, 80px); aspect-ratio: 1; padding: 5px; border: 3px double #99723c; box-shadow: inset 0 0 0 2px #f5e7b0, 3px 3px #94763e55; background: #c9aa66; transition: transform .18s steps(3), box-shadow .18s steps(3); }
 .iconFrame img { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
 .iconFrame i { position: absolute; bottom: -4px; right: -5px; font: bold 11px monospace; background: #3e532f; color: #faeab0; padding: 2px 3px; border: 1px solid #d6b674; }
-.skillName { font: bold clamp(10px, 1vw, 13px)/1.45 var(--book-font); text-align: center; max-width: 190px; margin-top: 5px; }
+.skillName { font: normal clamp(8px, .72vw, 11px)/1.65 var(--book-font); text-align: center; max-width: 190px; margin-top: 5px; }
 .skill small { font: 9px var(--book-font); text-transform: uppercase; letter-spacing: .1em; margin-top: 2px; }
 .skill:not(:disabled) .iconFrame i { animation: sealGlow 3s steps(8) infinite; }
 .skill:nth-child(2n) .iconFrame i { animation-delay: -1.5s; }
@@ -120,7 +120,7 @@
   .counter { padding: 10px 16px; }
   .book { margin-top: -100px; }
   .iconFrame, .emptySlot { width: 42px; }
-  .skillName { font-size: 10px; margin-top: 2px; }
+  .skillName { font-size: 8px; margin-top: 2px; }
   .skill small { font-size: 8px; }
   .deskHeading { font-size: 8px; padding: 16px 12px 0; }
   .controls { gap: 10px; font-size: 10px; flex-wrap: wrap; }

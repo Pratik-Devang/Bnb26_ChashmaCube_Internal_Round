@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { PixelText } from "@/components/ui/PixelText";
 import { adventureHref, loadAdventureJournal, loadCurriculum, topicNames, type AdventureProgress, type CurriculumTrack } from "@/lib/game/curriculum";
 import opening from "@/2d_assets/Book/PNG/Open_book.png";
 import closing from "@/2d_assets/Book/PNG/Close_book.png";
@@ -164,7 +165,7 @@ export function SkillBook() {
   return <section className={styles.library} aria-labelledby="skill-book-heading">
     <header className={styles.header}>
       <div><span className={styles.eyebrow}>YOUR PERSONAL GRIMOIRE</span>
-        <h1 id="skill-book-heading">The book of Python.</h1>
+        <h1 id="skill-book-heading"><PixelText text="The book of Python." /></h1>
         <p>Your learning record: revisit skills you have learned, see what remains, and choose your next lesson.</p></div>
       <div className={styles.counter} aria-live="polite">
         <strong>{loading ? "…" : error ? "—" : learned}</strong>
@@ -215,7 +216,7 @@ export function SkillBook() {
                 turn(page + (side === 0 ? -1 : 1));
               }}>
                 <header><span>{side === 0 ? `CHAPTER 0${page + 1}` : "YOUR COLLECTION"}</span>
-                  <h2>{side === 0 ? topicNames[topics[page]] : "Advanced skills"}</h2>
+                  <h2><PixelText text={side === 0 ? topicNames[topics[page]] : "Advanced skills"} /></h2>
                   <p>{side === 0 ? "Build your foundation · Easy & medium" : "Extend your understanding · Hard"}</p>
                 </header>
                 {loading || error ? <p className={styles.paperStatus}>{loading ? "Reading your journal…" : "Waiting for your journal…"}</p> :
@@ -226,7 +227,7 @@ export function SkillBook() {
                       aria-label={`${skill.title}, ${skill.difficulty}, ${skill.unlocked ? "learned: view description" : "locked"}`}
                       onClick={event => { trigger.current = event.currentTarget; setSelected(skill); }}>
                       <span className={styles.iconFrame}><Image src={icons[skill.icon]} alt="" unoptimized /><i>{skill.unlocked ? "✓" : "⌑"}</i></span>
-                      <span className={styles.skillName}>{skill.title}</span><small>{skill.difficulty} · {skill.unlocked ? "Learned" : "Locked"}</small>
+                      <span className={styles.skillName}><PixelText text={skill.title} /></span><small>{skill.difficulty} · {skill.unlocked ? "Learned" : "Locked"}</small>
                     </button>)}
                     {Array.from({ length: Math.max(0, 6 - currentSkills.slice(side * 6, side * 6 + 6).length) }, (_, index) =>
                       <div key={index} className={styles.emptySlot} aria-hidden="true">✧</div>)}
@@ -247,7 +248,7 @@ export function SkillBook() {
     </div>
     {ready && <section className={styles.moduleReport} aria-label={`${topicNames[topics[page]]} progress`}>
       <div className={styles.moduleDescription}><span className={styles.eyebrow}>CHAPTER 0{page + 1} / YOUR PROGRESS</span>
-        <h2>{topicNames[topics[page]]}</h2><p>{moduleNotes[topics[page]].description}</p>
+        <h2><PixelText text={topicNames[topics[page]]} /></h2><p>{moduleNotes[topics[page]].description}</p>
         <strong>{moduleLearned} of {currentSkills.length} lessons learned</strong>
         <progress aria-label={`${topicNames[topics[page]]} lesson completion`} value={moduleLearned} max={currentSkills.length || 1} />
         <div className={styles.difficultyProgress}>{(["easy", "medium", "hard"] as const).map(difficulty => {
@@ -256,7 +257,7 @@ export function SkillBook() {
         })}</div>
       </div>
       <div className={styles.nextStep}><span className={styles.eyebrow}>{nextSkill ? "NEXT LESSON TO UNLOCK" : "ALL LESSONS LEARNED"}</span>
-        <h3>{nextSkill ? nextSkill.title : "Put these skills into practice."}</h3>
+        <h3><PixelText text={nextSkill ? nextSkill.title : "Put these skills into practice."} /></h3>
         <p>{nextSkill ? `${nextSkill.body} Complete this ${nextSkill.difficulty} lesson on either map to unlock its entry in your book.` : "You have completed every lesson in this module. Revisit an unlocked skill to refresh your memory, then use an adventure challenge to check your understanding."}</p>
         {nextSkill ? <Link href={destination(nextSkill.track)}>Continue {nextSkill.difficulty} adventure →</Link> : <>
           <Link href={currentSkills[0] ? destination(currentSkills[0].track) : "/learn"}>Practice this module →</Link>
@@ -273,7 +274,7 @@ export function SkillBook() {
       {selected && <article>
         <button className={styles.dismiss} aria-label="Close skill description" onClick={dismiss} autoFocus>×</button>
         <header><Image src={icons[selected.icon]} alt="" width={72} height={72} unoptimized />
-          <div><span>{selected.difficulty} · LEARNED</span><h2 id="skill-description-title">{selected.title}</h2></div></header>
+          <div><span>{selected.difficulty} · LEARNED</span><h2 id="skill-description-title"><PixelText text={selected.title} /></h2></div></header>
         <h3>What this skill means</h3><p>{selected.body}</p>
         <h3>Where you will use it</h3><p>{moduleNotes[selected.topic].application}</p>
         {selected.code && <><h3>Trace this Python example</h3><pre><code>{selected.code}</code></pre></>}
