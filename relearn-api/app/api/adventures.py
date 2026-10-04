@@ -88,7 +88,36 @@ async def progress(learner: Learner = Depends(current_user), session: AsyncSessi
     saves = (await session.scalars(select(WorldSave).where(
         WorldSave.learner_id == learner.id, WorldSave.world_id.like("adventure:%")))).all()
     recent = next((saved.progress for saved in saves if saved.world_id == "adventure:recent"), None)
-    return {"recent": recent, "saves": [saved.progress for saved in saves if saved.world_id != "adventure:recent"]}
+    progress_saves = [saved.progress for saved in saves if saved.world_id != "adventure:recent"]
+    reviews = []
+    for save in progress_saves:
+        track = TRACKS.get(save.get("track", ""), {})
+        questions = {question["id"]: question for question in track.get("questions", [])}
+        for attempt in save.get("attempts", []):
+            if attempt.get("correct"):
+                continue
+            question = questions.get(attempt.get("questionId"))
+            if question is None:
+                continue
+            options = question.get("options", [])
+            selected = attempt.get("answer")
+            correct = question.get("answer")
+            reviews.append({
+                "id": f'{save.get("world", "")}/{save.get("track", "")}/{attempt.get("questionId", "")}/{attempt.get("at", "")}',
+                "world": save.get("world", "first-island"),
+                "track": save.get("track", ""),
+                "topic": track.get("topic", "Topic adventure"),
+                "difficulty": track.get("difficulty", ""),
+                "questionId": question["id"],
+                "prompt": question["prompt"],
+                "code": question.get("code", ""),
+                "yourAnswer": options[selected] if isinstance(selected, int) and 0 <= selected < len(options) else "Unavailable",
+                "correctAnswer": options[correct] if isinstance(correct, int) and 0 <= correct < len(options) else "Unavailable",
+                "explanation": question.get("feedback", "Review the related lesson and trace each step carefully."),
+                "attemptedAt": attempt.get("at"),
+            })
+    reviews.sort(key=lambda review: review.get("attemptedAt") or "", reverse=True)
+    return {"recent": recent, "saves": progress_saves, "incorrectReviews": reviews}
 
 
 @router.post("/start")
@@ -130,9 +159,14 @@ async def answer(payload: AnswerAction, learner: Learner = Depends(current_user)
         raise HTTPException(422, "Choose an available answer.")
     saved = await locked_save(session, learner, payload.world, payload.track)
     data = {**saved.progress}
-    if len(data["completedLessonIds"]) != len(track["lessons"]):
-        raise HTTPException(409, "Finish the guide lessons before this trial.")
     passed = list(data["passedQuestionIds"])
+    required_lessons = len(track["lessons"])
+    if payload.world == "chapel-of-choices":
+        # The chapel places its first topic check at the lever after two guides,
+        # then the treasure check after the final guide.
+        required_lessons = min(len(track["lessons"]), 2 + len(passed))
+    if len(data["completedLessonIds"]) < required_lessons:
+        raise HTTPException(409, "Visit the required guide before this question.")
     if payload.questionId not in passed and payload.questionId != track["questions"][len(passed)]["id"]:
         raise HTTPException(409, "Complete the earlier question first.")
     correct = payload.answer == question["answer"]

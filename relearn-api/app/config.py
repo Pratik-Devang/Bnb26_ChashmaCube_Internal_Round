@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+LOCAL_DATABASE_PATH = Path(__file__).resolve().parents[2] / "relearn-local.sqlite3"
 
 
 class Settings(BaseSettings):
@@ -15,7 +18,7 @@ class Settings(BaseSettings):
     )
 
     environment: str = "development"
-    database_url: str = "postgresql+psycopg://relearn:relearn@localhost:5432/relearn"
+    database_url: str = f"sqlite+aiosqlite:///{LOCAL_DATABASE_PATH.as_posix()}"
     cors_origins: list[str] = Field(
         default_factory=lambda: [
             "http://localhost:3000",
