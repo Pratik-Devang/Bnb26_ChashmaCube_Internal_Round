@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { diagnoseCode, getExercise } from "@/lib/api";
+import { diagnoseCode, getExercise, requestDiagnosis, submitAttempt } from "@/lib/api";
+import { currentLearnerId } from "@/lib/account";
 import { createPythonCodeRunner, type PythonCodeRunner } from "@/lib/code-runner";
 import type { Exercise, MLDiagnoseResponse, TestResults } from "@/types/learning";
 import styles from "../GameWorld.module.css";
@@ -22,6 +23,7 @@ export function IslandScoutChallenge({ exerciseId, title, reward, alreadyComplet
   const [diagnosis, setDiagnosis] = useState<MLDiagnoseResponse | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "running" | "passed" | "failed">("loading");
   const [error, setError] = useState("");
+  const [syncWarning, setSyncWarning] = useState("");
   const runnerRef = useRef<PythonCodeRunner | null>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
 
@@ -62,11 +64,26 @@ export function IslandScoutChallenge({ exerciseId, title, reward, alreadyComplet
     if (!exercise || !runnerRef.current) return;
     setStatus("running");
     setError("");
+    setSyncWarning("");
     setDiagnosis(null);
 
     try {
       const nextResults = await runnerRef.current.run({ code, testCases: exercise.testCases });
       setResults(nextResults);
+
+      try {
+        const attempt = await submitAttempt({
+          learnerId: currentLearnerId(),
+          exerciseId: exercise.id,
+          submittedCode: code,
+          attemptType: "INITIAL",
+          testResults: nextResults,
+        });
+        await requestDiagnosis(attempt.id);
+      } catch {
+        setSyncWarning("The Scout checked your code, but could not add this attempt to your learning journal. Try submitting once more.");
+      }
+
       if (nextResults.failed === 0 && nextResults.passed > 0) {
         setStatus("passed");
         if (!alreadyCompleted) onComplete();
@@ -132,6 +149,7 @@ export function IslandScoutChallenge({ exerciseId, title, reward, alreadyComplet
               </div>
             ) : null}
             {results ? <div className={styles.testCount}>{results.passed} passed · {results.failed} failed</div> : null}
+            {syncWarning ? <p className={styles.challengeError}>{syncWarning}</p> : null}
             {error ? <p className={styles.challengeError}>{error}</p> : null}
           </aside>
         </div>

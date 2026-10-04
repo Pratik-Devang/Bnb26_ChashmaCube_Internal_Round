@@ -96,6 +96,7 @@ body {
 .island-dashboard-preview { position: relative; min-width: 0; overflow: hidden; border: 3px double #87915f; background: #233729; color: #fff0c5; }
 .island-dashboard-preview::after { content: ""; position: absolute; inset: 0; background: linear-gradient(0deg, #12261ce8 0%, transparent 56%); }
 .island-dashboard-preview img { width: 100%; height: 100%; object-fit: cover; object-position: center 58%; image-rendering: pixelated; transition: transform .25s steps(4); }
+.island-dashboard-preview.next-world-preview img { object-position: center 42%; }
 .island-dashboard-preview:hover img { transform: scale(1.035); }
 .island-dashboard-preview > span { position: absolute; z-index: 1; left: 18px; right: 18px; bottom: 16px; display: flex; justify-content: space-between; align-items: end; gap: 12px; }
 .island-dashboard-preview small { color: #d4dd9c; font: 800 .58rem "Courier New", monospace; letter-spacing: .1em; }
