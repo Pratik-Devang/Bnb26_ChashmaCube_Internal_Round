@@ -1,21 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  conceptStates as defaultConcepts,
-  learner as defaultLearner,
-  learningModules as defaultModules,
-} from "@/lib/mock-data";
 import { getLearnerProgress, getLearningPlan } from "@/lib/api";
 import { Icon } from "@/components/ui/Icon";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { useAccount } from "@/components/auth/AccountProvider";
 import type { Learner, LearnerConceptState, LearningModule } from "@/types/learning";
 
 export function ProgressView() {
-  const [learner, setLearner] = useState<Learner>(defaultLearner);
-  const [modules, setModules] = useState<LearningModule[]>(defaultModules);
-  const [concepts, setConcepts] = useState<LearnerConceptState[]>(defaultConcepts);
+  const account = useAccount();
+  const [learner, setLearner] = useState<Learner>(account.learner);
+  const [modules, setModules] = useState<LearningModule[]>([]);
+  const [concepts, setConcepts] = useState<LearnerConceptState[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
     let isMounted = true;
@@ -23,8 +21,8 @@ export function ProgressView() {
       setIsLoading(true);
       try {
         const [plan, liveConcepts] = await Promise.all([
-          getLearningPlan("learner-demo"),
-          getLearnerProgress("learner-demo"),
+          getLearningPlan(),
+          getLearnerProgress(),
         ]);
         if (isMounted) {
           if (plan) {
@@ -36,7 +34,7 @@ export function ProgressView() {
           }
         }
       } catch {
-        // Fall back gracefully to default seed state
+        if (isMounted) setLoadError("Unable to load your progress. Refresh to retry.");
       } finally {
         if (isMounted) setIsLoading(false);
       }
@@ -51,8 +49,8 @@ export function ProgressView() {
   const loopConcept =
     concepts.find((c) => c.id.includes("boundaries") || c.concept.toLowerCase().includes("loop")) ??
     concepts[2] ??
-    defaultConcepts[2];
-  const loopMastery = loopConcept ? loopConcept.mastery : 64;
+    undefined;
+  const loopMastery = loopConcept ? loopConcept.mastery : 0;
 
   const masteredCount = concepts.filter((c) => c.state === "resolved").length;
   const improvingCount = concepts.filter((c) => c.state === "improving").length;
@@ -61,10 +59,11 @@ export function ProgressView() {
   const averageMastery =
     concepts.length > 0
       ? Math.round(concepts.reduce((acc, c) => acc + c.mastery, 0) / concepts.length)
-      : 64;
+      : 0;
 
   return (
     <main className="route-page progress-page">
+      {loadError && <p role="alert">{loadError}</p>}
       <PageHeader
         eyebrow="YOUR PROGRESS"
         title="Growth you can see"
@@ -81,7 +80,7 @@ export function ProgressView() {
         <div className="progress-hero-copy">
           <span className="page-eyebrow">CURRENT MILESTONE</span>
           <h2>Boundary explorer</h2>
-          <p>You’ve mastered the foundations and are building reliable loop intuition.</p>
+          <p>Your progress grows as you complete challenges and demonstrate understanding.</p>
           <div className="milestone-track">
             <i />
             <i />
@@ -147,20 +146,12 @@ export function ProgressView() {
               <span>THIS WEEK</span>
               <h2>Practice rhythm</h2>
             </div>
-            <strong>92 min</strong>
+            <strong>{concepts.length} concepts explored</strong>
           </div>
-          <div className="history-bars">
-            {[22, 48, 30, 64, 42, 78, 14].map((value, index) => (
-              <div key={index}>
-                <span>{value}m</span>
-                <i style={{ height: `${value}%` }} className={index === 5 ? "highlight" : ""} />
-                <small>{["M", "T", "W", "T", "F", "S", "S"][index]}</small>
-              </div>
-            ))}
-          </div>
+          <p>Your completed challenges will build evidence of understanding here.</p>
           <p className="history-note">
             <Icon name="flame" />
-            Saturday was your strongest focused session.
+            Practice-time tracking is not available yet.
           </p>
         </section>
       </div>

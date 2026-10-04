@@ -81,7 +81,7 @@ class DiagnosisEnvelope(ApiModel):
 
 
 class InterventionComplete(ApiModel):
-    learner_id: str = "learner-demo"
+    learner_id: str
 
 
 class InterventionCompletion(ApiModel):
@@ -93,7 +93,7 @@ class InterventionCompletion(ApiModel):
 
 
 class QuestComplete(ApiModel):
-    learner_id: str = "learner-demo"
+    learner_id: str
 
 
 class QuestRead(ApiModel):

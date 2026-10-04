@@ -2,6 +2,9 @@ from collections.abc import AsyncIterator
 import asyncio
 
 from fastapi.testclient import TestClient
+from fastapi import Depends
+from app.api.accounts import current_user
+from app.models.learner import Learner
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.database import get_session
@@ -26,6 +29,11 @@ def test_complete_learning_workflow(tmp_path) -> None:
 
     asyncio.run(prepare())
     app.dependency_overrides[get_session] = override_session
+    # This test covers the existing learning workflow; real account isolation
+    # is exercised separately in test_accounts.py.
+    async def workflow_user(session: AsyncSession = Depends(get_session)):
+        return await session.get(Learner, "learner-demo")
+    app.dependency_overrides[current_user] = workflow_user
     try:
         with TestClient(app) as client:
             plan = client.get("/api/v1/learning-plan").json()

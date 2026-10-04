@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { conceptStates as defaultConcepts, diagnosis } from "@/lib/mock-data";
+import { diagnosis } from "@/lib/mock-data";
 import { getLearnerProgress } from "@/lib/api";
 import { Icon } from "@/components/ui/Icon";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -17,20 +17,21 @@ const labels: Record<string, string> = {
 };
 
 export function InsightsView() {
-  const [concepts, setConcepts] = useState<LearnerConceptState[]>(defaultConcepts);
+  const [concepts, setConcepts] = useState<LearnerConceptState[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
     let isMounted = true;
     async function fetchProgress() {
       setIsLoading(true);
       try {
-        const live = await getLearnerProgress("learner-demo");
+        const live = await getLearnerProgress();
         if (isMounted && live && live.length > 0) {
           setConcepts(live);
         }
       } catch {
-        // Fall back gracefully to default seed state
+        if (isMounted) setLoadError("Unable to load your insights. Refresh to retry.");
       } finally {
         if (isMounted) setIsLoading(false);
       }
@@ -48,6 +49,7 @@ export function InsightsView() {
 
   return (
     <main className="route-page insights-page">
+      {loadError && <p role="alert">{loadError}</p>}
       <PageHeader
         eyebrow="LEARNING INSIGHTS"
         title="Mistakes with meaning"
@@ -58,7 +60,7 @@ export function InsightsView() {
         <article className="summary-main">
           <span>CONCEPTS CHECKED</span>
           <strong>{checkedCount}</strong>
-          <p>Enough evidence to personalize your loop path.</p>
+          <p>Concepts with evidence from your own attempts.</p>
         </article>
         <article>
           <span className="metric-icon mint">✓</span>
@@ -83,6 +85,7 @@ export function InsightsView() {
         </article>
       </section>
 
+      {concepts.length === 0 && !isLoading && <p>No learning evidence yet. Complete a challenge to start your journal.</p>}
       <div className="insights-grid">
         <section className="surface-card concept-insights">
           <div className="section-heading">
@@ -110,8 +113,8 @@ export function InsightsView() {
           </div>
         </section>
 
-        <section className="diagnosis-spotlight">
-          <span className="page-eyebrow">LATEST INSIGHT</span>
+        <section className="diagnosis-spotlight" aria-label="Example insight">
+          <span className="page-eyebrow">EXAMPLE INSIGHT · NOT YOUR RESULTS</span>
           <div className="spotlight-title">
             <span><PixelSprite character="scout" /></span>
             <div>

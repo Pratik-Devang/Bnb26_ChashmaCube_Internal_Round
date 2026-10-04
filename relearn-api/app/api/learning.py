@@ -8,6 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_session
+from app.api.ownership import require_ownership
 from app.models.attempts import Attempt, Diagnosis
 from app.models.enums import AttemptType, ConceptStatus, QuestStatus
 from app.models.interventions import Intervention, LearnerConceptState
@@ -41,7 +42,7 @@ from app.seed.demo_data import INTERVENTION_CONTENT_BY_CODE
 from app.services.diagnosis_service import RuleBasedDiagnosisProvider
 
 
-router = APIRouter(prefix="/api/v1", tags=["learning"])
+router = APIRouter(prefix="/api/v1", tags=["learning"], dependencies=[Depends(require_ownership)])
 provider = RuleBasedDiagnosisProvider()
 
 
@@ -277,9 +278,10 @@ async def _quest_is_eligible(session: AsyncSession, learner_id: str, quest: Ques
 
 @router.get("/learning-plan", response_model=LearningPlanRead)
 async def learning_plan(
-    learner_id: str = Query(default="learner-demo", alias="learnerId"),
+    learner_id: str | None = Query(default=None, alias="learnerId"),
     session: AsyncSession = Depends(get_session),
 ) -> LearningPlanRead:
+    learner_id = session.info["learner_id"]
     learner = await session.get(Learner, learner_id)
     if learner is None:
         raise _not_found("learner", learner_id)
