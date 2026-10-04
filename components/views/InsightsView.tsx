@@ -8,6 +8,7 @@ import { emptyFirstIslandProgress, loadFirstIslandProgress } from "@/lib/game/fi
 import { Icon } from "@/components/ui/Icon";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { PixelSprite } from "@/components/ui/PixelSprite";
+import { AdventureJournal } from "@/components/dashboard/AdventureJournal";
 import type { FirstIslandProgress } from "@/types/game";
 import type { LearnerConceptState, Misconception } from "@/types/learning";
 
@@ -117,6 +118,9 @@ export function InsightsView() {
         description="This journal uses your own island progress and code attempts—never another learner’s example results."
       />
 
+      <AdventureJournal />
+      <h2>Code-challenge evidence</h2>
+      <p>These diagnosis counts come from submitted code challenges. Topic-adventure reading and question checks appear above.</p>
       <section className="insight-summary" aria-label="Learner evidence summary">
         <article className="summary-main">
           <span>CONCEPTS CHECKED</span>
@@ -128,7 +132,7 @@ export function InsightsView() {
         <article><span className="metric-icon yellow">◎</span><div><strong>{practiceCount}</strong><p>Practice next</p></div></article>
       </section>
 
-      {!islandStarted && concepts.length === 0 && !isLoading ? <p className="insights-empty-note">No learning evidence yet. Visit The First Island to begin your journal.</p> : null}
+      {!islandStarted && concepts.length === 0 && !isLoading ? <p className="insights-empty-note">No code-challenge evidence yet. Topic-adventure progress is tracked separately above.</p> : null}
 
       <div className="insights-grid">
         <section className="surface-card concept-insights">

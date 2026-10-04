@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ChurchWorld } from "@/components/game/ChurchWorld";
+import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "The Chapel of Choices · Re:Learn",
@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function ChurchPage() {
-  return <ChurchWorld />;
+  redirect("/game/church");
 }

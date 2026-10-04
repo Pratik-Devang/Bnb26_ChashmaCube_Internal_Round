@@ -52,3 +52,13 @@
 .number { background: #d4b277; color: #34372d; border-color: #eee9dc; font-family: monospace; }
 .chartFooter { font-family: monospace; font-size: .7rem; }
 .chartFooter span { color: #eee9dc; }
+
+@keyframes islandDrift {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -8px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .landscape { animation: islandDrift 6s ease-in-out infinite; }
+  .destination:nth-child(even) .landscape { animation-delay: -3s; }
+  .worldLink:is(:hover,:focus-visible) .landscape { animation-play-state: paused; }
+}

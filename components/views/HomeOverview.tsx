@@ -7,6 +7,8 @@ import firstIslandMap from "@/2d_assets/First Island/Tiled/Tiled_map.png";
 import ruinedChurchMap from "@/2d_assets/Church/Maps/Ruined_temple_exterior.png";
 import { useAccount } from "@/components/auth/AccountProvider";
 import { AdventureHero } from "@/components/dashboard/AdventureHero";
+import { AdventureSummary } from "@/components/dashboard/AdventureJournal";
+import { loadAdventureJournal, type AdventureProgress } from "@/lib/game/curriculum";
 import { Icon } from "@/components/ui/Icon";
 import { getLearningPlan } from "@/lib/api";
 import { firstIsland, orderedFirstIslandLessons } from "@/lib/game/first-island/content";
@@ -22,18 +24,27 @@ export function HomeOverview() {
   const [islandProgress, setIslandProgress] = useState<FirstIslandProgress>(emptyFirstIslandProgress);
   const [loadingProgress, setLoadingProgress] = useState(true);
   const [error, setError] = useState("");
+  const [recentAdventure, setRecentAdventure] = useState<AdventureProgress | null>(null);
+  const [loadVersion, setLoadVersion] = useState(0);
 
   useEffect(() => {
     let isMounted = true;
 
-    Promise.all([getLearningPlan(), loadFirstIslandProgress()])
-      .then(([plan, progress]) => {
+    setLoadingProgress(true);
+    setError("");
+    Promise.allSettled([getLearningPlan(), loadFirstIslandProgress(), loadAdventureJournal()])
+      .then(([plan, progress, journal]) => {
         if (!isMounted) return;
-        setLearner(plan.learner);
-        setIslandProgress(progress);
-      })
-      .catch(() => {
-        if (isMounted) setError("Your adventure progress could not be loaded. Please refresh to try again.");
+        const failures: string[] = [];
+        if (plan.status === "fulfilled") setLearner(plan.value.learner);
+        else failures.push("Your learning plan could not be loaded.");
+        if (progress.status === "fulfilled") setIslandProgress(progress.value);
+        else failures.push("Your original island save could not be loaded.");
+        if (journal.status === "fulfilled") {
+          const data = journal.value;
+          setRecentAdventure(data.saves.find((save) => save.world === data.recent?.world && save.track === data.recent?.track) ?? null);
+        } else failures.push(journal.reason instanceof Error ? journal.reason.message : "Your topic-adventure save could not be loaded.");
+        setError(failures.join(" "));
       })
       .finally(() => {
         if (isMounted) setLoadingProgress(false);
@@ -42,7 +53,7 @@ export function HomeOverview() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [loadVersion]);
 
   const completedLessons = islandProgress.completedLessonIds.length;
   const hasStarted = completedLessons > 0 || islandProgress.challengeCompleted;
@@ -77,11 +88,11 @@ export function HomeOverview() {
 
   return (
     <main className="route-page home-page">
-      {error && <p className="action-error-banner" role="alert">{error}</p>}
-      <AdventureHero name={learner.name} progress={islandProgress} loading={loadingProgress} />
+      {error && <div className="action-error-banner" role="alert">{error} <button className="quiet-action" disabled={loadingProgress} onClick={() => setLoadVersion((value) => value + 1)}>{loadingProgress ? "Loading…" : "Retry"}</button></div>}
+      <AdventureHero name={learner.name} progress={islandProgress} loading={loadingProgress} recentAdventure={recentAdventure} />
       <div className="adventure-section-heading"><span>YOUR SAVED JOURNEY</span><Link href="/learn">View world map ↗</Link></div>
 
-      <div className="dashboard-grid">
+      {recentAdventure ? <AdventureSummary progress={recentAdventure} /> : <div className="dashboard-grid">
         <section className="plan-workspace" aria-label="Current adventure">
           <div className="plan-toolbar">
             <div><span className="page-eyebrow">CURRENT ADVENTURE</span><h2>Variables &amp; values</h2></div>
@@ -170,7 +181,7 @@ export function HomeOverview() {
             <Link href={islandComplete ? "/game/church" : "/game"} className="notice-board-link">{islandComplete ? "Enter the Chapel of Choices →" : hasStarted ? "Continue island →" : "Begin adventure →"}</Link>
           </section>
         </aside>
-      </div>
+      </div>}
     </main>
   );
 }
