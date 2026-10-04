@@ -1,6 +1,6 @@
 /* Shared journal UI. Game scenes retain their own scoped styles. */
 body {
-  background: repeating-linear-gradient(0deg, #ffffff03 0 1px, transparent 1px 6px), #15251f;
+  background: radial-gradient(ellipse at 50% 0, #385154, transparent 65%), #101d27;
 }
 .product-shell {
   --ink: #302d24;
@@ -17,7 +17,7 @@ body {
   width: min(1540px, calc(100% - 48px));
   border: 3px solid #0b1712;
   border-radius: 0;
-  background: repeating-linear-gradient(0deg, transparent 0 5px, #6a542507 5px 6px), #e9e1c9;
+  background: radial-gradient(ellipse at 90% 0, #2d4d4744, transparent 60%), #172b31;
   box-shadow: 0 0 0 1px #657b59, 12px 14px 0 #09181099;
   backdrop-filter: none;
   color: var(--ink);
@@ -27,7 +27,7 @@ body {
 .product-shell :where(h1,h2,h3) { font-family: Georgia, "Times New Roman", serif; letter-spacing: -.035em; }
 .product-shell :where(.page-eyebrow,.hero-label,.section-heading > span,.section-heading > div > span,.lesson-kicker, .map-card small, .header-chip,.level-pill,.world-number) { font-family: "Courier New", monospace; font-weight: 800; letter-spacing: .1em; }
 .product-shell :where(a,button,input,select,textarea):focus-visible { outline: 3px solid #ae6f21; outline-offset: 4px; }
-.product-header { background: #233a2e; border-bottom: 4px solid #9c8047; color: #f9edcb; min-height: 84px; padding: 0 28px; backdrop-filter: none; gap: 12px; }
+.product-header { background: repeating-linear-gradient(0deg, #ffffff03 0 2px, transparent 2px 7px), #263b35; border-bottom: 4px double #b89b58; color: #f9edcb; min-height: 90px; padding: 0 28px; backdrop-filter: none; gap: 12px; }
 .guild-emblem { display: grid; place-items: center; width: 36px; height: 40px; border: 3px double #d5b767; background: #121f18; color: #ebce87; font: bold 25px Georgia, serif; box-shadow: 3px 3px 0 #0b160f; }
 .brand { font-family: "Courier New", monospace; font-size: 1.4rem; letter-spacing: -.075em; }
 .brand span { color: #d4d77c; }
@@ -43,17 +43,18 @@ body {
 .header-portrait .pixel-character { transform: scale(.75); flex-shrink: 0; }
 .page-stage { width: min(1400px, calc(100% - 64px)); }
 .route-page { padding-top: 30px; }
-.page-heading { border-bottom: 1px solid #bcb395; padding-bottom: 22px; margin-bottom: 24px; }
+.page-heading { border-bottom: 1px solid #54654f; padding-bottom: 22px; margin-bottom: 24px; color: #f4edcf; }
 .page-heading h1 { font-size: clamp(2.1rem, 3vw, 3.1rem); margin-block: 7px 10px; font-weight: 700; }
-.page-heading p { font-size: .9rem; color: #66654f; }
+.page-heading p { font-size: .9rem; color: #b3c3b6; }
+.product-shell .page-heading .page-eyebrow { color: #c2d184; }
 .page-eyebrow,.section-heading span { color: #596741; }
-.guild-footer { display: flex; justify-content: space-between; margin: 0 32px; padding: 18px 0 0; border-top: 1px solid #b9ad8d; color: #706d54; font: bold .6rem "Courier New", monospace; letter-spacing: .1em; }
+.guild-footer { display: flex; justify-content: space-between; margin: 0 32px; padding: 18px 0 0; border-top: 1px solid #53654e; color: #aebd9d; font: bold .6rem "Courier New", monospace; letter-spacing: .1em; }
 .pixel-character { display: inline-block; width: 64px; height: 64px; background-repeat: no-repeat; background-size: auto 64px; image-rendering: pixelated; animation: journal-sprite 1.3s infinite; }
 @keyframes journal-sprite { to { background-position: var(--sheet-end) 0; } }
 
 /* Illustrated destinations give the home page a real sense of place. */
-.world-destinations { display: grid; grid-template-columns: 1.4fr 1fr; gap: 20px; margin-bottom: 28px; }
-.world-postcard { position: relative; display: flex; align-items: end; min-height: 290px; overflow: hidden; border: 3px solid #31462f; background: #203c2b; box-shadow: 5px 5px 0 #302d2333; }
+.world-destinations { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; margin-bottom: 28px; }
+.world-postcard { position: relative; display: flex; align-items: end; min-height: 320px; overflow: hidden; border: 4px double #bd9c57; background: #203c2b; box-shadow: 5px 5px 0 #07181d88; }
 .world-postcard-art { position: absolute; width: 100%; height: 100%; inset: 0; object-fit: cover; image-rendering: pixelated; object-position: center 42%; transition: transform .3s steps(6); }
 .world-postcard::after { content: ""; position: absolute; inset: 0; background: linear-gradient(0deg, #102c20 0%, #102c20df 26%, #102c2020 80%); pointer-events: none; }
 .church-postcard { background: #27382e; }
