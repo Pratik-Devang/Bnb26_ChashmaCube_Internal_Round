@@ -21,13 +21,9 @@ import { ChurchMapCanvas } from "../ChurchMapCanvas";
 import { ChurchExteriorCanvas } from "../ChurchExteriorCanvas";
 import { useAccount } from "@/components/auth/AccountProvider";
 import { CharacterDialogue, type CharacterConversation, type DialoguePortrait } from "../dialogs/CharacterDialogue";
-<<<<<<< HEAD
-import { answerAdventureQuestion, finishAdventureLesson, topicNames, worldPath, type AdventureProgress, type AdventureWorld, type CurriculumTrack } from "@/lib/game/curriculum";
-import { PracticeArenaModal } from "@/components/practice/PracticeArenaModal";
-=======
 import { IslandScoutChallenge } from "../dialogs/IslandScoutChallenge";
 import { answerAdventureQuestion, completeAdventureCodeQuestion, finishAdventureLesson, topicNames, worldPath, type AdventureProgress, type AdventureWorld, type CurriculumTrack } from "@/lib/game/curriculum";
->>>>>>> origin/integration/end-to-end-demo
+import { PracticeArenaModal } from "@/components/practice/PracticeArenaModal";
 import styles from "./Adventure.module.css";
 
 type Position = { x: number; y: number };

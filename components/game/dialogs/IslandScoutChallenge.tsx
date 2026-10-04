@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { getExercise, requestDiagnosis, submitAttempt } from "@/lib/api";
 import { currentLearnerId } from "@/lib/account";
 import { createPythonCodeRunner, type PythonCodeRunner } from "@/lib/code-runner";
+import { PixelSprite } from "@/components/ui/PixelSprite";
 import type { DiagnosisResponse, Exercise, TestResults } from "@/types/learning";
 import styles from "../GameWorld.module.css";
 
@@ -174,6 +175,16 @@ export function IslandScoutChallenge({ exerciseId, exerciseOverride, hint, recor
     }
   };
 
+  const insertIndent = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key !== "Tab") return;
+    event.preventDefault();
+    const field = event.currentTarget;
+    const start = field.selectionStart;
+    const end = field.selectionEnd;
+    setCode(`${code.slice(0, start)}    ${code.slice(end)}`);
+    requestAnimationFrame(() => field.setSelectionRange(start + 4, start + 4));
+  };
+
   return (
     <div className={styles.dialogScrim} role="presentation" onMouseDown={onClose}>
       <section
@@ -190,24 +201,35 @@ export function IslandScoutChallenge({ exerciseId, exerciseOverride, hint, recor
 
         <div className={styles.challengeGrid}>
           <div className={styles.challengeEditor}>
-            <p>{exercise?.prompt ?? "The Island Scout is preparing your challenge..."}</p>
-            <textarea
-              value={code}
-              onChange={(event) => setCode(event.target.value)}
-              aria-label="Python solution"
-              spellCheck={false}
-              disabled={status === "loading" || status === "running"}
-            />
-            <button type="button" className={styles.primaryAction} onClick={runChallenge} disabled={!exercise || status === "running"}>
-              {status === "running" ? "Scout is checking..." : "Submit to the Scout"}
-            </button>
+            <div className={styles.challengeBrief}><span>YOUR TASK</span><p>{exercise?.prompt ?? `${guideName} is preparing your challenge...`}</p></div>
+            <div className={styles.codeWorkbench}>
+              <div className={styles.editorBar}><span className={styles.editorLights}><i /><i /><i /></span><strong>solution.py</strong><small>PYTHON 3</small></div>
+              <div className={styles.editorSurface}>
+                <div className={styles.lineNumbers} aria-hidden="true">{code.split("\n").map((_, index) => <span key={index}>{index + 1}</span>)}</div>
+                <textarea
+                  value={code}
+                  onChange={(event) => setCode(event.target.value)}
+                  onKeyDown={insertIndent}
+                  aria-label="Python solution"
+                  spellCheck={false}
+                  disabled={status === "loading" || status === "running"}
+                />
+              </div>
+              <div className={styles.editorFooter}><span><i /> AUTOSAVED LOCALLY</span><span>Tab inserts 4 spaces</span></div>
+            </div>
+            <div className={styles.challengeActions}>
+              <span>Run all {exercise?.testCases.length ?? 3} hidden checks before submitting.</span>
+              <button type="button" className={styles.primaryAction} onClick={runChallenge} disabled={!exercise || status === "running"}>
+                <b aria-hidden="true">▶</b>{status === "running" ? "Running tests..." : `Run ${exercise?.testCases.length ?? 3} tests`}
+              </button>
+            </div>
           </div>
 
           <aside className={styles.scoutFeedback}>
-            <span>{guideName.toUpperCase()}</span>
-            {status === "loading" ? <p>“Let me prepare the trial.”</p> : null}
-            {status === "ready" ? <p>“Use everything the island taught you. I’ll inspect the result, not just the final answer.”</p> : null}
-            {status === "running" ? <p>“I’m tracing your code now...”</p> : null}
+            <div className={styles.feedbackGuide}><PixelSprite character="scout" /><div><small>TRIAL KEEPER</small><strong>{guideName}</strong></div></div>
+            {status === "loading" ? <div className={styles.statusCard}><small>PREPARING</small><p>“Let me prepare the trial.”</p></div> : null}
+            {status === "ready" ? <div className={styles.statusCard}><small>READY FOR YOUR CODE</small><p>“Use everything the guides taught you. I’ll inspect every test, not just one answer.”</p></div> : null}
+            {status === "running" ? <div className={`${styles.statusCard} ${styles.runningCard}`}><small>TRACING YOUR CODE</small><p>“I’m following each value through the program...”</p><i /></div> : null}
             {status === "passed" ? (
               <div className={styles.challengeSuccess}>
                 <strong>Trial complete!</strong>
@@ -223,7 +245,7 @@ export function IslandScoutChallenge({ exerciseId, exerciseOverride, hint, recor
                 {diagnosis.check ? <em>{diagnosis.check}</em> : null}
               </div>
             ) : null}
-            {results ? <div className={styles.testCount}>{results.passed} passed · {results.failed} failed</div> : null}
+            {results ? <div className={styles.testResults}><div><strong>TEST RUN</strong><span>{results.passed}/{results.cases.length} passed</span></div>{results.cases.map((item, index) => <span key={index} className={item.passed ? styles.testPassed : styles.testFailed}><b>{item.passed ? "✓" : "×"}</b> Case {String(index + 1).padStart(2, "0")}</span>)}</div> : null}
             {syncWarning ? <p className={styles.challengeError}>{syncWarning}</p> : null}
             {error ? <p className={styles.challengeError}>{error}</p> : null}
           </aside>
