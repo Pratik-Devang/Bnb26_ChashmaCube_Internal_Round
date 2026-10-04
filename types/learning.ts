@@ -236,9 +236,22 @@ export interface ReassessmentResult {
   misconception_id: number;
 }
 
+export interface AlternativeItem {
+  misconception_id?: number;
+  misconception: string;
+  confidence?: "high" | "medium" | "low" | string;
+  score?: number;
+  id?: number;
+}
+
 export interface MLDiagnoseResponse {
-  top_prediction: PredictionItem;
-  alternatives: PredictionItem[];
-  intervention: InterventionDetail;
-  reassessment: ReassessmentResult | null;
+  misconception_id?: number;
+  misconception?: string;
+  confidence?: "high" | "medium" | "low" | string;
+  evidence?: string;
+  alternatives?: AlternativeItem[];
+  model_confident?: boolean;
+  top_prediction?: PredictionItem;
+  intervention?: InterventionDetail;
+  reassessment?: ReassessmentResult | null;
 }
