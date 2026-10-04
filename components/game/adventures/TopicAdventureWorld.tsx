@@ -21,6 +21,7 @@ import { ChurchExteriorCanvas } from "../ChurchExteriorCanvas";
 import { useAccount } from "@/components/auth/AccountProvider";
 import { CharacterDialogue, type CharacterConversation, type DialoguePortrait } from "../dialogs/CharacterDialogue";
 import { answerAdventureQuestion, finishAdventureLesson, topicNames, worldPath, type AdventureProgress, type AdventureWorld, type CurriculumTrack } from "@/lib/game/curriculum";
+import { PracticeArenaModal } from "@/components/practice/PracticeArenaModal";
 import styles from "./Adventure.module.css";
 
 type Position = { x: number; y: number };
@@ -70,6 +71,7 @@ export function TopicAdventureWorld({ world, track, initialProgress }: { world: 
       "Use WASD or the arrow keys to move. Walk close to a guide and press E or click them to talk. Lessons earn 10 coins each; finish both checks for 50 more. Your journal is saved to your account.",
     ],
   }));
+  const [arenaOpen, setArenaOpen] = useState(false);
   const [choice, setChoice] = useState<number | null>(null);
   const [feedback, setFeedback] = useState("");
   const [busy, setBusy] = useState(false);
@@ -176,7 +178,25 @@ export function TopicAdventureWorld({ world, track, initialProgress }: { world: 
   }
 
   return <main className={styles.world}>
-    <header className={styles.hud}><Link href={worldPath(world)}>← Change topic</Link><div><small>{chapel ? "CHAPEL OF CHOICES" : "THE FIRST ISLAND"}</small><strong>{topicNames[track.topic]} / {track.difficulty}</strong></div><span>{progress.coinsEarned} coins</span><Link href="/">Dashboard</Link></header>
+    <header className={styles.hud}>
+      <div className={styles.hudLeft}>
+        <Link href={worldPath(world)}>← Change topic</Link>
+        <div><small>{chapel ? "CHAPEL OF CHOICES" : "THE FIRST ISLAND"}</small><strong>{topicNames[track.topic]} / {track.difficulty}</strong></div>
+      </div>
+
+      <div className={styles.hudCenter}>
+        <div className={styles.fireWrapper}>
+          <button type="button" className={styles.fireButton} onClick={() => setArenaOpen(true)}>
+            Quiz
+          </button>
+        </div>
+      </div>
+
+      <div className={styles.hudRight}>
+        <span>{progress.coinsEarned} coins</span>
+        <Link href="/">Dashboard</Link>
+      </div>
+    </header>
     <div className={styles.objective}><span>{progress.completed ? "ADVENTURE COMPLETE" : `NEXT: ${nextGuide.name}`}</span><strong>{progress.completedLessonIds.length}/3 lessons · {progress.passedQuestionIds.length}/2 checks</strong></div>
     <section className={`${styles.map} ${chapel ? styles.chapelMap : ""}`} style={chapel ? { aspectRatio: viewport.ratio, width: `min(100%, calc(max(520px, 100dvh - 190px) * ${viewport.ratio}))` } : undefined} aria-label="Learning adventure map" tabIndex={0}>
       <div className={chapel ? styles.scenePlane : styles.islandPlane} style={chapel ? viewport.plane : undefined}>
@@ -198,5 +218,6 @@ export function TopicAdventureWorld({ world, track, initialProgress }: { world: 
       {error && <p className={styles.error} role="alert">{error}</p>}
       {lesson ? <><h2>{lesson.title}</h2><p>{lesson.body}</p><pre><code>{lesson.code}</code></pre><aside>{lesson.takeaway}</aside><button className={styles.primary} disabled={busy} onClick={finishLesson}>{busy ? "Saving…" : progress.completedLessonIds.includes(lesson.id) ? "Return to the trail" : "Finish lesson · +10 coins"}</button></> : progress.completed ? <><h2>Adventure complete!</h2><p>You finished the lessons and both checks for {topicNames[track.topic]} ({track.difficulty}).</p><p>80 coins earned in this adventure. This is practice evidence; lasting understanding takes more than one session.</p>{feedback && <p role="status">{feedback}</p>}<Link className={styles.primary} href={worldPath(world)}>Choose another topic or difficulty →</Link></> : question ? <><small>{question.kind === "transfer" ? "TRANSFER CHECK / A NEW CONTEXT" : "FINAL TRIAL"}</small><h2>{question.prompt}</h2>{feedback && <aside role="status">{feedback}</aside>}<pre><code>{question.code}</code></pre><fieldset disabled={busy}><legend>Choose your answer</legend>{question.options.map((answer, index) => <label className={`${styles.answer} ${choice === index ? styles.selected : ""}`} key={`${question.id}-${index}`}><input type="radio" name="answer" checked={choice === index} onChange={() => setChoice(index)} />{answer}</label>)}</fieldset><button className={styles.primary} disabled={busy || choice === null} onClick={submitAnswer}>{busy ? "Checking…" : "Check answer"}</button></> : null}
     </dialog>
+    <PracticeArenaModal isOpen={arenaOpen} onClose={() => setArenaOpen(false)} initialDifficulty={(track.difficulty as any) || "easy"} />
   </main>;
 }
