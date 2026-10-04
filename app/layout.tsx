@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import "./pixel-theme.css";
 import { AppFrame } from "@/components/navigation/AppFrame";
+import { AccountProvider } from "@/components/auth/AccountProvider";
 
 export const metadata: Metadata = {
   title: "re:learn · Turn mistakes into mastery",
@@ -12,7 +13,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body><AppFrame>{children}</AppFrame></body>
+      <body><AccountProvider><AppFrame>{children}</AppFrame></AccountProvider></body>
     </html>
   );
 }

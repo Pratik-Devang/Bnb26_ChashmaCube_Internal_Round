@@ -48,7 +48,7 @@ def create_app() -> FastAPI:
     async def validation_error(_request: Request, error: RequestValidationError) -> JSONResponse:
         return JSONResponse(
             status_code=422,
-            content={"code": "VALIDATION_ERROR", "message": "The request payload is invalid.", "details": {"errors": error.errors()}},
+            content={"code": "VALIDATION_ERROR", "message": "The request payload is invalid.", "details": {"errors": [{"loc": item["loc"], "msg": item["msg"], "type": item["type"]} for item in error.errors()]}},
         )
     return app
 

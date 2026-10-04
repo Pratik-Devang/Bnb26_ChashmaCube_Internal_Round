@@ -44,8 +44,15 @@ export function FirstIslandWorld() {
   const [isMoving, setIsMoving] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const movementTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [saveReady, setSaveReady] = useState(false);
+  const [saveError, setSaveError] = useState("");
+  const [saving, setSaving] = useState(false);
 
-  useEffect(() => setProgress(loadFirstIslandProgress()), []);
+  useEffect(() => {
+    let active = true;
+    loadFirstIslandProgress().then((saved) => { if (active) { setProgress(saved); setSaveReady(true); } }).catch(() => { if (active) setSaveError("Could not load your island save. Refresh to try again."); });
+    return () => { active = false; };
+  }, []);
 
   const nextTeacher = useMemo(
     () => orderedFirstIslandLessons.find((actor) => actor.lesson && !progress.completedLessonIds.includes(actor.lesson.id)),
@@ -55,9 +62,14 @@ export function FirstIslandWorld() {
   const completedStops = progress.completedLessonIds.length + (progress.challengeCompleted ? 1 : 0);
   const discovery = Math.round((completedStops / totalStops) * 100);
 
-  const updateProgress = useCallback((next: FirstIslandProgress) => {
-    setProgress(next);
-    saveFirstIslandProgress(next);
+  const updateProgress = useCallback(async (next: FirstIslandProgress) => {
+    setSaving(true);
+    try {
+      const saved = await saveFirstIslandProgress(next);
+      setProgress(saved);
+      setSaveError("");
+    } catch { setSaveError("Your progress was not saved. Please retry this lesson or challenge."); }
+    finally { setSaving(false); }
   }, []);
 
   const interactWithActor = useCallback((actor: IslandActor) => {
@@ -91,7 +103,7 @@ export function FirstIslandWorld() {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
-      if (target?.matches("textarea, input, select, button") || selectedActor || challengeOpen) return;
+      if (target?.matches("textarea, input, select, button") || selectedActor || challengeOpen || !saveReady || saving) return;
       const key = event.key.toLowerCase();
       const movement: Record<string, MapPosition> = {
         arrowup: { x: 0, y: -1.25 }, w: { x: 0, y: -1.25 }, arrowdown: { x: 0, y: 1.25 }, s: { x: 0, y: 1.25 },
@@ -111,7 +123,7 @@ export function FirstIslandWorld() {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [challengeOpen, interactWithActor, playerPosition, selectedActor]);
+  }, [challengeOpen, interactWithActor, playerPosition, selectedActor, saveReady, saving]);
 
   useEffect(() => () => { if (movementTimer.current) clearTimeout(movementTimer.current); }, []);
 
@@ -136,8 +148,12 @@ export function FirstIslandWorld() {
     ? `Find ${nextTeacher.name} · Lesson ${nextTeacher.lesson?.order} of ${orderedFirstIslandLessons.length}`
     : progress.challengeCompleted ? "The First Island is complete" : "Report to the Island Scout for the final trial";
 
+  if (!saveReady) return <main className={styles.gameRoot}><p role="status">{saveError || "Loading your island journal…"}</p><Link href="/learn">Return to learning path</Link></main>;
+
   return (
     <main className={styles.gameRoot}>
+      {saveError && <p role="alert">{saveError}</p>}
+      {saving && <p role="status">Saving your progress…</p>}
       <div className={styles.ambientGlow} aria-hidden="true" />
       <header className={styles.topBar}>
         <Link href="/learn" className={styles.gameBrand} aria-label="Return to learning path"><span className={styles.brandMark}>R</span><span><strong>Re:Learn</strong><small>THE FIRST ISLAND</small></span></Link>

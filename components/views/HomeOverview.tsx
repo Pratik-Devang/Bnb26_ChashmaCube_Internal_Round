@@ -3,29 +3,30 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import {
-  learner as defaultLearner,
   learningModules as defaultModules,
-  quests as defaultQuests,
   statistics as defaultStatistics,
 } from "@/lib/mock-data";
 import { completeQuest, getLearningPlan } from "@/lib/api";
 import { Icon } from "@/components/ui/Icon";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { WorldDestinations } from "@/components/dashboard/WorldDestinations";
+import { useAccount } from "@/components/auth/AccountProvider";
 import type { DashboardStatistics, Learner, LearningModule, Quest } from "@/types/learning";
 
 export function HomeOverview() {
-  const [learner, setLearner] = useState<Learner>(defaultLearner);
-  const [modules, setModules] = useState<LearningModule[]>(defaultModules);
-  const [quests, setQuests] = useState<Quest[]>(defaultQuests);
-  const [statistics, setStatistics] = useState<DashboardStatistics>(defaultStatistics);
+  const account = useAccount();
+  const [learner, setLearner] = useState<Learner>(account.learner);
+  const [modules, setModules] = useState<LearningModule[]>(defaultModules.map((item) => ({ ...item, progress: 0, status: "upcoming" })));
+  const [quests, setQuests] = useState<Quest[]>([]);
+  const [statistics, setStatistics] = useState<DashboardStatistics>({ ...defaultStatistics, mastered: 0, inProgress: 0 });
+  const [error, setError] = useState("");
   const [completingQuestId, setCompletingQuestId] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
     async function fetchPlan() {
       try {
-        const plan = await getLearningPlan("learner-demo");
+        const plan = await getLearningPlan();
         if (isMounted && plan) {
           setLearner(plan.learner);
           setModules(plan.modules);
@@ -33,7 +34,7 @@ export function HomeOverview() {
           setStatistics(plan.statistics);
         }
       } catch {
-        // Fallback gracefully to default seed state
+        if (isMounted) setError("Your progress could not be loaded. Please refresh to try again.");
       }
     }
     fetchPlan();
@@ -54,18 +55,8 @@ export function HomeOverview() {
         ...prev,
         xp: result.learnerXp,
       }));
-    } catch {
-      // Optimistic completion in mock fallback mode
-      setQuests((items) =>
-        items.map((item) => (item.id === questId ? { ...item, status: "completed" } : item))
-      );
-      const quest = quests.find((q) => q.id === questId);
-      if (quest) {
-        setLearner((prev) => ({
-          ...prev,
-          xp: prev.xp + quest.xpReward,
-        }));
-      }
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Unable to claim this quest.");
     } finally {
       setCompletingQuestId(null);
     }
@@ -73,10 +64,11 @@ export function HomeOverview() {
 
   const activeLesson = modules.find((item) => item.status === "active") ?? modules[2] ?? defaultModules[2];
   const completedCount = quests.filter((quest) => quest.status === "completed").length;
-  const loopMastery = activeLesson.progress || 64;
+  const loopMastery = activeLesson.progress ?? 0;
 
   return (
     <main className="route-page home-page">
+      {error && <p role="alert">{error}</p>}
       <PageHeader
         eyebrow={`WELCOME BACK, ${learner.name.toUpperCase()} / PYTHON FOUNDATIONS`}
         title="Your next adventure awaits."
@@ -129,13 +121,12 @@ export function HomeOverview() {
           <div className="home-support-grid">
             <Link href="/insights" className="misconception-signal">
               <span className="support-icon"><Icon name="brain" /></span>
-              <div><small>LATEST LEARNING SIGNAL</small><strong>Range stops before the final value</strong><p>Your last answer shows exactly what to practice next.</p></div>
+              <div><small>YOUR LEARNING JOURNAL</small><strong>Discover what your answers reveal</strong><p>Review understanding across your own attempts.</p></div>
               <b>Review</b>
             </Link>
             <section className="practice-pulse" aria-label="Practice rhythm">
-              <div><small>FOCUS RHYTHM</small><strong>5 sessions this week</strong></div>
-              <div className="pulse-bars">{[38, 62, 28, 74, 53, 88, 18].map((height, index) => <i key={index} className={index === 5 ? "peak" : ""} style={{ height: `${height}%` }} />)}</div>
-              <span>92 min</span>
+              <div><small>YOUR ADVENTURE</small><strong>{statistics.mastered} concepts mastered</strong></div>
+              <span>{learner.xp} XP</span>
             </section>
           </div>
         </section>
@@ -172,8 +163,8 @@ export function HomeOverview() {
           </section>
 
           <section className="week-strip" aria-label="Practice this week">
-            <div><span className="page-eyebrow">THIS WEEK</span><strong>92 min</strong></div>
-            <div className="week-dots">{[1, 1, 1, 1, 1, 1, 0].map((done, index) => <span key={index} className={done ? "done" : ""}>{["M", "T", "W", "T", "F", "S", "S"][index]}</span>)}</div>
+            <div><span className="page-eyebrow">YOUR ACCOUNT</span><strong>Level {learner.level}</strong></div>
+            <p>Explore a world to continue your personal journey.</p>
           </section>
         </aside>
       </div>

@@ -15,6 +15,7 @@ import {
   submitReassessment,
 } from "@/lib/api";
 import { createPythonCodeRunner, type PythonCodeRunner } from "@/lib/code-runner";
+import { currentLearnerId } from "@/lib/account";
 import type {
   AttemptResponse,
   AttemptType,
@@ -211,7 +212,7 @@ export function ExerciseWorkspace({ exerciseId }: Props) {
       if (reassessmentType === "INITIAL" || !activeInterventionId) {
         // Standard initial attempt submission
         const attempt = await submitAttempt({
-          learnerId: "learner-demo",
+          learnerId: currentLearnerId(),
           exerciseId: exercise.id,
           submittedCode: code,
           learnerExplanation: explanation.trim() || undefined,
@@ -236,7 +237,7 @@ export function ExerciseWorkspace({ exerciseId }: Props) {
       } else {
         // Reassessment submission (Near or Far Transfer)
         const reassessResponse = await submitReassessment({
-          learnerId: "learner-demo",
+          learnerId: currentLearnerId(),
           exerciseId: exercise.id,
           submittedCode: code,
           learnerExplanation: explanation.trim() || undefined,
@@ -278,7 +279,7 @@ export function ExerciseWorkspace({ exerciseId }: Props) {
   // Complete intervention mini-game
   const handleCompleteIntervention = async () => {
     if (!activeInterventionId) return;
-    const result = await completeIntervention(activeInterventionId, "learner-demo");
+    const result = await completeIntervention(activeInterventionId);
     if (result.nearTransferExerciseId) {
       setActiveInterventionContent((prev) => ({
         type: prev?.type ?? "RANGE_PATH_GAME",

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { learner } from "@/lib/mock-data";
+import { useAccount } from "@/components/auth/AccountProvider";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { PixelSprite } from "@/components/ui/PixelSprite";
 
@@ -15,6 +15,7 @@ const navigation: { href: string; label: string; icon: IconName }[] = [
 ];
 
 export function AppFrame({ children }: { children: ReactNode }) {
+  const { learner } = useAccount();
   const pathname = usePathname();
 
   if (pathname.startsWith("/game")) {

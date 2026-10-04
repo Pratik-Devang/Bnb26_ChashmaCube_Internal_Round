@@ -2,6 +2,18 @@
 body {
   background: radial-gradient(ellipse at 50% 0, #385154, transparent 65%), #101d27;
 }
+.account-screen { min-height: 100vh; display: grid; place-items: center; padding: 40px; color: #f2e8c4; }
+.account-panel { width: min(480px, 100%); padding: 32px; border: 5px double #a99051; background: #203c32; box-shadow: 12px 12px #0b171b; }
+.account-kicker { display: block; font: bold .6rem "Courier New", monospace; letter-spacing: .12em; color: #c9d789; }
+.account-panel h1 { margin: 12px 0; font: bold 2rem Georgia, serif; }
+.account-panel p { color: #d0d8bb; font-size: .85rem; }
+.account-panel form { display: grid; gap: 16px; margin-top: 25px; }
+.account-panel label { display: grid; gap: 6px; font-size: .8rem; }
+.account-panel input { width: 100%; padding: 12px; background: #fcf0ce; color: #243629; border: 2px solid #b5a06b; border-radius: 0; }
+.account-panel button { padding: 12px; background: #d5bd76; border: 2px solid #f0dea4; color: #233a2e; font-weight: 800; cursor: pointer; }
+.account-panel button:disabled { opacity: .6; cursor: wait; }
+.account-panel .account-switch { display: block; width: 100%; margin-top: 18px; background: transparent; color: #e6d998; border: 0; font-size: .8rem; }
+.account-panel .account-error { color: #ffb9aa; }
 .product-shell {
   --ink: #302d24;
   --paper: #e9e1c9;
