@@ -8,6 +8,7 @@ import {
   quests as initialQuests,
   statistics,
 } from "./mock-data";
+import { accountApiBase, currentLearnerId } from "./account";
 import type {
   AttemptRequest,
   AttemptResponse,
@@ -42,9 +43,10 @@ export class ApiError extends Error {
 }
 
 /** Base URL for the FastAPI service. When omitted or blank, mock mode is active. */
-export const NEXT_PUBLIC_API_BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL ?? "").trim();
+export const NEXT_PUBLIC_API_BASE_URL = accountApiBase;
 
-const isMockMode = !NEXT_PUBLIC_API_BASE_URL;
+// Account data must never fall back to the shared demo learner.
+const isMockMode = false;
 
 const mockDelay = <T,>(value: T, delayMs = 180): Promise<T> =>
   new Promise((resolve) => setTimeout(() => resolve(value), delayMs));
@@ -65,9 +67,12 @@ async function apiFetch<T>(endpoint: string, init?: RequestInit): Promise<T> {
   try {
     response = await fetch(url, {
       ...init,
+      credentials: "include",
+      cache: "no-store",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
+        "X-Learner-Id": currentLearnerId(),
         ...init?.headers,
       },
     });
@@ -89,6 +94,7 @@ async function apiFetch<T>(endpoint: string, init?: RequestInit): Promise<T> {
   }
 
   if (!response.ok) {
+    if (response.status === 401 && typeof window !== "undefined") window.dispatchEvent(new Event("relearn:session-expired"));
     if (json && typeof json === "object") {
       const data = json as Record<string, unknown>;
       if (typeof data.code === "string" && typeof data.message === "string") {
@@ -129,10 +135,11 @@ async function apiFetch<T>(endpoint: string, init?: RequestInit): Promise<T> {
     );
   }
 
+  if (init?.method === "POST" && typeof window !== "undefined") window.dispatchEvent(new Event("relearn:account-updated"));
   return json as T;
 }
 
-export async function getLearningPlan(learnerId = "learner-demo"): Promise<LearningPlanResponse> {
+export async function getLearningPlan(learnerId = currentLearnerId()): Promise<LearningPlanResponse> {
   if (isMockMode) {
     return mockDelay({
       learner,
@@ -141,7 +148,12 @@ export async function getLearningPlan(learnerId = "learner-demo"): Promise<Learn
       statistics,
     });
   }
-  return apiFetch<LearningPlanResponse>(`/api/v1/learning-plan?learnerId=${encodeURIComponent(learnerId)}`);
+  const plan = await apiFetch<LearningPlanResponse>(`/api/v1/learning-plan?learnerId=${encodeURIComponent(learnerId)}`);
+  return {
+    ...plan,
+    modules: plan.modules.map((item) => ({ ...item, status: String(item.status) === "RESOLVED" ? "completed" : ["IMPROVING", "NEEDS_PRACTICE"].includes(String(item.status)) ? "active" : "upcoming" })),
+    quests: plan.quests.map((item) => ({ ...item, status: String(item.status).toLowerCase() as Quest["status"] })),
+  };
 }
 
 export async function getExercise(exerciseId: string): Promise<Exercise> {
@@ -244,7 +256,7 @@ export async function selectIntervention(diagnosisId: string): Promise<Intervent
 
 export async function completeIntervention(
   interventionId: string,
-  learnerId = "learner-demo"
+  learnerId = currentLearnerId()
 ): Promise<InterventionCompletion> {
   if (isMockMode) {
     return mockDelay({
@@ -296,7 +308,7 @@ export async function submitReassessment(payload: ReassessmentRequest): Promise<
   });
 }
 
-export async function getLearnerProgress(learnerId = "learner-demo"): Promise<LearnerConceptState[]> {
+export async function getLearnerProgress(learnerId = currentLearnerId()): Promise<LearnerConceptState[]> {
   if (isMockMode) {
     return mockDelay(conceptStates);
   }
@@ -326,14 +338,14 @@ export async function getLearnerProgress(learnerId = "learner-demo"): Promise<Le
   });
 }
 
-export async function getQuests(learnerId = "learner-demo"): Promise<Quest[]> {
+export async function getQuests(learnerId = currentLearnerId()): Promise<Quest[]> {
   if (isMockMode) {
     return mockDelay(mockQuestsState);
   }
   return apiFetch<Quest[]>(`/api/v1/learners/${encodeURIComponent(learnerId)}/quests`);
 }
 
-export async function completeQuest(questId: string, learnerId = "learner-demo"): Promise<QuestCompletion> {
+export async function completeQuest(questId: string, learnerId = currentLearnerId()): Promise<QuestCompletion> {
   if (isMockMode) {
     const quest = mockQuestsState.find((item) => item.id === questId);
     if (!quest) throw new ApiError(`Quest '${questId}' not found`, "QUEST_NOT_FOUND", 404);

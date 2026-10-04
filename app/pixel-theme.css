@@ -2,6 +2,18 @@
 body {
   background: radial-gradient(ellipse at 50% 0, #385154, transparent 65%), #101d27;
 }
+.account-screen { min-height: 100vh; display: grid; place-items: center; padding: 40px; color: #f2e8c4; }
+.account-panel { width: min(480px, 100%); padding: 32px; border: 5px double #a99051; background: #203c32; box-shadow: 12px 12px #0b171b; }
+.account-kicker { display: block; font: bold .6rem "Courier New", monospace; letter-spacing: .12em; color: #c9d789; }
+.account-panel h1 { margin: 12px 0; font: bold 2rem Georgia, serif; }
+.account-panel p { color: #d0d8bb; font-size: .85rem; }
+.account-panel form { display: grid; gap: 16px; margin-top: 25px; }
+.account-panel label { display: grid; gap: 6px; font-size: .8rem; }
+.account-panel input { width: 100%; padding: 12px; background: #fcf0ce; color: #243629; border: 2px solid #b5a06b; border-radius: 0; }
+.account-panel button { padding: 12px; background: #d5bd76; border: 2px solid #f0dea4; color: #233a2e; font-weight: 800; cursor: pointer; }
+.account-panel button:disabled { opacity: .6; cursor: wait; }
+.account-panel .account-switch { display: block; width: 100%; margin-top: 18px; background: transparent; color: #e6d998; border: 0; font-size: .8rem; }
+.account-panel .account-error { color: #ffb9aa; }
 .product-shell {
   --ink: #302d24;
   --paper: #e9e1c9;
@@ -63,6 +75,7 @@ body {
 .church-postcard:hover .world-postcard-art { transform: scale(1.7); }
 .world-postcard-copy { position: relative; z-index: 1; padding: 28px; color: #fff4d3; }
 .world-number { display: inline-block; font-size: .61rem; color: #e7cc8a; padding: 5px 8px; border: 1px solid #b5b36b66; background: #172b20cc; }
+.world-progress-label { display: inline-block; margin-left: 7px; padding: 5px 8px; border: 1px solid #d7c47a88; background: #d9c278; color: #263527; font: 800 .58rem "Courier New", monospace; letter-spacing: .07em; }
 .world-postcard h2 { margin: 10px 0 5px; font-size: 2rem; color: #fff4d3; }
 .world-postcard p { font-size: .83rem; color: #ccd4b7; margin-bottom: 17px; }
 .world-enter { display: inline-flex; gap: 28px; align-items: center; border-bottom: 2px solid #b7ca80; padding-bottom: 4px; font: bold .72rem "Courier New", monospace; color: #e1e9bb; }
@@ -80,6 +93,25 @@ body {
 .product-shell .lesson-kicker { color: #4b623e; }
 .product-shell .boundary-preview { border: 3px double #87915f; border-radius: 0; padding: 22px; background: #233729; color: #f4e9c8; }
 .product-shell .boundary-preview::before { display: none; }
+.island-dashboard-preview { position: relative; min-width: 0; overflow: hidden; border: 3px double #87915f; background: #233729; color: #fff0c5; }
+.island-dashboard-preview::after { content: ""; position: absolute; inset: 0; background: linear-gradient(0deg, #12261ce8 0%, transparent 56%); }
+.island-dashboard-preview img { width: 100%; height: 100%; object-fit: cover; object-position: center 58%; image-rendering: pixelated; transition: transform .25s steps(4); }
+.island-dashboard-preview:hover img { transform: scale(1.035); }
+.island-dashboard-preview > span { position: absolute; z-index: 1; left: 18px; right: 18px; bottom: 16px; display: flex; justify-content: space-between; align-items: end; gap: 12px; }
+.island-dashboard-preview small { color: #d4dd9c; font: 800 .58rem "Courier New", monospace; letter-spacing: .1em; }
+.island-dashboard-preview strong { color: #fff0c5; font: 700 1rem Georgia, serif; text-align: right; }
+.mini-path-card.current { background: #d7dfb5 !important; box-shadow: inset 0 -3px #788a54; }
+.mini-path-card.done > span { background: #526f40; color: #fff1c8; }
+.island-objectives article { display: grid; grid-template-columns: 42px 1fr auto; align-items: center; gap: 10px; min-height: 68px; padding: 10px; border: 1px solid #b7ad85; background: #f9f0d6; box-shadow: 2px 2px #b1a581; }
+.island-objectives article + article { margin-top: 9px; }
+.island-objectives article > span { display: grid; place-items: center; width: 42px; height: 42px; background: #d8dfb5; color: #33462e; font: 900 .8rem "Courier New", monospace; }
+.island-objectives article strong,.island-objectives article small { display: block; }
+.island-objectives article strong { font-size: .78rem; }
+.island-objectives article small { margin-top: 4px; color: #716a50; font-size: .64rem; }
+.island-objectives article i { color: #453d26; font: 800 .62rem "Courier New", monospace; font-style: normal; }
+.island-objectives article.done { background: #dbe3ba; }
+.island-objectives article.done > span { background: #526f40; color: #fff1c8; }
+.notice-board-link { display: inline-block; margin-top: 10px; color: #365536; border-bottom: 2px solid #687b48; font: 800 .67rem "Courier New", monospace; }
 .product-shell .preview-code { border: 1px solid #68764f; border-radius: 0; background: #15281c; color: #e5ce81; }
 .product-shell .preview-steps > span { border-radius: 0; border-color: #879b60; background: #d7dfb5; color: #283a23; box-shadow: 3px 3px #102114; }
 .product-shell .preview-steps > span.stop { color: #d9d4b7; background: transparent; }
