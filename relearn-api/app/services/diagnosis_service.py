@@ -47,6 +47,41 @@ class RuleBasedDiagnosisProvider:
                 model_version=self.model_version,
             )
 
+        if attempt.exercise_id == "starting-value-01":
+            cases = attempt.test_results.get("cases", [])
+            actuals = [case.get("actual") for case in cases if isinstance(case, dict)]
+            inputs = [case.get("args", [None])[0] for case in cases if isinstance(case, dict)]
+            if actuals and actuals == inputs:
+                return self._prediction(
+                    MisconceptionCode.WRONG_OR_MISSING_UPDATE,
+                    "The score was returned unchanged",
+                    0.99,
+                    "Your function keeps the starting score, but never adds the 10-point bonus.",
+                )
+            if actuals and all(value == 10 for value in actuals):
+                return self._prediction(
+                    MisconceptionCode.VARIABLE_ROLE_CONFUSION,
+                    "The starting score was left out",
+                    0.99,
+                    "The result is always 10. Keep the score parameter and add the bonus to it.",
+                )
+            numeric_offsets = [
+                actual - expected
+                for actual, case in zip(actuals, cases)
+                if isinstance(case, dict)
+                and isinstance(actual, (int, float))
+                and isinstance((expected := case.get("expected")), (int, float))
+            ]
+            if numeric_offsets and len(numeric_offsets) == len(cases) and len(set(numeric_offsets)) == 1:
+                offset = numeric_offsets[0]
+                return self._prediction(
+                    MisconceptionCode.WRONG_INITIALIZATION,
+                    "The bonus amount is off",
+                    0.97,
+                    f"Every result is {abs(offset):g} point{'s' if abs(offset) != 1 else ''} "
+                    f"{'too high' if offset > 0 else 'too low'}. Add exactly 10 to score.",
+                )
+
         boundary_match = re.search(
             r"range\s*\(\s*1\s*,\s*(?P<end>[A-Za-z_]\w*)\s*\)",
             attempt.submitted_code,
@@ -77,6 +112,22 @@ class RuleBasedDiagnosisProvider:
                 type=EvidenceType.CODE,
                 message="The temporary provider found no unambiguous supported pattern.",
             )
+        )
+
+    def _prediction(
+        self,
+        code: MisconceptionCode,
+        name: str,
+        confidence: float,
+        message: str,
+    ) -> DiagnosisPrediction:
+        return DiagnosisPrediction(
+            misconception_code=code,
+            learner_friendly_name=name,
+            confidence=confidence,
+            class_probabilities={code: confidence, MisconceptionCode.UNCERTAIN: 1 - confidence},
+            evidence=[DiagnosisEvidence(type=EvidenceType.TEST, message=message)],
+            model_version=self.model_version,
         )
 
     @staticmethod

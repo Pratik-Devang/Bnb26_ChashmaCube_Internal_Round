@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { diagnoseCode, getExercise, requestDiagnosis, submitAttempt } from "@/lib/api";
+import { getExercise, requestDiagnosis, submitAttempt } from "@/lib/api";
 import { currentLearnerId } from "@/lib/account";
 import { createPythonCodeRunner, type PythonCodeRunner } from "@/lib/code-runner";
-import type { Exercise, MLDiagnoseResponse, TestResults } from "@/types/learning";
+import type { DiagnosisResponse, Exercise, TestResults } from "@/types/learning";
 import styles from "../GameWorld.module.css";
 
 type Props = {
@@ -16,11 +16,78 @@ type Props = {
   onComplete: () => void;
 };
 
+type ScoutGuidance = {
+  title: string;
+  explanation: string;
+  example?: string;
+  check?: string;
+  source: "journal" | "tests";
+};
+
+const recommendedCode: Partial<Record<DiagnosisResponse["diagnosis"]["misconceptionCode"], string>> = {
+  WRONG_INITIALIZATION: "return score + 10",
+  WRONG_OR_MISSING_UPDATE: "return score + 10",
+  VARIABLE_ROLE_CONFUSION: "return score + 10",
+};
+
+function guidanceFromDiagnosis(result: DiagnosisResponse): ScoutGuidance | null {
+  const diagnosis = result.diagnosis;
+  if (diagnosis.misconceptionCode === "CORRECT") return null;
+  if (diagnosis.misconceptionCode === "UNCERTAIN") return null;
+  return {
+    title: diagnosis.learnerFriendlyName,
+    explanation: diagnosis.evidence[0]?.message ?? diagnosis.summary,
+    example: recommendedCode[diagnosis.misconceptionCode],
+    check: "For each test, start with its input score and confirm the result is exactly 10 higher.",
+    source: "journal",
+  };
+}
+
+function guidanceFromTests(results: TestResults): ScoutGuidance {
+  const failed = results.cases.filter((item) => !item.passed);
+  const firstError = failed.find((item) => item.error)?.error;
+  if (firstError) return {
+    title: "Python could not run this yet",
+    explanation: firstError,
+    check: "Fix the reported Python error, then ask the Scout to check again.",
+    source: "tests",
+  };
+
+  const unchanged = failed.length > 0 && failed.every((item) => item.actual === item.args?.[0]);
+  if (unchanged) return {
+    title: "The score stayed unchanged",
+    explanation: "Your function returns the starting score, but the 10-point bonus was never added.",
+    example: "return score + 10",
+    check: "If score is 7, the function should return 17.",
+    source: "tests",
+  };
+
+  const constantBonus = failed.length > 0 && failed.every((item) => item.actual === 10);
+  if (constantBonus) return {
+    title: "Keep the starting score",
+    explanation: "Returning only 10 forgets the score supplied to the function. Add the bonus to score.",
+    example: "return score + 10",
+    check: "Try both score = 0 and score = 7. The answers should be 10 and 17.",
+    source: "tests",
+  };
+
+  const first = failed[0];
+  return {
+    title: "One result does not match yet",
+    explanation: first
+      ? `For input ${JSON.stringify(first.args ?? first.input)}, the Scout expected ${JSON.stringify(first.expected)} but received ${JSON.stringify(first.actual)}.`
+      : "The submitted function did not satisfy the challenge tests.",
+    example: "return score + 10",
+    check: "Use the score parameter in the result and add exactly 10.",
+    source: "tests",
+  };
+}
+
 export function IslandScoutChallenge({ exerciseId, title, reward, alreadyCompleted, onClose, onComplete }: Props) {
   const [exercise, setExercise] = useState<Exercise | null>(null);
   const [code, setCode] = useState("");
   const [results, setResults] = useState<TestResults | null>(null);
-  const [diagnosis, setDiagnosis] = useState<MLDiagnoseResponse | null>(null);
+  const [diagnosis, setDiagnosis] = useState<ScoutGuidance | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "running" | "passed" | "failed">("loading");
   const [error, setError] = useState("");
   const [syncWarning, setSyncWarning] = useState("");
@@ -70,6 +137,7 @@ export function IslandScoutChallenge({ exerciseId, title, reward, alreadyComplet
     try {
       const nextResults = await runnerRef.current.run({ code, testCases: exercise.testCases });
       setResults(nextResults);
+      let journalGuidance: ScoutGuidance | null = null;
 
       try {
         const attempt = await submitAttempt({
@@ -79,9 +147,10 @@ export function IslandScoutChallenge({ exerciseId, title, reward, alreadyComplet
           attemptType: "INITIAL",
           testResults: nextResults,
         });
-        await requestDiagnosis(attempt.id);
+        const savedDiagnosis = await requestDiagnosis(attempt.id);
+        journalGuidance = guidanceFromDiagnosis(savedDiagnosis);
       } catch {
-        setSyncWarning("The Scout checked your code, but could not add this attempt to your learning journal. Try submitting once more.");
+        setSyncWarning("The Scout used the challenge tests, but could not save this attempt to your learning journal.");
       }
 
       if (nextResults.failed === 0 && nextResults.passed > 0) {
@@ -90,8 +159,7 @@ export function IslandScoutChallenge({ exerciseId, title, reward, alreadyComplet
         return;
       }
 
-      const classifierResult = await diagnoseCode(code);
-      setDiagnosis(classifierResult);
+      setDiagnosis(journalGuidance ?? guidanceFromTests(nextResults));
       setStatus("failed");
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "The Scout could not check that solution.");
@@ -141,11 +209,11 @@ export function IslandScoutChallenge({ exerciseId, title, reward, alreadyComplet
             ) : null}
             {status === "failed" && diagnosis ? (
               <div className={styles.classifierFeedback}>
-                <small>MISCONCEPTION DETECTED</small>
-                <strong>{diagnosis.misconception ?? diagnosis.top_prediction?.misconception ?? "Misconception pattern detected"}</strong>
-                <p>{diagnosis.evidence ?? diagnosis.intervention?.explanation}</p>
-                {diagnosis.intervention?.example ? <code>{diagnosis.intervention.example}</code> : null}
-                {diagnosis.intervention?.check ? <em>{diagnosis.intervention.check}</em> : null}
+                <small>{diagnosis.source === "journal" ? "SUPPORTED PATTERN" : "TEST EVIDENCE"}</small>
+                <strong>{diagnosis.title}</strong>
+                <p>{diagnosis.explanation}</p>
+                {diagnosis.example ? <code>{diagnosis.example}</code> : null}
+                {diagnosis.check ? <em>{diagnosis.check}</em> : null}
               </div>
             ) : null}
             {results ? <div className={styles.testCount}>{results.passed} passed · {results.failed} failed</div> : null}

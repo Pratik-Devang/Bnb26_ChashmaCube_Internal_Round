@@ -18,7 +18,7 @@ class InterventionDetail(BaseModel):
 
 
 class ReassessmentResult(BaseModel):
-    status: Literal["resolved", "unresolved"]
+    status: Literal["resolved", "unresolved", "uncertain"]
     misconception_id: int
 
 
