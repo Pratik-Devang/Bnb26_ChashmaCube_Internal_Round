@@ -35,3 +35,38 @@
 .challengePrompt { margin-top: 20px; padding: 15px; border-left: 4px solid #d6b968; background: #293529; font-size: .84rem; line-height: 1.5; }.answers { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 13px; }.answers button, .closeLesson, .finishLesson { min-height: 40px; padding: 9px 13px; border: 1px solid #6a765c; background: #18221a; color: #e9ebdd; font-weight: 800; cursor: pointer; }.answers button:hover, .answers .answerSelected { border-color: #e1c773; background: #3a432e; }.correct, .tryAgain { margin-top: 12px; padding: 12px; border: 1px solid #74915f; background: #293b2d; color: #daf0c6; font-size: .78rem; line-height: 1.5; }.tryAgain { border-color: #a47758; background: #3b2e24; color: #f1d5bd; }.lessonActions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 17px; }.finishLesson { border-color: #dfc574; background: #dbbd6b; color: #252418; }.closeLesson:hover { background: #303c30; }
 @media (max-width: 900px) { .root { padding: 12px; }.frame { height: auto; min-height: 84vh; padding: 138px 12px 150px; }.scene { width: min(96vw, 880px); }.quest, .status { width: calc(50% - 26px); }.quest { top: 14px; left: 14px; }.status { right: 14px; bottom: 12px; }.footer { font-size: .56rem; } }
 @media (max-width: 560px) { .header { min-height: 58px; padding: 0 9px; }.brand small { font-size: .4rem; }.location { display: none; }.back { padding: 8px; font-size: .6rem; }.frame { padding: 129px 10px 155px; }.scene { width: min(100%, 420px); }.quest, .status { width: calc(100% - 28px); }.quest { left: 14px; }.status { right: 14px; bottom: 9px; }.quest p, .status p { font-size: .59rem; }.controls { gap: 5px; padding: 7px; font-size: .45rem; }.lesson { padding: 18px; }.lesson > p { font-size: .79rem; }.lesson pre { font-size: .72rem; }.footer { gap: 8px; font-size: .5rem; } }
+
+.oracleButton {
+  width: 38px;
+  height: 38px;
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fdba74;
+  border-radius: 4px;
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  color: #ffffff;
+  box-shadow: 0 0 14px rgba(249, 115, 22, 0.65), 3px 3px 0 #070c08;
+  font-size: 1.25rem;
+  cursor: pointer;
+  animation: oracleGlow 2s ease-in-out infinite alternate;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  user-select: none;
+}
+
+.oracleButton:hover {
+  transform: scale(1.1) translate(-1px, -1px);
+  box-shadow: 0 0 22px rgba(249, 115, 22, 0.95), 4px 4px 0 #070c08;
+}
+
+@keyframes oracleGlow {
+  0% {
+    box-shadow: 0 0 8px rgba(249, 115, 22, 0.45), 3px 3px 0 #070c08;
+    transform: scale(1);
+  }
+  100% {
+    box-shadow: 0 0 18px rgba(249, 115, 22, 0.9), 3px 3px 0 #070c08;
+    transform: scale(1.06);
+  }
+}

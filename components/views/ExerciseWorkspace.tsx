@@ -539,30 +539,34 @@ export function ExerciseWorkspace({ exerciseId }: Props) {
                 <div className="ml-diagnosis-panel" style={{ marginTop: "1rem", padding: "1rem", borderRadius: "8px", background: "rgba(255, 255, 255, 0.04)", border: "1px solid rgba(255, 255, 255, 0.1)" }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.5rem" }}>
                     <span className="crumb-badge tone-lilac" style={{ fontSize: "0.75rem", fontWeight: 600 }}>
-                      ML CLASSIFIER (ID #{mlDiagnosis.top_prediction.id})
+                      ML CLASSIFIER (ID #{mlDiagnosis.misconception_id ?? mlDiagnosis.top_prediction?.id ?? 0})
                     </span>
                     <span style={{ fontSize: "0.8rem", color: "#9ca3af" }}>
-                      Score: {mlDiagnosis.top_prediction.score}
+                      {mlDiagnosis.confidence ? `${mlDiagnosis.confidence.toUpperCase()} CONFIDENCE` : `Score: ${mlDiagnosis.top_prediction?.score ?? 0}`}
                     </span>
                   </div>
 
                   <h3 style={{ fontSize: "1rem", fontWeight: 600, color: "#f3f4f6", marginBottom: "0.25rem" }}>
-                    {mlDiagnosis.intervention.title}
+                    {mlDiagnosis.intervention?.title ?? "Misconception Analysis"}
                   </h3>
                   <p style={{ fontSize: "0.875rem", color: "#d1d5db", marginBottom: "0.75rem" }}>
-                    {mlDiagnosis.top_prediction.misconception}
+                    {mlDiagnosis.misconception ?? mlDiagnosis.top_prediction?.misconception}
                   </p>
 
                   <div style={{ background: "rgba(0, 0, 0, 0.25)", padding: "0.75rem", borderRadius: "6px", marginBottom: "0.75rem", borderLeft: "3px solid #8b5cf6" }}>
                     <p style={{ fontSize: "0.85rem", color: "#e5e7eb", margin: 0, marginBottom: "0.4rem" }}>
-                      <strong>Intervention:</strong> {mlDiagnosis.intervention.explanation}
+                      <strong>Intervention:</strong> {mlDiagnosis.evidence ?? mlDiagnosis.intervention?.explanation}
                     </p>
-                    <div style={{ fontSize: "0.8rem", color: "#a78bfa", fontFamily: "monospace", marginBottom: "0.3rem" }}>
-                      Example: <code>{mlDiagnosis.intervention.example}</code>
-                    </div>
-                    <div style={{ fontSize: "0.8rem", color: "#93c5fd" }}>
-                      💡 <em>{mlDiagnosis.intervention.check}</em>
-                    </div>
+                    {mlDiagnosis.intervention?.example ? (
+                      <div style={{ fontSize: "0.8rem", color: "#a78bfa", fontFamily: "monospace", marginBottom: "0.3rem" }}>
+                        Example: <code>{mlDiagnosis.intervention.example}</code>
+                      </div>
+                    ) : null}
+                    {mlDiagnosis.intervention?.check ? (
+                      <div style={{ fontSize: "0.8rem", color: "#93c5fd" }}>
+                        💡 <em>{mlDiagnosis.intervention.check}</em>
+                      </div>
+                    ) : null}
                   </div>
 
                   {mlDiagnosis.alternatives && mlDiagnosis.alternatives.length > 0 ? (
@@ -570,8 +574,8 @@ export function ExerciseWorkspace({ exerciseId }: Props) {
                       <summary style={{ cursor: "pointer" }}>Alternative diagnoses ({mlDiagnosis.alternatives.length})</summary>
                       <ul style={{ paddingLeft: "1.2rem", marginTop: "0.4rem" }}>
                         {mlDiagnosis.alternatives.map((alt) => (
-                          <li key={alt.id} style={{ marginBottom: "0.25rem" }}>
-                            <strong>ID #{alt.id}</strong> (score {alt.score}): {alt.misconception}
+                          <li key={alt.misconception_id ?? alt.id} style={{ marginBottom: "0.25rem" }}>
+                            <strong>ID #{alt.misconception_id ?? alt.id}</strong> ({alt.confidence ?? alt.score}): {alt.misconception}
                           </li>
                         ))}
                       </ul>

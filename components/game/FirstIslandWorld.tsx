@@ -18,6 +18,7 @@ import { firstIsland, firstIslandActors, orderedFirstIslandLessons } from "@/lib
 import { emptyFirstIslandProgress, loadFirstIslandProgress, saveFirstIslandProgress } from "@/lib/game/first-island/progress";
 import type { FirstIslandProgress, GameSpriteKey, IslandActor, MapPosition } from "@/types/game";
 import { IslandLessonDialog } from "./dialogs/IslandLessonDialog";
+import { IslandOracleDialog } from "./dialogs/IslandOracleDialog";
 import { IslandScoutChallenge } from "./dialogs/IslandScoutChallenge";
 import styles from "./GameWorld.module.css";
 
@@ -39,6 +40,7 @@ export function FirstIslandWorld() {
   const [selectedActor, setSelectedActor] = useState<IslandActor | null>(null);
   const [lockedMessage, setLockedMessage] = useState<string | undefined>();
   const [challengeOpen, setChallengeOpen] = useState(false);
+  const [oracleOpen, setOracleOpen] = useState(false);
   const [completionOpen, setCompletionOpen] = useState(false);
   const [activeAmbientId, setActiveAmbientId] = useState<string | null>(null);
   const [guidance, setGuidance] = useState("Use WASD or the arrow keys to reach the Beach Cartographer.");
@@ -152,6 +154,15 @@ export function FirstIslandWorld() {
         <div className={styles.topActions}>
           <div className={styles.coinWallet} aria-label={`${progress.coinsEarned} coins`}><span className={styles.coin}>●</span><strong>{progress.coinsEarned}</strong></div>
           <button type="button" className={styles.iconButton} onClick={() => setSoundEnabled((value) => !value)} aria-label={soundEnabled ? "Mute game sounds" : "Enable game sounds"} aria-pressed={soundEnabled}><span aria-hidden="true">♪</span>{!soundEnabled && <i aria-hidden="true" />}</button>
+          <button
+            type="button"
+            className={styles.oracleButton}
+            onClick={() => setOracleOpen(true)}
+            title="Consult AI Island Oracle (Spell & Code Diagnoser)"
+            aria-label="Consult AI Island Oracle"
+          >
+            ✨
+          </button>
           <Link href="/church" className={styles.exitButton}>Explore church</Link>
           <Link href="/learn" className={styles.exitButton}>Learning path</Link>
         </div>
@@ -183,6 +194,18 @@ export function FirstIslandWorld() {
       <footer className={styles.gameFooter}><span>{guidance}</span><span><kbd>WASD</kbd> move <i /> <kbd>E</kbd> interact</span></footer>
       {selectedActor ? <IslandLessonDialog actor={selectedActor} lockedMessage={lockedMessage} completed={Boolean(selectedActor.lesson && progress.completedLessonIds.includes(selectedActor.lesson.id))} onClose={() => { setSelectedActor(null); setLockedMessage(undefined); }} onComplete={completeSelectedLesson} /> : null}
       {challengeOpen ? <IslandScoutChallenge exerciseId={firstIsland.challenge.exerciseId} title={firstIsland.challenge.title} reward={firstIsland.challenge.reward} alreadyCompleted={progress.challengeCompleted} onClose={() => setChallengeOpen(false)} onComplete={completeChallenge} /> : null}
+      {oracleOpen ? (
+        <IslandOracleDialog
+          onClose={() => setOracleOpen(false)}
+          onRewardCoins={(amount) => {
+            setProgress((prev) => {
+              const next = { ...prev, coinsEarned: prev.coinsEarned + amount };
+              saveFirstIslandProgress(next);
+              return next;
+            });
+          }}
+        />
+      ) : null}
       {completionOpen ? <div className={styles.dialogScrim} role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setCompletionOpen(false); }}>
         <section className={`${styles.dialog} ${styles.completionDialog}`} role="dialog" aria-modal="true" aria-labelledby="island-complete-title">
           <button className={styles.completionClose} type="button" onClick={() => setCompletionOpen(false)} aria-label="Close quest completion">×</button>

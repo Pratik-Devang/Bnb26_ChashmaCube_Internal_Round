@@ -7,6 +7,7 @@ import playerWalk from "@/2d_characters/Wizard/Walk.png";
 import guideIdle from "@/2d_characters/Archer/Idle.png";
 import { ChurchMapCanvas } from "./ChurchMapCanvas";
 import { ChurchExteriorCanvas } from "./ChurchExteriorCanvas";
+import { IslandOracleDialog } from "./dialogs/IslandOracleDialog";
 import styles from "./ChurchWorld.module.css";
 
 type Position = { x: number; y: number };
@@ -82,6 +83,7 @@ export function ChurchWorld() {
   const [objectiveStep, setObjectiveStep] = useState(0);
   const [activeProblem, setActiveProblem] = useState<ObjectiveTarget | null>(null);
   const [choice, setChoice] = useState<string | null>(null);
+  const [oracleOpen, setOracleOpen] = useState(false);
   const movementTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -232,7 +234,18 @@ export function ChurchWorld() {
       <header className={styles.header}>
         <Link href="/learn" className={styles.brand}><span>R</span><strong>Re:Learn <small>· CONDITIONS QUEST</small></strong></Link>
         <div className={styles.location}><span>✦</span><div><small>LOCATION</small><strong>{insideTemple ? "Inside the Temple" : "Temple Grounds"}</strong></div></div>
-        <Link href="/game" className={styles.back}>← First Island</Link>
+        <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
+          <button
+            type="button"
+            className={styles.oracleButton}
+            onClick={() => setOracleOpen(true)}
+            title="Consult AI Oracle (Spell & Code Diagnoser)"
+            aria-label="Consult AI Oracle"
+          >
+            ✨
+          </button>
+          <Link href="/game" className={styles.back}>← First Island</Link>
+        </div>
       </header>
 
       <section className={styles.frame} aria-label={insideTemple ? "Explore inside the ruined temple" : "Explore the ruined temple grounds"}>
@@ -300,6 +313,7 @@ export function ChurchWorld() {
           </div>
         </section>
       </div> : null}
+      {oracleOpen ? <IslandOracleDialog onClose={() => setOracleOpen(false)} /> : null}
     </main>
   );
 }

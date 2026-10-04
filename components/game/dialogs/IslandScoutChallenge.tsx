@@ -125,10 +125,10 @@ export function IslandScoutChallenge({ exerciseId, title, reward, alreadyComplet
             {status === "failed" && diagnosis ? (
               <div className={styles.classifierFeedback}>
                 <small>MISCONCEPTION DETECTED</small>
-                <strong>{diagnosis.top_prediction.misconception}</strong>
-                <p>{diagnosis.intervention.explanation}</p>
-                <code>{diagnosis.intervention.example}</code>
-                <em>{diagnosis.intervention.check}</em>
+                <strong>{diagnosis.misconception ?? diagnosis.top_prediction?.misconception ?? "Misconception pattern detected"}</strong>
+                <p>{diagnosis.evidence ?? diagnosis.intervention?.explanation}</p>
+                {diagnosis.intervention?.example ? <code>{diagnosis.intervention.example}</code> : null}
+                {diagnosis.intervention?.check ? <em>{diagnosis.intervention.check}</em> : null}
               </div>
             ) : null}
             {results ? <div className={styles.testCount}>{results.passed} passed · {results.failed} failed</div> : null}
