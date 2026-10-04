@@ -97,6 +97,7 @@ class CodeReviewCreate(ApiModel):
 class CodeReviewRead(ApiModel):
     source: Literal["gemini", "deterministic"]
     model: str
+    availability_message: str | None = None
     diagnosis_code: MisconceptionCode
     summary: str
     strengths: list[str]

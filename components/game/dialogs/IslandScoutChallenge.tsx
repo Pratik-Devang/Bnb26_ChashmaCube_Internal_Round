@@ -5,6 +5,7 @@ import { getExercise, requestCodeReview, requestDiagnosis, reviewCode, submitAtt
 import { currentLearnerId } from "@/lib/account";
 import { createPythonCodeRunner, type PythonCodeRunner } from "@/lib/code-runner";
 import { challengeSolutions } from "@/lib/game/challenge-solutions";
+import { AIReviewPanel } from "@/components/review/AIReviewPanel";
 import type { CodeReviewResponse, DiagnosisResponse, Exercise, TestResults } from "@/types/learning";
 import styles from "../GameWorld.module.css";
 
@@ -134,6 +135,7 @@ export function IslandScoutChallenge({ exerciseId, exerciseOverride, hint, recor
   const [results, setResults] = useState<TestResults | null>(null);
   const [diagnosis, setDiagnosis] = useState<ScoutGuidance | null>(null);
   const [codeReview, setCodeReview] = useState<CodeReviewResponse | null>(null);
+  const [reviewState, setReviewState] = useState<"idle" | "loading" | "unavailable">("idle");
   const [status, setStatus] = useState<"loading" | "ready" | "running" | "passed" | "failed">("loading");
   const [error, setError] = useState("");
   const [syncWarning, setSyncWarning] = useState("");
@@ -186,6 +188,7 @@ export function IslandScoutChallenge({ exerciseId, exerciseOverride, hint, recor
     setSyncWarning("");
     setDiagnosis(null);
     setCodeReview(null);
+    setReviewState("loading");
     setHintOpen(false);
     setSolutionOpen(false);
 
@@ -226,11 +229,13 @@ export function IslandScoutChallenge({ exerciseId, exerciseOverride, hint, recor
         journalGuidance = guidanceFromDiagnosis(savedDiagnosis);
         try {
           setCodeReview(await requestCodeReview(attempt.id));
+          setReviewState("idle");
         } catch {
-          // Diagnosis and test evidence remain available if optional review fails.
+          setReviewState("unavailable");
         }
       } catch {
         setSyncWarning(`${guideName} used the challenge tests, but could not save this attempt to your learning journal.`);
+        setReviewState("unavailable");
       } else try {
         setCodeReview(await reviewCode({
           exerciseId: exercise.id,
@@ -238,8 +243,9 @@ export function IslandScoutChallenge({ exerciseId, exerciseOverride, hint, recor
           submittedCode: code,
           testResults: nextResults,
         }));
+        setReviewState("idle");
       } catch {
-        // The local test explanation below remains available.
+        setReviewState("unavailable");
       }
 
       if (nextResults.failed === 0 && nextResults.passed > 0) {
@@ -253,6 +259,7 @@ export function IslandScoutChallenge({ exerciseId, exerciseOverride, hint, recor
       setDiagnosis(hasRuntimeError ? testGuidance : journalGuidance ?? testGuidance);
       setStatus("failed");
     } catch (reason) {
+      setReviewState("unavailable");
       setError(reason instanceof Error
         ? `This attempt could not be saved: ${reason.message}`
         : "This attempt could not be saved. Your code is still here; try again.");
@@ -292,7 +299,7 @@ export function IslandScoutChallenge({ exerciseId, exerciseOverride, hint, recor
             <div className={styles.editorActions}>
               <small>Runs against {exercise?.testCases.length ?? 0} hidden checks</small>
               <button type="button" className={styles.primaryAction} onClick={runChallenge} disabled={!exercise || status === "running"}>
-                {status === "running" ? "Scout is checking..." : "Run code & review"}
+                {status === "running" ? "Scout is checking..." : "Run + AI review"}
               </button>
             </div>
           </div>
@@ -317,16 +324,7 @@ export function IslandScoutChallenge({ exerciseId, exerciseOverride, hint, recor
                 {diagnosis.check ? <em>{diagnosis.check}</em> : null}
               </div>
             ) : null}
-            {codeReview ? (
-              <details className={styles.codeReview} open={status === "failed"}>
-                <summary>Detailed code review</summary>
-                <small>{codeReview.source === "gemini" ? "GEMINI-ASSISTED EXPLANATION" : "EVIDENCE-BASED FALLBACK"}</small>
-                <p>{codeReview.summary}</p>
-                {codeReview.strengths.length ? <div><strong>What worked</strong><ul>{codeReview.strengths.map(item => <li key={item}>{item}</li>)}</ul></div> : null}
-                {codeReview.issues.length ? <div><strong>What to inspect</strong><ul>{codeReview.issues.map((item, index) => <li key={`${item.title}-${index}`}><b>{item.line ? `Line ${item.line}: ` : ""}{item.title}</b> — {item.explanation}</li>)}</ul></div> : null}
-                <div><strong>Next step</strong><ol>{codeReview.nextSteps.map(item => <li key={item}>{item}</li>)}</ol></div>
-              </details>
-            ) : null}
+            <AIReviewPanel review={codeReview} state={reviewState} />
             {results ? <div className={styles.testCount}>{results.passed} passed · {results.failed} failed</div> : null}
             {status === "failed" && exercise ? <div className={styles.challengeHelp}>
               {hint && <button type="button" onClick={() => setHintOpen((open) => !open)} aria-expanded={hintOpen}>

@@ -38,8 +38,20 @@ class GeminiCodeReviewService:
                 diagnosis_code=prediction.misconception_code,
                 **result,
             )
-        except (KeyError, IndexError, TypeError, ValueError, json.JSONDecodeError, HTTPError, URLError, TimeoutError, asyncio.TimeoutError) as exc:
-            raise GeminiReviewUnavailable("Gemini review was unavailable.") from exc
+        except HTTPError as exc:
+            messages = {
+                400: "Gemini rejected the review request. The configured model or response format may not be supported.",
+                401: "Gemini rejected the API key. Check that the key is valid and enabled for the Gemini API.",
+                403: "Gemini denied this API key or project permission. Check API restrictions and Gemini API access.",
+                404: "The configured Gemini model is unavailable to this API key. Check RELEARN_GEMINI_MODEL.",
+                429: "Gemini rate or quota limits were reached. Wait briefly or check the Google AI project quota.",
+            }
+            message = messages.get(exc.code, "Gemini returned a service error while generating this review.")
+            raise GeminiReviewUnavailable(message) from exc
+        except (URLError, TimeoutError, asyncio.TimeoutError) as exc:
+            raise GeminiReviewUnavailable("The backend could not reach Gemini before the request timed out. Check internet, firewall, or proxy access to generativelanguage.googleapis.com.") from exc
+        except (KeyError, IndexError, TypeError, ValueError, json.JSONDecodeError) as exc:
+            raise GeminiReviewUnavailable("Gemini responded, but its review did not match the required structured format.") from exc
 
     def _request(self, payload: dict[str, object]) -> dict[str, object]:
         settings = get_settings()
@@ -93,7 +105,11 @@ class GeminiCodeReviewService:
         }
 
 
-def deterministic_review(attempt: AttemptForDiagnosis, prediction: DiagnosisPrediction) -> CodeReviewRead:
+def deterministic_review(
+    attempt: AttemptForDiagnosis,
+    prediction: DiagnosisPrediction,
+    availability_message: str | None = None,
+) -> CodeReviewRead:
     passed = int(attempt.test_results.get("passed", 0))
     failed = int(attempt.test_results.get("failed", 0))
     cases = attempt.test_results.get("cases", [])
@@ -106,6 +122,7 @@ def deterministic_review(attempt: AttemptForDiagnosis, prediction: DiagnosisPred
         return CodeReviewRead(
             source="deterministic",
             model=prediction.model_version,
+            availability_message=availability_message,
             diagnosis_code=prediction.misconception_code,
             summary="Your function header is ready, but pass is only a placeholder, so the function returns no result.",
             strengths=["The requested function name and parameters are present, so the tests can call your code."],
@@ -126,6 +143,7 @@ def deterministic_review(attempt: AttemptForDiagnosis, prediction: DiagnosisPred
         next_steps = ["Trace the first failed case from its input to the returned value, then change only the line where they diverge."]
     return CodeReviewRead(
         source="deterministic", model=prediction.model_version,
+        availability_message=availability_message,
         diagnosis_code=prediction.misconception_code,
         summary=prediction.learner_friendly_name,
         strengths=strengths, issues=issues, next_steps=next_steps,

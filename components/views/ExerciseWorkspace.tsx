@@ -4,12 +4,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { RangeInterventionGame, type InterventionContent } from "@/components/exercise/RangeInterventionGame";
+import { AIReviewPanel } from "@/components/review/AIReviewPanel";
 import { Icon } from "@/components/ui/Icon";
 import {
   ApiError,
   completeIntervention,
   diagnoseCode,
   getExercise,
+  requestCodeReview,
   requestDiagnosis,
   submitAttempt,
   submitReassessment,
@@ -19,6 +21,7 @@ import { currentLearnerId } from "@/lib/account";
 import type {
   AttemptResponse,
   AttemptType,
+  CodeReviewResponse,
   DiagnosisResponse,
   Exercise,
   MLDiagnoseResponse,
@@ -55,6 +58,8 @@ export function ExerciseWorkspace({ exerciseId }: Props) {
   const [testResults, setTestResults] = useState<TestResults | null>(null);
   const [activeAttempt, setActiveAttempt] = useState<AttemptResponse | null>(null);
   const [diagnosisResponse, setDiagnosisResponse] = useState<DiagnosisResponse | null>(null);
+  const [codeReview, setCodeReview] = useState<CodeReviewResponse | null>(null);
+  const [reviewState, setReviewState] = useState<"idle" | "loading" | "unavailable">("idle");
   const [mlDiagnosis, setMlDiagnosis] = useState<MLDiagnoseResponse | null>(null);
   const [previousMisconceptionId, setPreviousMisconceptionId] = useState<number | null>(null);
   const [activeInterventionId, setActiveInterventionId] = useState<string | null>(null);
@@ -87,6 +92,8 @@ export function ExerciseWorkspace({ exerciseId }: Props) {
     setErrorMessage(null);
     setTestResults(null);
     setDiagnosisResponse(null);
+    setCodeReview(null);
+    setReviewState("idle");
     try {
       const data = await getExercise(id);
       setExercise(data);
@@ -181,6 +188,8 @@ export function ExerciseWorkspace({ exerciseId }: Props) {
     if (!exercise) return;
     setPhase("submitting");
     setErrorMessage(null);
+    setCodeReview(null);
+    setReviewState("loading");
 
     try {
       let currentTestResults = testResults;
@@ -229,6 +238,12 @@ export function ExerciseWorkspace({ exerciseId }: Props) {
           setActiveInterventionContent(diagnosis.intervention.content as unknown as InterventionContent);
         }
         setPhase("diagnosed");
+        try {
+          setCodeReview(await requestCodeReview(attempt.id));
+          setReviewState("idle");
+        } catch {
+          setReviewState("unavailable");
+        }
 
         // Focus diagnosis section for accessibility
         setTimeout(() => {
@@ -247,6 +262,12 @@ export function ExerciseWorkspace({ exerciseId }: Props) {
           testResults: currentTestResults || testResults || { passed: 0, failed: 0, cases: [] },
         });
         setDiagnosisResponse(reassessResponse);
+        try {
+          setCodeReview(await requestCodeReview(reassessResponse.attemptId));
+          setReviewState("idle");
+        } catch {
+          setReviewState("unavailable");
+        }
 
         if (
           (reassessmentType === "FAR_TRANSFER" && reassessResponse.conceptStatus === "RESOLVED") ||
@@ -262,6 +283,7 @@ export function ExerciseWorkspace({ exerciseId }: Props) {
         }, 100);
       }
     } catch (err) {
+      setReviewState("unavailable");
       setPhase("tests-ready");
       if (err instanceof ApiError) {
         setErrorMessage(err.message);
@@ -437,7 +459,7 @@ export function ExerciseWorkspace({ exerciseId }: Props) {
               aria-busy={phase === "submitting"}
             >
               <Icon name="check" />
-              {phase === "submitting" ? "Analyzing..." : "Submit for diagnosis"}
+              {phase === "submitting" ? "Analyzing..." : "Submit + AI review"}
             </button>
           </div>
 
@@ -449,7 +471,7 @@ export function ExerciseWorkspace({ exerciseId }: Props) {
         </section>
 
         {/* Right Column: Predefined Tests, Diagnosis & Interventions */}
-        <aside className="results-column" aria-label="Tests and diagnosis results">
+        <aside className="results-column" aria-label="Tests, diagnosis, and AI code review results">
           {/* Test Results Card */}
           <div className="surface-card test-results-card">
             <div className="results-header">
@@ -513,7 +535,7 @@ export function ExerciseWorkspace({ exerciseId }: Props) {
 
           {/* Diagnosis Card (visible once diagnosed) */}
           {diagnosisResponse && phase !== "intervention" && phase !== "resolved" ? (
-            <div ref={diagnosisSectionRef} className="surface-card diagnosis-card" aria-label="AI diagnosis">
+            <div ref={diagnosisSectionRef} className="surface-card diagnosis-card" aria-label="Diagnosis and AI code review">
               <header className="diagnosis-card-header">
                 <span className="page-eyebrow">DIAGNOSIS RESULT</span>
                 <h2>{diagnosisResponse.diagnosis.learnerFriendlyName}</h2>
@@ -534,6 +556,8 @@ export function ExerciseWorkspace({ exerciseId }: Props) {
                   </ul>
                 </div>
               ) : null}
+
+              <AIReviewPanel review={codeReview} state={reviewState} />
 
               {/* ML Model Diagnosis & Targeted Intervention */}
               {mlDiagnosis ? (

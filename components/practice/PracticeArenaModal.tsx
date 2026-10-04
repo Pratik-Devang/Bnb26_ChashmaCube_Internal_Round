@@ -11,8 +11,9 @@ import {
   runQuestionTests,
   type RunSummary,
 } from "@/lib/python-executor";
-import { diagnoseCode } from "@/lib/api";
-import type { MLDiagnoseResponse } from "@/types/learning";
+import { diagnoseCode, reviewCode } from "@/lib/api";
+import { AIReviewPanel } from "@/components/review/AIReviewPanel";
+import type { CodeReviewResponse, MLDiagnoseResponse } from "@/types/learning";
 import styles from "./PracticeArena.module.css";
 
 interface PracticeArenaModalProps {
@@ -43,6 +44,8 @@ export function PracticeArenaModal({
   const [isDiagnosing, setIsDiagnosing] = useState<boolean>(false);
   const [runSummary, setRunSummary] = useState<RunSummary | null>(null);
   const [mlDiagnosis, setMlDiagnosis] = useState<MLDiagnoseResponse | null>(null);
+  const [codeReview, setCodeReview] = useState<CodeReviewResponse | null>(null);
+  const [reviewState, setReviewState] = useState<"idle" | "loading" | "unavailable">("idle");
   const [diagnosisStatus, setDiagnosisStatus] = useState<
     "idle" | "correct" | "misconception" | "error"
   >("idle");
@@ -59,6 +62,8 @@ export function PracticeArenaModal({
     );
     setRunSummary(null);
     setMlDiagnosis(null);
+    setCodeReview(null);
+    setReviewState("idle");
     setDiagnosisStatus("idle");
     setShowSolution(false);
   }, [currentQuestion]);
@@ -123,19 +128,42 @@ export function PracticeArenaModal({
         currentQuestion.testCases
       );
       setRunSummary(testSummary);
+      setDiagnosisStatus(testSummary.allPassed ? "correct" : "misconception");
+      setShowSolution(true);
+      setCodeReview(null);
+      setReviewState("loading");
 
-      const mlResult = await diagnoseCode(userCode);
-      setMlDiagnosis(mlResult);
+      try {
+        const mlResult = await diagnoseCode(userCode);
+        setMlDiagnosis(mlResult);
+      } catch {
+        setMlDiagnosis(null);
+      }
 
-      if (testSummary.allPassed) {
-        setDiagnosisStatus("correct");
-        setShowSolution(true);
-      } else {
-        setDiagnosisStatus("misconception");
-        setShowSolution(true);
+      try {
+        setCodeReview(await reviewCode({
+          exerciseId: currentQuestion.id,
+          prompt: `${currentQuestion.description}\n${currentQuestion.instructions.join(" ")}`,
+          submittedCode: userCode,
+          testResults: {
+            passed: testSummary.passedCount,
+            failed: testSummary.failedCount,
+            cases: testSummary.results.map(result => ({
+              input: { stdin: result.testCase.input },
+              expected: result.expectedOutput,
+              actual: result.actualOutput.trim(),
+              passed: result.passed,
+              error: result.error,
+            })),
+          },
+        }));
+        setReviewState("idle");
+      } catch {
+        setReviewState("unavailable");
       }
     } catch {
       setDiagnosisStatus("error");
+      setReviewState("unavailable");
     } finally {
       setIsDiagnosing(false);
     }
@@ -151,6 +179,8 @@ export function PracticeArenaModal({
     setUserCode("");
     setRunSummary(null);
     setMlDiagnosis(null);
+    setCodeReview(null);
+    setReviewState("idle");
     setDiagnosisStatus("idle");
   };
 
@@ -354,7 +384,7 @@ export function PracticeArenaModal({
                   onClick={handleSubmitAndDiagnose}
                   disabled={isRunning || isDiagnosing}
                 >
-                  {isDiagnosing ? "Diagnosing..." : "Submit & Diagnose"}
+                  {isDiagnosing ? "Analyzing..." : "Submit + AI Review"}
                 </button>
               </div>
 
@@ -430,7 +460,7 @@ export function PracticeArenaModal({
                   </>
                 ) : (
                   <div style={{ color: "#8d9567" }}>
-                    Write your solution above. Click &quot;Run Code&quot; to test with custom input, or &quot;Submit &amp; Diagnose&quot; to test all cases and receive ML diagnosis.
+                    Write your solution above. Run it with custom input, or submit it for verified tests, ML diagnosis, and an explicitly labelled Gemini AI review when available.
                   </div>
                 )}
               </div>
@@ -442,8 +472,8 @@ export function PracticeArenaModal({
           {/* ========================================================================= */}
           <aside className={styles.columnDiagnosis}>
             <div className={styles.diagnosisHeader}>
-              <div className={styles.diagnosisTitle}>ML Misconception Diagnosis</div>
-              <span className={styles.mlModelBadge}>LinearSVC</span>
+              <div className={styles.diagnosisTitle}>Diagnosis &amp; Code Review</div>
+              <span className={styles.mlModelBadge}>ML + GEMINI</span>
             </div>
 
             {/* When Correct */}
@@ -499,6 +529,8 @@ export function PracticeArenaModal({
                 )}
               </div>
             )}
+
+            <AIReviewPanel review={codeReview} state={reviewState} />
 
             {/* Idle State */}
             {diagnosisStatus === "idle" && (

@@ -54,8 +54,8 @@ async def _review_normalized(normalized: AttemptForDiagnosis, prediction: Diagno
     trusted = prediction or await provider.diagnose(normalized)
     try:
         return await reviewer.review(normalized, trusted)
-    except GeminiReviewUnavailable:
-        return deterministic_review(normalized, trusted)
+    except GeminiReviewUnavailable as exc:
+        return deterministic_review(normalized, trusted, exc.reason)
 
 
 def _not_found(kind: str, identifier: str) -> HTTPException:

@@ -107,6 +107,7 @@ export interface DiagnosisResponse {
 export interface CodeReviewResponse {
   source: "gemini" | "deterministic";
   model: string;
+  availabilityMessage?: string | null;
   diagnosisCode: Misconception;
   summary: string;
   strengths: string[];
