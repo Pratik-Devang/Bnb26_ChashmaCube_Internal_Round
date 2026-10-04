@@ -33,6 +33,19 @@ body { background: #11130f; }
 .product-shell .page-heading h1 { color: #eee9dc; font-size: clamp(2rem, 3vw, 3.2rem); }
 .product-shell .page-heading p { color: #c2bba9; }
 .product-shell .page-heading .page-eyebrow { color: #d4b277; }
+
+/* Make the main navigation and account controls comfortably readable. */
+.product-shell .top-navigation a { min-width: 104px; height: 58px; padding-inline: 14px; font-size: 1rem; }
+.product-shell .top-navigation svg { width: 21px; height: 21px; }
+.product-shell .profile-copy strong { font-size: 1rem; }
+.product-shell .profile-copy small { font-size: .82rem; }
+.product-shell .back-crumb { min-height: 42px; padding: 8px 13px; font-size: .95rem; }
+.product-shell .back-crumb svg { width: 18px; height: 18px; }
+
+@media (max-width: 760px) {
+  .product-shell .mobile-navigation a { font-size: .76rem; }
+  .product-shell .mobile-navigation svg { width: 21px; height: 21px; }
+}
 .product-shell :is(.page-eyebrow,.section-heading > span,.section-heading > div > span,.lesson-kicker) { color: #d4b277; }
 .adventure-hero { position: relative; isolation: isolate; min-height: 650px; height: min(740px, 78vh); overflow: hidden; margin: 0 -4.35%; background: #252720; border-bottom: 1px solid #827d62; }
 .adventure-scene { z-index: -3; object-fit: cover; image-rendering: pixelated; object-position: 65% 43%; filter: brightness(.78) saturate(.92); }

@@ -14,8 +14,9 @@ export type AdventureProgress = AdventureSelection & {
   coinsEarned: number; attemptCount: number; mistakeCount: number; updatedAt: string | null;
 };
 export type IncorrectAdventureReview = {
+  kind?: "code";
   id: string; world: AdventureWorld; track: string; topic: string; difficulty: string;
-  questionId: string; prompt: string; code: string; yourAnswer: string;
+  questionId: string; exerciseId?: string; prompt: string; code: string; yourAnswer: string;
   correctAnswer: string; explanation: string; attemptedAt: string | null;
 };
 export type AdventureJournal = { recent: AdventureSelection | null; saves: AdventureProgress[]; incorrectReviews: IncorrectAdventureReview[] };

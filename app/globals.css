@@ -199,6 +199,9 @@ h1, h2, h3, p { margin-top: 0; }
 .incorrect-review-item h3 { margin: 13px 0; font-size: 1.2rem; line-height: 1.4; }
 .incorrect-review-item pre { overflow-x: auto; padding: 12px; background: var(--ink); color: var(--white); }
 .incorrect-review-item p { margin: 8px 0; }
+.adventure-review-solution { margin-top: 12px; }
+.adventure-review-solution summary { width: fit-content; padding: 8px 11px; border: 1px solid var(--line); cursor: pointer; font-weight: 800; }
+.adventure-review-solution pre { margin-top: 10px; white-space: pre-wrap; }
 .incorrect-review-explanation { padding: 11px; border-left: 3px solid var(--mint); background: rgba(127, 205, 172, .12); }
 .insights-grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: 22px; align-items: start; }
 .insight-list { display: grid; gap: 10px; }.insight-list article { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 13px; padding: 14px; border-radius: 17px; background: #f5f6f0; }.state-symbol { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 13px; font-weight: 950; }.state-resolved { background: var(--mint); }.state-improving { background: var(--cyan); }.state-learned { background: #52724a; color: #fff; }.state-needs-practice { background: var(--yellow); }.state-untested { background: #e6e7e1; }

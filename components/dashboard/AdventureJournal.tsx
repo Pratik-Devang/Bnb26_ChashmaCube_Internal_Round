@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { adventureHref, loadAdventureJournal, topicNames, type AdventureProgress, type IncorrectAdventureReview } from "@/lib/game/curriculum";
+import { challengeSolutions } from "@/lib/game/challenge-solutions";
 
 export function AdventureSummary({ progress, reviews = [] }: { progress: AdventureProgress; reviews?: IncorrectAdventureReview[] }) {
   const [isReviewOpen, setIsReviewOpen] = useState(false);
@@ -19,15 +20,25 @@ export function AdventureSummary({ progress, reviews = [] }: { progress: Adventu
       <button className="adventure-review-toggle" type="button" aria-expanded={isReviewOpen} aria-controls={reviewId} onClick={() => setIsReviewOpen((open) => !open)}>
         {isReviewOpen ? "Hide question review" : `Review ${adventureReviews.length === 1 ? "question" : `${adventureReviews.length} questions`}`}
       </button>
-      {isReviewOpen && <div className="incorrect-review-list" id={reviewId}>{adventureReviews.map((review) => (
-        <article className="incorrect-review-item" key={review.id}>
+      {isReviewOpen && <div className="incorrect-review-list" id={reviewId}>{adventureReviews.map((review) => {
+        const solution = review.exerciseId ? challengeSolutions[review.exerciseId] : undefined;
+        return <article className="incorrect-review-item" key={review.id}>
           <h3>{review.prompt}</h3>
-          {review.code && <pre><code>{review.code}</code></pre>}
-          <p><strong>Your answer:</strong> {review.yourAnswer}</p>
-          <p><strong>Correct answer:</strong> {review.correctAnswer}</p>
-          <p className="incorrect-review-explanation"><strong>Explanation:</strong> {review.explanation}</p>
-        </article>
-      ))}</div>}
+          {review.kind === "code" ? <>
+            <p><strong>Attempt:</strong> {review.yourAnswer}</p>
+            {review.code
+              ? <><p><strong>Your submitted code:</strong></p><pre><code>{review.code}</code></pre></>
+              : <p>Your earlier attempt was recorded before submitted code was saved, so that code is unavailable.</p>}
+            <p className="incorrect-review-explanation"><strong>Hint:</strong> {review.explanation}</p>
+            {solution && <details className="adventure-review-solution"><summary>Show a working solution</summary><pre><code>{solution}</code></pre></details>}
+          </> : <>
+            {review.code && <pre><code>{review.code}</code></pre>}
+            <p><strong>Your answer:</strong> {review.yourAnswer}</p>
+            <p><strong>Correct answer:</strong> {review.correctAnswer}</p>
+            <p className="incorrect-review-explanation"><strong>Explanation:</strong> {review.explanation}</p>
+          </>}
+        </article>;
+      })}</div>}
     </div>}
     <Link className="solid-action" href={adventureHref(progress)}>{progress.completed ? "Revisit adventure" : "Resume adventure"} →</Link>
   </section>;

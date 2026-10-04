@@ -23,7 +23,6 @@ import { useAccount } from "@/components/auth/AccountProvider";
 import { CharacterDialogue, type CharacterConversation, type DialoguePortrait } from "../dialogs/CharacterDialogue";
 import { IslandScoutChallenge } from "../dialogs/IslandScoutChallenge";
 import { answerAdventureQuestion, completeAdventureCodeQuestion, finishAdventureLesson, topicNames, worldPath, type AdventureProgress, type AdventureWorld, type CurriculumTrack } from "@/lib/game/curriculum";
-import { examplesForLesson } from "@/lib/game/lesson-examples";
 import { PracticeArenaModal } from "@/components/practice/PracticeArenaModal";
 import styles from "./Adventure.module.css";
 
