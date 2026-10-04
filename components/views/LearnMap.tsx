@@ -1,58 +1,40 @@
-"use client";
-
+import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import { learningModules } from "@/lib/mock-data";
-import { Icon } from "@/components/ui/Icon";
-import { PageHeader } from "@/components/ui/PageHeader";
+import { learningWorlds } from "@/lib/game/worlds";
+import styles from "./LearnMap.module.css";
 
 export function LearnMap() {
-  const [query, setQuery] = useState("");
-  const [selected, setSelected] = useState("loop-boundaries");
-  const modules = useMemo(() => learningModules.filter((item) => item.title.toLowerCase().includes(query.toLowerCase())), [query]);
-  const active = learningModules.find((item) => item.id === selected) ?? learningModules[2];
-
+  const height = Math.max(740, learningWorlds.length * 300 + 160);
+  const stops = learningWorlds.map((world, index) => ({ world, x: index % 2 === 0 ? 29 : 72, y: height - 210 - index * 300 }));
   return (
-    <main className="route-page learn-page">
-      <PageHeader
-        eyebrow="PYTHON FOUNDATIONS"
-        title="Your learning path"
-        description="Move one concept at a time. Completed ideas stay visible, and the next useful step is always clear."
-        action={<label className="route-search"><Icon name="search" /><span className="sr-only">Search lessons</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Find a concept" /></label>}
-      />
-
-      <div className="learn-layout">
-        <section className="learning-map" aria-label="Python concept path">
-          <div className="map-line" aria-hidden="true" />
-          {modules.map((module, index) => (
-            <button key={module.id} className={`map-stop stop-${module.status} ${selected === module.id ? "selected" : ""}`} onClick={() => setSelected(module.id)} disabled={module.status === "locked"}>
-              <span className="map-node">{module.status === "completed" ? "✓" : module.status === "locked" ? <Icon name="lock" /> : index + 1}</span>
-              <span className={`map-card tone-${module.accent}`}>
-                <i>{module.icon}</i>
-                <span><small>{module.status}</small><strong>{module.title}</strong><em>{module.description}</em></span>
-                <b>{module.progress ? `${module.progress}%` : `+${module.xpReward} XP`}</b>
-              </span>
-            </button>
+    <main className={styles.atlas}>
+      <header className={styles.heading}>
+        <div><span>THE RE:LEARN ATLAS</span><h1>A world of discovery.</h1><p>Pick an island. Let curiosity lead the way.</p></div>
+        <span className={styles.worldCount}>{String(learningWorlds.length).padStart(2, "0")} <small>WORLDS TO EXPLORE</small></span>
+      </header>
+      <section className={styles.ocean} aria-label="Learning worlds" style={{ height }}>
+        <div className={styles.chartTitle}><span>PYTHON ARCHIPELAGO</span><small>Choose a destination to begin your journey</small></div>
+        <div className={styles.compass} aria-hidden="true"><span>N</span>✥</div>
+        <svg className={styles.routes} viewBox={`0 0 1000 ${height}`} preserveAspectRatio="none" aria-hidden="true">
+          {stops.slice(1).map((stop, index) => {
+            const previous = stops[index];
+            return <path key={stop.world.id} d={`M ${previous.x * 10} ${previous.y} C ${previous.x * 10} ${previous.y - 200}, ${stop.x * 10} ${stop.y + 200}, ${stop.x * 10} ${stop.y}`} />;
+          })}
+        </svg>
+        <span className={styles.seaLabel} aria-hidden="true">THE SEA OF POSSIBILITIES</span>
+        <ol className={styles.destinations}>
+          {stops.map(({ world, x, y }, index) => (
+            <li key={world.id} className={styles.destination} style={{ left: `${x}%`, top: y }}>
+              <Link href={world.href} className={styles.worldLink} aria-label={`Enter ${world.name}. ${world.label}`}>
+                <div className={`${styles.landscape} ${world.art === "church" ? styles.church : styles.island}`}><Image src={world.image} alt="" unoptimized className={styles.mapArt} /></div>
+                <span className={styles.number}>{String(index + 1).padStart(2, "0")}</span>
+                <div className={styles.plaque}><small>{world.topic}</small><h2>{world.name}</h2><span>{world.label}</span><b>EXPLORE WORLD <span aria-hidden="true">→</span></b></div>
+              </Link>
+            </li>
           ))}
-          {!modules.length ? <div className="map-empty">No concepts match that search.</div> : null}
-        </section>
-
-        <aside className="lesson-focus">
-          <span className="focus-icon">{active.icon}</span>
-          <span className="page-eyebrow">SELECTED CONCEPT</span>
-          <h2>{active.title}</h2>
-          <p>{active.beginnerNote}</p>
-          <div className="focus-meter"><span><i style={{ width: `${active.progress}%` }} /></span><strong>{active.progress}%</strong></div>
-          <dl><div><dt>Reward</dt><dd>+{active.xpReward} XP</dd></div><div><dt>Format</dt><dd>{active.status === "active" ? "Mini-game" : "Lesson"}</dd></div><div><dt>Time</dt><dd>8 min</dd></div></dl>
-          {active.status === "locked" ? <button className="solid-action" disabled><Icon name="lock" />Finish earlier stops</button> : (
-            <div className="lesson-actions">
-              <Link className="solid-action" href={`/topics/${active.id}?mode=lesson`}><Icon name="play" />{active.status === "completed" ? "Review this lesson" : "Start this lesson"}</Link>
-              <Link className="quiet-action" href={`/topics/${active.id}?mode=practice`}><Icon name="target" />Practice again</Link>
-            </div>
-          )}
-          {active.status === "active" ? <div className="gentle-note"><Icon name="brain" /><span><strong>Why this lesson?</strong>Your last answer suggests the final step of a range deserves a closer look.</span></div> : null}
-        </aside>
-      </div>
+        </ol>
+        <div className={styles.chartFooter}><span aria-hidden="true">✦</span> Your next chapter begins on shore.</div>
+      </section>
     </main>
   );
 }

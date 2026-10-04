@@ -4,6 +4,7 @@ import { useState } from "react";
 import { learner } from "@/lib/mock-data";
 import { Icon } from "@/components/ui/Icon";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { PixelSprite } from "@/components/ui/PixelSprite";
 
 export function ProfileView() {
   const [sound, setSound] = useState(true);
@@ -12,11 +13,11 @@ export function ProfileView() {
 
   return (
     <main className="route-page profile-page">
-      <PageHeader eyebrow="PROFILE & PREFERENCES" title="Make learning feel like yours" description="Keep the experience encouraging, comfortable, and realistic for your routine." />
+      <PageHeader eyebrow="YOUR EXPLORER" title="Character & camp settings" description="A place for your achievements, your routine, and the way you like to learn." />
 
       <div className="profile-layout">
         <aside className="profile-card">
-          <div className="large-avatar">{learner.avatar}</div>
+          <div className="large-avatar"><PixelSprite /></div>
           <span className="level-pill">LEVEL {learner.level}</span>
           <h2>{learner.name}</h2>
           <p>Python explorer</p>

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./pixel-theme.css";
 import { AppFrame } from "@/components/navigation/AppFrame";
 
 export const metadata: Metadata = {
