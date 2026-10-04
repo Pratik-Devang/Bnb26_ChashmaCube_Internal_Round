@@ -1,64 +1,57 @@
-.atlas { padding: 30px 0; }
-.heading { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; color: #f5edcd; }
-.heading > div > span { color: #c8d985; font: bold .65rem "Courier New", monospace; letter-spacing: .2em; }
-.heading h1 { font-size: 2.8rem; margin: 6px 0; }
-.heading p { margin: 0; color: #aabbbb; font-size: .88rem; }
-.worldCount { display: flex; align-items: center; gap: 12px; padding: 12px 18px; border: 1px solid #637266; background: #233c3e; font: bold 2rem Georgia, serif; color: #e9d496; }
-.worldCount small { max-width: 90px; font: bold .6rem/1.6 "Courier New", monospace; letter-spacing: .1em; }
-.ocean { position: relative; overflow: hidden; isolation: isolate; border: 6px double #b99a5a; background: radial-gradient(ellipse at 20% 70%, #42bac088, transparent 48%), radial-gradient(ellipse at 80% 25%, #2babbb88, transparent 45%), repeating-linear-gradient(0deg, #ffffff05 0 2px, transparent 2px 8px), #197388; box-shadow: 0 0 0 3px #1b383c, 0 20px 50px #0005, inset 0 0 90px #052e4966; }
-.ocean::before { content: ""; position: absolute; inset: 0; z-index: -1; opacity: .2; background-image: repeating-radial-gradient(ellipse at center, transparent 0 25px, #b7f0d7 26px 27px, transparent 28px 42px); background-size: 130px 65px; transform: rotate(-8deg) scale(1.3); }
-.chartTitle { position: absolute; top: 26px; left: 30px; display: grid; gap: 7px; color: #f3e4b7; }
-.chartTitle > span { font: bold .8rem "Courier New", monospace; letter-spacing: .18em; }
-.chartTitle small { font-size: .75rem; color: #c5e6df; }
-.compass { position: absolute; right: 26px; bottom: 42px; display: grid; justify-items: center; color: #d1dfb9aa; font-size: 5rem; line-height: 1; }
-.compass span { font: bold .7rem "Courier New", monospace; }
-.routes { position: absolute; width: 100%; height: 100%; inset: 0; overflow: visible; }
-.routes path { fill: none; stroke: #eed18b; stroke-width: 5; stroke-dasharray: 1 17; stroke-linecap: round; filter: drop-shadow(0 2px 0 #294b44); }
-.seaLabel { position: absolute; top: 43%; left: 9%; transform: rotate(-13deg); font: italic .85rem Georgia, serif; letter-spacing: .16em; color: #b1e2d39c; }
-.destinations { margin: 0; padding: 0; list-style: none; }
-.destination { position: absolute; width: 340px; transform: translate(-50%, -50%); }
-.worldLink { display: flex; flex-direction: column; align-items: center; position: relative; transition: transform .18s ease; }
-.worldLink:hover { transform: translateY(-6px); }
-.worldLink:focus-visible { outline: 3px solid #fff5ae; outline-offset: 12px; }
-.landscape { width: 310px; height: 190px; position: relative; overflow: hidden; filter: drop-shadow(0 10px 0 #08455166); }
-.island { border: 3px solid #87d6c6; border-radius: 45% 38% 42% 35%; box-shadow: 0 0 0 7px #71d6d32b, 0 0 0 15px #7ce4d519; }
-.mapArt { width: 100%; height: 100%; object-fit: cover; image-rendering: pixelated; }
-.church .mapArt { position: absolute; width: 430px; height: 430px; max-width: none; left: -55px; top: -53px; object-fit: contain; }
-.number { z-index: 2; display: grid; place-items: center; width: 46px; height: 46px; margin-top: -17px; margin-bottom: -12px; background: #ebc66c; color: #43351f; border: 3px solid #fff0b9; font: bold 1.1rem Georgia, serif; clip-path: polygon(0 0,100% 0,100% 80%,50% 100%,0 80%); }
-.plaque { min-width: 300px; text-align: center; padding: 23px 16px 14px; border: 3px double #b79753; background: linear-gradient(#33493c, #182f2e); box-shadow: 4px 5px 0 #0d414788; color: #fff1c7; }
-.plaque small { color: #d9cb91; text-transform: uppercase; font: bold .58rem "Courier New", monospace; letter-spacing: .12em; }
-.plaque h2 { font-size: 1.55rem; margin: 5px 0; }
-.plaque > span { font-size: .67rem; color: #c5d3bd; }
-.plaque b { display: flex; justify-content: center; gap: 22px; margin: 12px auto 0; padding-top: 9px; border-top: 1px solid #768265; color: #dfdf9b; font: bold .65rem "Courier New", monospace; letter-spacing: .1em; }
-.chartFooter { position: absolute; bottom: 18px; left: 28px; font: italic .85rem Georgia, serif; color: #d2e2c9; }
-.chartFooter span { color: #efd18c; padding-right: 8px; }
-@media (prefers-reduced-motion: reduce) { .worldLink { transition: none; } }
-
-/* The world chart belongs to the same night expedition as the dashboard. */
-.heading { color: #eee9dc; }
-.heading > div > span { color: #d4b277; }
-.heading p { color: #c2bba9; }
-.worldCount { background: #34372d; border-color: #827d62; color: #eee9dc; font-family: monospace; }
-.ocean { border: 1px solid #515747; background: #283d36; box-shadow: inset 0 0 120px #10171166; }
-.ocean::before { opacity: .08; }
-.chartTitle,.chartFooter { color: #c2bba9; }
-.chartTitle small { color: #c2bba9; }
-.routes path { stroke: #d4b277; filter: none; }
-.seaLabel { color: #d4b27788; font-family: monospace; }
-.plaque { background: #252720; border: 1px solid #aaa28f; color: #eee9dc; box-shadow: 5px 5px #1b1d1888; }
-.plaque small,.plaque b { color: #d4b277; }
-.plaque > span { color: #c2bba9; }
-.plaque b { border-color: #827d62; }
-.number { background: #d4b277; color: #34372d; border-color: #eee9dc; font-family: monospace; }
-.chartFooter { font-family: monospace; font-size: .7rem; }
-.chartFooter span { color: #eee9dc; }
-
-@keyframes islandDrift {
-  0%, 100% { translate: 0 0; }
-  50% { translate: 0 -8px; }
-}
-@media (prefers-reduced-motion: no-preference) {
-  .landscape { animation: islandDrift 6s ease-in-out infinite; }
-  .destination:nth-child(even) .landscape { animation-delay: -3s; }
-  .worldLink:is(:hover,:focus-visible) .landscape { animation-play-state: paused; }
-}
+.atlas { max-width: 1440px; margin: 0 auto; padding: 44px 0 28px; color: #eee6d3; }
+.heading { display: flex; justify-content: space-between; align-items: center; gap: 32px; margin-bottom: 36px; }
+.eyebrow { font: bold .65rem/1.6 "Courier New", monospace; letter-spacing: .2em; color: #bba275; }
+.heading h1 { font: 600 clamp(2rem,3.5vw,3.6rem)/1.15 "Courier New", monospace; letter-spacing: -.065em; margin: 14px 0; }
+.heading h1 em { color: #d6b778; font-style: normal; }
+.heading p { font-size: .9rem; color: #a9a897; margin: 0; line-height: 1.7; }
+.worldCount { display: flex; gap: 16px; align-items: center; padding-left: 25px; border-left: 1px solid #595644; flex-shrink: 0; }
+.worldCount strong { color: #d6b778; font: 400 3rem/1 monospace; }
+.worldCount span { color: #a9a897; font: .65rem/1.7 monospace; }
+.sectionHeading { display: flex; justify-content: space-between; gap: 18px; padding: 15px 0; border-top: 1px solid #484b3b; color: #969884; font: .6rem/1.5 "Courier New", monospace; letter-spacing: .16em; }
+.destinations { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 28px; list-style: none; padding: 0; margin: 0; }
+.destination { min-width: 0; }
+.worldLink { display: block; height: 100%; text-decoration: none; color: inherit; border: 1px solid #62604a; background: #23271e; box-shadow: 5px 5px 0 #0b100b; position: relative; transition: border-color .2s, translate .2s; }
+.worldLink::after { content: ""; position: absolute; inset: 5px; border: 1px solid #c7b27e20; pointer-events: none; }
+.worldLink:hover { border-color: #d6b778; translate: 0 -4px; }
+.worldLink:focus-visible { outline: 3px solid #e9c88d; outline-offset: 6px; }
+.landscape { position: relative; aspect-ratio: 1.75; overflow: hidden; background: #25382b; border-bottom: 1px solid #696345; }
+.mapArt { display: block; position: absolute; width: 100%; height: auto; max-width: none; image-rendering: pixelated; }
+.island .mapArt { top: -13%; filter: saturate(.7) sepia(.16); }
+/* Crop transparent margins from the temple's 512px square source without stretching. */
+.church .mapArt { width: 139.13%; left: -21.74%; top: -34%; filter: saturate(.72) sepia(.12); }
+.shade { position: absolute; inset: 0; background: linear-gradient(180deg,#17201880,transparent 30%,transparent 60%,#182018bb); box-shadow: inset 0 0 50px #14201355; }
+.worldNumber { position: absolute; left: 22px; top: 20px; display: flex; gap: 12px; align-items: center; padding: 9px 13px; background: #1b221be8; border: 1px solid #bdaa7299; font: .6rem monospace; letter-spacing: .14em; color: #e2d2a3; }
+.worldNumber b { font-size: 1.1rem; letter-spacing: 0; }
+.location { position: absolute; left: 26px; bottom: 18px; font: bold .58rem/1.5 monospace; letter-spacing: .16em; color: #f2e7c5; text-shadow: 1px 2px #152313; }
+.plaque { padding: 25px 28px 20px; background: linear-gradient(115deg,#2b2e23,#20251d); }
+.chapter { color: #b9a071; font: .58rem/1.7 monospace; letter-spacing: .16em; }
+.plaque h2 { margin: 10px 0 12px; color: #f3e8cd; font: bold clamp(1.35rem,2.1vw,2rem)/1.15 "Courier New", monospace; letter-spacing: -.055em; }
+.plaque p { margin: 0; max-width: 49ch; min-height: 3.4em; color: #b6b5a2; font-size: .85rem; line-height: 1.7; }
+.details { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 21px; color: #d3c6a4; font: .67rem/1.6 monospace; }
+.details i { font-size: .4rem; color: #9a865c; }
+.departure { display: flex; justify-content: space-between; align-items: center; gap: 12px; border-top: 1px solid #4d503b; margin-top: 21px; padding-top: 17px; }
+.guide { display: flex; align-items: center; gap: 4px; min-width: 0; }
+.guide > span:last-child { color: #aaa991; font: .62rem/1.7 monospace; }
+.guide strong { color: #d0c7aa; font-weight: normal; }
+.guide > span:first-child { flex-shrink: 0; width: 64px; height: 64px; margin: -12px 0 -9px -13px; }
+.action { display: inline-flex; justify-content: center; align-items: center; gap: 20px; padding: 13px 17px; background: #cfb77f; color: #22281b; border: 1px solid #f0dca7; box-shadow: 3px 3px #10160d; font: bold .72rem/1.2 monospace; white-space: nowrap; }
+.action b { font-size: 1.1rem; transition: translate .2s; }
+.worldLink:hover .action { background: #e4cc91; }
+.worldLink:hover .action b { translate: 2px -2px; }
+.fieldNote { display: flex; align-items: center; gap: 20px; padding: 25px 3px 0; color: #a5a48f; }
+.noteMark { color: #c7ad76; font-size: 1.8rem; }
+.fieldNote strong { font: bold .68rem monospace; color: #cfbe99; }
+.fieldNote p { margin: 6px 0 0; font-size: .77rem; line-height: 1.7; }
+.noteEnd { margin-left: auto; font: .55rem monospace; letter-spacing: .13em; white-space: nowrap; }
+.motes { position: absolute; inset: 0; pointer-events: none; }
+.motes i { position: absolute; width: 3px; height: 3px; background: #fff1ad; box-shadow: 0 0 7px #f8db7b; opacity: .65; }
+.motes i:nth-child(1) { left: 19%; top: 49%; }
+.motes i:nth-child(2) { left: 68%; top: 30%; animation-delay: -2s; }
+.motes i:nth-child(3) { left: 81%; top: 77%; animation-delay: -4s; }
+.motes i:nth-child(4) { left: 44%; top: 65%; animation-delay: -1s; }
+@keyframes firefly { 0%,100% { translate: 0 0; opacity: .2; } 50% { translate: 5px -10px; opacity: .9; } }
+@media (prefers-reduced-motion: no-preference) { .motes i { animation: firefly 6s ease-in-out infinite; } }
+@media (prefers-reduced-motion: reduce) { .worldLink,.action b { transition: none; } }
+@media (max-width: 1100px) { .plaque { padding: 22px 20px 18px; }.guide > span:last-child { display: none; }.noteEnd { display: none; } }
+@media (max-width: 760px) { .atlas { padding-top: 24px; }.heading { gap: 16px; margin-bottom: 25px; }.worldCount { display: none; }.heading h1 { letter-spacing: -.055em; }.destinations { grid-template-columns: 1fr; gap: 26px; }.sectionHeading > span:last-child { display: none; }.guide > span:last-child { display: block; }.plaque p { min-height: 0; }.fieldNote { align-items: flex-start; gap: 12px; }.landscape { aspect-ratio: 1.6; }.worldNumber { top: 16px; left: 16px; }.location { left: 20px; font-size: .53rem; } }
+@media (max-width: 380px) { .guide > span:last-child { display: none; }.details { gap: 8px; font-size: .6rem; }.plaque { padding: 20px 16px; } }

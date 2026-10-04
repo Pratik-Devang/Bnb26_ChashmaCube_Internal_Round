@@ -584,7 +584,7 @@ export function ExerciseWorkspace({ exerciseId }: Props) {
                   ) : null}
 
                   {mlDiagnosis.reassessment ? (
-                    <div style={{ padding: "0.5rem", borderRadius: "4px", background: mlDiagnosis.reassessment.status === "resolved" ? "rgba(16, 185, 129, 0.15)" : "rgba(239, 68, 68, 0.15)", color: mlDiagnosis.reassessment.status === "resolved" ? "#34d399" : "#f87171", fontSize: "0.85rem", marginBottom: "0.75rem" }}>
+                    <div style={{ padding: "0.5rem", borderRadius: "4px", background: mlDiagnosis.reassessment.status === "resolved" ? "rgba(16, 185, 129, 0.15)" : mlDiagnosis.reassessment.status === "uncertain" ? "rgba(234, 179, 8, 0.15)" : "rgba(239, 68, 68, 0.15)", color: mlDiagnosis.reassessment.status === "resolved" ? "#34d399" : mlDiagnosis.reassessment.status === "uncertain" ? "#facc15" : "#f87171", fontSize: "0.85rem", marginBottom: "0.75rem" }}>
                       Reassessment status: <strong>{mlDiagnosis.reassessment.status.toUpperCase()}</strong> (Previous Misconception ID: #{mlDiagnosis.reassessment.misconception_id})
                     </div>
                   ) : null}
