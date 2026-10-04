@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
+import type { TestResults } from "@/types/learning";
 import islandMap from "@/2d_assets/First Island/Tiled/Tiled_map.png";
 import explorer from "@/2d_assets/First Island/Characters/Character_1/Idle.png";
 import explorerWalk from "@/2d_assets/First Island/Characters/Character_1/Walk.png";
@@ -20,8 +21,9 @@ import { ChurchMapCanvas } from "../ChurchMapCanvas";
 import { ChurchExteriorCanvas } from "../ChurchExteriorCanvas";
 import { useAccount } from "@/components/auth/AccountProvider";
 import { CharacterDialogue, type CharacterConversation, type DialoguePortrait } from "../dialogs/CharacterDialogue";
-import { answerAdventureQuestion, finishAdventureLesson, topicNames, worldPath, type AdventureProgress, type AdventureWorld, type CurriculumTrack } from "@/lib/game/curriculum";
-import { examplesForLesson } from "@/lib/game/lesson-examples";
+import { IslandScoutChallenge } from "../dialogs/IslandScoutChallenge";
+import { answerAdventureQuestion, completeAdventureCodeQuestion, finishAdventureLesson, topicNames, worldPath, type AdventureProgress, type AdventureWorld, type CurriculumTrack } from "@/lib/game/curriculum";
+import { PracticeArenaModal } from "@/components/practice/PracticeArenaModal";
 import styles from "./Adventure.module.css";
 
 type Position = { x: number; y: number };
@@ -63,6 +65,7 @@ export function TopicAdventureWorld({ world, track, initialProgress }: { world: 
   const [moving, setMoving] = useState(false);
   const [progress, setProgress] = useState(initialProgress);
   const [guide, setGuide] = useState<Guide | null>(null);
+  const [codeChallengeOpen, setCodeChallengeOpen] = useState(false);
   const [conversation, setConversation] = useState<(CharacterConversation & { target?: Guide }) | null>(() => ({
     speaker: chapel ? "Grounds Guide" : "Beach Cartographer", portrait: chapel ? "ranger" : "elder", label: "Begin exploring",
     lines: initialProgress.completedLessonIds.length ? [
@@ -76,6 +79,7 @@ export function TopicAdventureWorld({ world, track, initialProgress }: { world: 
       "Use WASD or the arrow keys to move. Walk close to a guide and press E or click them to talk. Lessons earn 10 coins each; finish both checks for 50 more. Your journal is saved to your account.",
     ],
   }));
+  const [arenaOpen, setArenaOpen] = useState(false);
   const [choice, setChoice] = useState<number | null>(null);
   const [quizAt, setQuizAt] = useState<ChapelObject | null>(null);
   const [lessonPage, setLessonPage] = useState(0);
@@ -124,7 +128,7 @@ export function TopicAdventureWorld({ world, track, initialProgress }: { world: 
     setChoice(null); setFeedback(""); setError(""); setQuizAt(target);
   };
   const interact = (target: Guide) => {
-    if (busy || guide || quizAt || conversation) return;
+    if (busy || guide || conversation || codeChallengeOpen) return;
     if (distance(position, target) > 11) { setMessage(`Walk closer to ${target.name}, then press E.`); return; }
     if (target.lesson < 0) {
       setConversation({ speaker: target.name, portrait: "keeper", label: "Return to exploring", lines: [
@@ -170,7 +174,7 @@ export function TopicAdventureWorld({ world, track, initialProgress }: { world: 
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (guide || quizAt || conversation || busy || (event.target as HTMLElement)?.closest("input,textarea,select,a")) return;
+      if (guide || conversation || codeChallengeOpen || busy || (event.target as HTMLElement)?.closest("input,textarea,select,a")) return;
       const key = event.key.toLowerCase();
       if (key === "e") {
         event.preventDefault();
@@ -238,8 +242,39 @@ export function TopicAdventureWorld({ world, track, initialProgress }: { world: 
     finally { setBusy(false); }
   }
 
+  async function completeCodeChallenge(code: string, results: TestResults) {
+    if (!question || busy) return;
+    setBusy(true); setError("");
+    try {
+      const result = await completeAdventureCodeQuestion(selection, question.id, track.codeChallenge.id, code, results);
+      if (!result.correct) throw new Error("The server could not verify that solution. Try the Scout again.");
+      setProgress(result.progress);
+      setMessage("Coding trial complete. Return to the Island Scout for the transfer check.");
+    } catch (reason) {
+      throw reason instanceof Error ? reason : new Error("Could not save the coding trial.");
+    } finally { setBusy(false); }
+  }
+
   return <main className={styles.world}>
-    <header className={styles.hud}><Link href={worldPath(world)}>← Change topic</Link><div><small>{chapel ? "CHAPEL OF CHOICES" : "THE FIRST ISLAND"}</small><strong>{topicNames[track.topic]} / {track.difficulty}</strong></div><span>{progress.coinsEarned} coins</span><Link href="/">Dashboard</Link></header>
+    <header className={styles.hud}>
+      <div className={styles.hudLeft}>
+        <Link href={worldPath(world)}>← Change topic</Link>
+        <div><small>{chapel ? "CHAPEL OF CHOICES" : "THE FIRST ISLAND"}</small><strong>{topicNames[track.topic]} / {track.difficulty}</strong></div>
+      </div>
+
+      <div className={styles.hudCenter}>
+        <div className={styles.fireWrapper}>
+          <button type="button" className={styles.fireButton} onClick={() => setArenaOpen(true)}>
+            Quiz
+          </button>
+        </div>
+      </div>
+
+      <div className={styles.hudRight}>
+        <span>{progress.coinsEarned} coins</span>
+        <Link href="/">Dashboard</Link>
+      </div>
+    </header>
     <div className={styles.objective}><span>{progress.completed ? "ADVENTURE COMPLETE" : `NEXT: ${nextGuide.name}`}</span><strong>{progress.completedLessonIds.length}/3 lessons · {progress.passedQuestionIds.length}/2 checks</strong></div>
     <section className={`${styles.map} ${chapel ? styles.chapelMap : ""}`} style={chapel ? { aspectRatio: viewport.ratio, width: `min(100%, calc(max(520px, 100dvh - 190px) * ${viewport.ratio}))` } : undefined} aria-label="Learning adventure map" tabIndex={0}>
       <div className={chapel ? styles.scenePlane : styles.islandPlane} style={chapel ? viewport.plane : undefined}>
@@ -260,12 +295,29 @@ export function TopicAdventureWorld({ world, track, initialProgress }: { world: 
     {conversation && <CharacterDialogue conversation={conversation} onDismiss={() => setConversation(null)} onComplete={() => {
       const target = conversation.target;
       setConversation(null);
-      if (target) { setChoice(null); setFeedback(""); setError(""); setLessonPage(0); setGuide(target); }
+      if (target) {
+        setChoice(null); setFeedback(""); setError("");
+        if (target.lesson === 3 && progress.passedQuestionIds.length === 0) setCodeChallengeOpen(true);
+        else setGuide(target);
+      }
     }} />}
+    {codeChallengeOpen && <IslandScoutChallenge
+      exerciseId={track.codeChallenge.id}
+      exerciseOverride={track.codeChallenge}
+      hint={track.codeChallenge.hint}
+      recordAttempt={false}
+      guideName={chapel ? "Chapel Keeper" : "Island Scout"}
+      title={`The Scout’s ${topicNames[track.topic]} Code Trial`}
+      reward={0}
+      alreadyCompleted={progress.passedQuestionIds.includes(track.questions[0].id)}
+      onClose={() => setCodeChallengeOpen(false)}
+      onComplete={completeCodeChallenge}
+    />}
     <dialog ref={dialog} className={styles.dialog} onCancel={(event) => { event.preventDefault(); closeDialog(); }}>
       <header><small>{guide?.name ?? (quizAt === "lever" ? "Lever" : quizAt === "treasure" ? "Treasure" : "Adventure")} / {track.difficulty}</small><button disabled={busy} onClick={closeDialog} aria-label="Close lesson">×</button></header>
       {error && <p className={styles.error} role="alert">{error}</p>}
       {quizAt && question ? <><small>{quizAt === "lever" ? "LEVER CHECK · FIRST QUESTION" : "TREASURE CHECK · SECOND QUESTION"} / {topicNames[track.topic]}</small><h2>{question.prompt}</h2>{feedback && <aside role="status">{feedback}</aside>}<pre><code>{question.code}</code></pre><fieldset disabled={busy}><legend>Choose your answer</legend>{question.options.map((answer, index) => <label className={`${styles.answer} ${choice === index ? styles.selected : ""}`} key={`${question.id}-${index}`}><input type="radio" name="answer" checked={choice === index} onChange={() => setChoice(index)} />{answer}</label>)}</fieldset><button className={styles.primary} disabled={busy || choice === null} onClick={submitAnswer}>{busy ? "Checking…" : quizAt === "lever" ? "Check and pull lever" : "Check and open treasure"}</button></> : lesson ? <><small>{topicNames[track.topic]} · GUIDE {guide!.lesson + 1} · PAGE {lessonPage + 1} / {lessonPageCount}</small>{workedExample ? <><h2>{workedExample.title}</h2><p>{workedExample.prompt}</p><pre><code>{workedExample.code}</code></pre><aside className={styles.exampleAnswer}><strong>Answer</strong><span>{workedExample.answer}</span><p>{workedExample.explanation}</p></aside></> : <><h2>{lesson.title}</h2><p>{lesson.body}</p><pre><code>{lesson.code}</code></pre><aside>{lesson.takeaway}</aside></>}<div className={styles.lessonPager}><button type="button" className={styles.pageButton} disabled={lessonPage === 0 || busy} onClick={() => setLessonPage((page) => Math.max(0, page - 1))}>Previous</button><span aria-live="polite">Page {lessonPage + 1} of {lessonPageCount}</span>{lessonPage < lessonPageCount - 1 ? <button type="button" className={styles.pageButton} disabled={busy} onClick={() => setLessonPage((page) => Math.min(lessonPageCount - 1, page + 1))}>Next page</button> : <button type="button" className={styles.primary} disabled={busy} onClick={finishLesson}>{busy ? "Saving…" : progress.completedLessonIds.includes(lesson.id) ? "Return to the trail" : "Finish lesson · +10 coins"}</button>}</div></> : progress.completed ? <><h2>Adventure complete!</h2><p>You finished the lessons and both checks for {topicNames[track.topic]} ({track.difficulty}).</p><p>80 coins earned in this adventure. This is practice evidence; lasting understanding takes more than one session.</p>{feedback && <p role="status">{feedback}</p>}<Link className={styles.primary} href={worldPath(world)}>Choose another topic or difficulty →</Link></> : question ? <><small>{question.kind === "transfer" ? "TRANSFER CHECK / A NEW CONTEXT" : "FINAL TRIAL"}</small><h2>{question.prompt}</h2>{feedback && <aside role="status">{feedback}</aside>}<pre><code>{question.code}</code></pre><fieldset disabled={busy}><legend>Choose your answer</legend>{question.options.map((answer, index) => <label className={`${styles.answer} ${choice === index ? styles.selected : ""}`} key={`${question.id}-${index}`}><input type="radio" name="answer" checked={choice === index} onChange={() => setChoice(index)} />{answer}</label>)}</fieldset><button className={styles.primary} disabled={busy || choice === null} onClick={submitAnswer}>{busy ? "Checking…" : "Check answer"}</button></> : null}
     </dialog>
+    <PracticeArenaModal isOpen={arenaOpen} onClose={() => setArenaOpen(false)} initialDifficulty={(track.difficulty as any) || "easy"} />
   </main>;
 }

@@ -6,6 +6,7 @@ export type CurriculumTrack = {
   id: string; topic: string; difficulty: Difficulty;
   lessons: { id: string; title: string; body: string; code: string; takeaway: string }[];
   questions: { id: string; prompt: string; code: string; options: string[]; kind: string }[];
+  codeChallenge: import("@/types/learning").Exercise & { hint: string };
 };
 export type AdventureSelection = { world: AdventureWorld; track: string };
 export type AdventureProgress = AdventureSelection & {
@@ -33,3 +34,4 @@ export const loadAdventureJournal = () => accountRequest<AdventureJournal>("/adv
 export const startAdventure = (selection: AdventureSelection) => accountRequest<AdventureProgress>("/adventures/start", { method: "POST", body: JSON.stringify(selection) });
 export const finishAdventureLesson = (selection: AdventureSelection, lessonId: string) => accountRequest<AdventureProgress>("/adventures/lesson", { method: "POST", body: JSON.stringify({ ...selection, lessonId }) });
 export const answerAdventureQuestion = (selection: AdventureSelection, questionId: string, answer: number) => accountRequest<{ progress: AdventureProgress; correct: boolean; feedback: string; source: string }>("/adventures/answer", { method: "POST", body: JSON.stringify({ ...selection, questionId, answer }) });
+export const completeAdventureCodeQuestion = (selection: AdventureSelection, questionId: string, exerciseId: string, code: string, results: import("@/types/learning").TestResults) => accountRequest<{ progress: AdventureProgress; correct: boolean; feedback: string; source: string }>("/adventures/code-answer", { method: "POST", body: JSON.stringify({ ...selection, questionId, exerciseId, code, results: results.cases }) });

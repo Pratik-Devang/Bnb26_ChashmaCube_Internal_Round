@@ -31,11 +31,124 @@
 .error { color: #ffc1a1; padding: 14px; border: 1px solid #88634b; background: #3b2822; }
 .error button,.error a { margin-left: 12px; color: inherit; text-decoration: underline; background: none; border: 0; cursor: pointer; }
 .world { padding: 18px 4%; }
-.hud { display: flex; align-items: center; gap: 24px; padding: 12px 0 20px; border-bottom: 1px solid #4a4e3c; }
-.hud > div { flex: 1; }
-.hud small,.hud strong { display: block; }
-.hud strong { text-transform: capitalize; }
-.hud a { color: #d4b277; font: bold .75rem monospace; }
+.hud {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 20px;
+  padding: 12px 0 20px;
+  border-bottom: 1px solid #4a4e3c;
+}
+
+.hudLeft {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.hudLeft small, .hudLeft strong { display: block; }
+.hudLeft strong { text-transform: capitalize; }
+.hudLeft a { color: #d4b277; font: bold .75rem monospace; }
+
+.hudCenter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hudRight {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 20px;
+  font: bold .75rem monospace;
+}
+
+.hudRight a { color: #d4b277; }
+
+/* Golden celestial revolving border animation matching website theme */
+.fireWrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px;
+  border-radius: 9999px;
+  overflow: hidden;
+  box-shadow: 0 0 16px rgba(212, 178, 119, 0.45), 0 0 32px rgba(212, 178, 119, 0.25);
+  animation: goldPulse 2.5s ease-in-out infinite alternate;
+}
+
+@keyframes goldPulse {
+  0% {
+    box-shadow: 0 0 12px rgba(212, 178, 119, 0.35), 0 0 24px rgba(212, 178, 119, 0.15);
+  }
+  100% {
+    box-shadow: 0 0 22px rgba(212, 178, 119, 0.65), 0 0 42px rgba(245, 231, 183, 0.35);
+  }
+}
+
+.fireWrapper::before {
+  content: "";
+  position: absolute;
+  top: -60%;
+  left: -60%;
+  width: 220%;
+  height: 220%;
+  background: conic-gradient(
+    from 0deg,
+    #d4b277,
+    #eedda9,
+    #fff5d6,
+    #ffffff,
+    #e3c796,
+    transparent 45%,
+    transparent 65%,
+    #c49d58,
+    #d4b277,
+    #f5e7b7,
+    #d4b277
+  );
+  animation: rotateGold 5.5s linear infinite;
+  z-index: 1;
+}
+
+@keyframes rotateGold {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.fireButton {
+  position: relative;
+  z-index: 2;
+  background: #1c2018;
+  border: 1px solid #d4b277;
+  color: #f5e7b7;
+  padding: 10px 36px;
+  font: 800 1.05rem monospace;
+  cursor: pointer;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  transition: all 0.2s ease;
+  text-shadow: 0 0 10px rgba(212, 178, 119, 0.75);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fireButton:hover {
+  background: #282f22;
+  color: #ffffff;
+  border-color: #f0d6a8;
+  transform: scale(1.04);
+  box-shadow: 0 0 14px rgba(212, 178, 119, 0.5);
+}
+
 .objective { display: flex; justify-content: space-between; padding: 18px 0; font: .75rem monospace; color: #d6c595; }
 .map { position: relative; width: min(1440px,100%); margin: 0 auto; background: #243c2e; border: 3px solid #55583f; }
 .mapImage { display: block; width: 100%; height: auto; image-rendering: pixelated; }

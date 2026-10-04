@@ -382,8 +382,9 @@ export async function diagnoseCode(
   const targetBase = NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
   const url = `${normalizeBaseUrl(targetBase)}/diagnose`;
 
+  let res: Response;
   try {
-    const res = await fetch(url, {
+    res = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -395,61 +396,18 @@ export async function diagnoseCode(
       }),
     });
 
-    if (res.ok) {
-      return (await res.json()) as MLDiagnoseResponse;
-    }
   } catch {
-    // Backend fetch failed, proceed to fallback mock
+    throw new ApiError("The diagnosis service is offline. Your code was not classified.", "DIAGNOSIS_OFFLINE", 503);
   }
 
-  // Fallback prediction if server is offline
-  const isParens = code.includes("return(") || code.includes("return (");
-  const topId = isParens ? 31 : 15;
-  const isResolved =
-    previousMisconceptionId !== null &&
-    previousMisconceptionId !== undefined &&
-    topId !== previousMisconceptionId;
-
-  return mockDelay({
-    top_prediction: {
-      id: topId,
-      misconception: isParens
-        ? "Student believes that the `return` statement requires parentheses around its argument."
-        : "Student believes Python sequences use 1-based indexing instead of 0-based indexing.",
-      score: isParens ? 0.305 : 0.28,
-    },
-    alternatives: [
-      {
-        id: 56,
-        misconception: "Student uses incorrect argument count or mismatches positional and keyword arguments.",
-        score: -0.527,
-      },
-      {
-        id: 46,
-        misconception: "Student misplaces indentation causing block association errors.",
-        score: -0.835,
-      },
-    ],
-    intervention: isParens
-      ? {
-          title: "Understanding return statements",
-          explanation: "In Python, parentheses are not required around the value returned by a function.",
-          example: "return a + b",
-          check: "Try rewriting the return statement without parentheses.",
-        }
-      : {
-          title: "Python uses zero-based indexing",
-          explanation: "The first element of a Python list is at index 0, not index 1.",
-          example: "numbers[0]",
-          check: "Which index accesses the first element?",
-        },
-    reassessment:
-      previousMisconceptionId !== null && previousMisconceptionId !== undefined
-        ? {
-            status: isResolved ? "resolved" : "unresolved",
-            misconception_id: previousMisconceptionId,
-          }
-        : null,
-  });
+  if (!res.ok) {
+    let message = "The diagnosis service could not classify this code.";
+    try {
+      const body = await res.json() as { message?: string; detail?: { message?: string } };
+      message = body.message ?? body.detail?.message ?? message;
+    } catch { /* The response was not JSON. */ }
+    throw new ApiError(message, "DIAGNOSIS_FAILED", res.status);
+  }
+  return (await res.json()) as MLDiagnoseResponse;
 }
 
