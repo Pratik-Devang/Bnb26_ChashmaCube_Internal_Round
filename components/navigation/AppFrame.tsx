@@ -13,6 +13,7 @@ const navigation: { href: string; label: string; icon: IconName }[] = [
   { href: "/learn", label: "Learn", icon: "book" },
   { href: "/insights", label: "Insights", icon: "brain" },
   { href: "/progress", label: "Progress", icon: "chart" },
+  { href: "/guide", label: "Guide", icon: "sparkles" },
 ];
 
 export function AppFrame({ children }: { children: ReactNode }) {

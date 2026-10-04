@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { getExercise, requestDiagnosis, submitAttempt } from "@/lib/api";
+import { getExercise, requestCodeReview, requestDiagnosis, reviewCode, submitAttempt } from "@/lib/api";
 import { currentLearnerId } from "@/lib/account";
 import { createPythonCodeRunner, type PythonCodeRunner } from "@/lib/code-runner";
-import type { DiagnosisResponse, Exercise, TestResults } from "@/types/learning";
+import type { CodeReviewResponse, DiagnosisResponse, Exercise, TestResults } from "@/types/learning";
 import styles from "../GameWorld.module.css";
 
 type Props = {
@@ -91,6 +91,7 @@ export function IslandScoutChallenge({ exerciseId, exerciseOverride, hint, recor
   const [code, setCode] = useState("");
   const [results, setResults] = useState<TestResults | null>(null);
   const [diagnosis, setDiagnosis] = useState<ScoutGuidance | null>(null);
+  const [codeReview, setCodeReview] = useState<CodeReviewResponse | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "running" | "passed" | "failed">("loading");
   const [error, setError] = useState("");
   const [syncWarning, setSyncWarning] = useState("");
@@ -140,6 +141,7 @@ export function IslandScoutChallenge({ exerciseId, exerciseOverride, hint, recor
     setError("");
     setSyncWarning("");
     setDiagnosis(null);
+    setCodeReview(null);
 
     try {
       const nextResults = await runnerRef.current.run({ code, testCases: exercise.testCases });
@@ -156,8 +158,22 @@ export function IslandScoutChallenge({ exerciseId, exerciseOverride, hint, recor
         });
         const savedDiagnosis = await requestDiagnosis(attempt.id);
         journalGuidance = guidanceFromDiagnosis(savedDiagnosis);
+        try {
+          setCodeReview(await requestCodeReview(attempt.id));
+        } catch {
+          // Diagnosis and test evidence remain available if optional review fails.
+        }
       } catch {
         setSyncWarning(`${guideName} used the challenge tests, but could not save this attempt to your learning journal.`);
+      } else try {
+        setCodeReview(await reviewCode({
+          exerciseId: exercise.id,
+          prompt: exercise.prompt,
+          submittedCode: code,
+          testResults: nextResults,
+        }));
+      } catch {
+        // The local test explanation below remains available.
       }
 
       if (nextResults.failed === 0 && nextResults.passed > 0) {
@@ -222,6 +238,16 @@ export function IslandScoutChallenge({ exerciseId, exerciseOverride, hint, recor
                 {diagnosis.example ? <code>{diagnosis.example}</code> : null}
                 {diagnosis.check ? <em>{diagnosis.check}</em> : null}
               </div>
+            ) : null}
+            {codeReview ? (
+              <details className={styles.codeReview} open={status === "failed"}>
+                <summary>Detailed code review</summary>
+                <small>{codeReview.source === "gemini" ? "GEMINI-ASSISTED EXPLANATION" : "EVIDENCE-BASED FALLBACK"}</small>
+                <p>{codeReview.summary}</p>
+                {codeReview.strengths.length ? <div><strong>What worked</strong><ul>{codeReview.strengths.map(item => <li key={item}>{item}</li>)}</ul></div> : null}
+                {codeReview.issues.length ? <div><strong>What to inspect</strong><ul>{codeReview.issues.map((item, index) => <li key={`${item.title}-${index}`}><b>{item.line ? `Line ${item.line}: ` : ""}{item.title}</b> — {item.explanation}</li>)}</ul></div> : null}
+                <div><strong>Next step</strong><ol>{codeReview.nextSteps.map(item => <li key={item}>{item}</li>)}</ol></div>
+              </details>
             ) : null}
             {results ? <div className={styles.testCount}>{results.passed} passed · {results.failed} failed</div> : null}
             {syncWarning ? <p className={styles.challengeError}>{syncWarning}</p> : null}

@@ -7,11 +7,12 @@ from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 LOCAL_DATABASE_PATH = Path(__file__).resolve().parents[2] / "relearn-local.sqlite3"
+API_ENV_PATH = Path(__file__).resolve().parents[1] / ".env"
 
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=API_ENV_PATH,
         env_file_encoding="utf-8",
         env_prefix="RELEARN_",
         extra="ignore",
@@ -28,6 +29,10 @@ class Settings(BaseSettings):
         ]
     )
     diagnosis_provider: str = "rule-based"
+    # Server-side only. With env_prefix this is RELEARN_GEMINI_API_KEY.
+    gemini_api_key: str | None = None
+    gemini_model: str = "gemini-2.5-flash"
+    gemini_timeout_seconds: float = Field(default=12.0, ge=1, le=30)
 
     @field_validator("cors_origins", mode="before")
     @classmethod

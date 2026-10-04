@@ -21,6 +21,8 @@ from app.schemas.learning import (
     AttemptCreate,
     AttemptRead,
     ConceptProgress,
+    CodeReviewCreate,
+    CodeReviewRead,
     DiagnosisEnvelope,
     DiagnosisRead,
     ExerciseRead,
@@ -40,10 +42,20 @@ from app.schemas.learning import (
 )
 from app.seed.demo_data import INTERVENTION_CONTENT_BY_CODE
 from app.services.diagnosis_service import RuleBasedDiagnosisProvider
+from app.services.gemini_review_service import GeminiCodeReviewService, GeminiReviewUnavailable, deterministic_review
 
 
 router = APIRouter(prefix="/api/v1", tags=["learning"], dependencies=[Depends(require_ownership)])
 provider = RuleBasedDiagnosisProvider()
+reviewer = GeminiCodeReviewService()
+
+
+async def _review_normalized(normalized: AttemptForDiagnosis, prediction: DiagnosisPrediction | None = None) -> CodeReviewRead:
+    trusted = prediction or await provider.diagnose(normalized)
+    try:
+        return await reviewer.review(normalized, trusted)
+    except GeminiReviewUnavailable:
+        return deterministic_review(normalized, trusted)
 
 
 def _not_found(kind: str, identifier: str) -> HTTPException:
@@ -341,6 +353,40 @@ async def create_attempt(payload: AttemptCreate, session: AsyncSession = Depends
 @router.post("/attempts/{attempt_id}/diagnose", response_model=DiagnosisEnvelope)
 async def diagnose_attempt(attempt_id: str, session: AsyncSession = Depends(get_session)) -> DiagnosisEnvelope:
     return await _diagnose_attempt(session, await _get_attempt(session, attempt_id))
+
+
+@router.post("/attempts/{attempt_id}/code-review", response_model=CodeReviewRead)
+async def review_attempt(attempt_id: str, session: AsyncSession = Depends(get_session)) -> CodeReviewRead:
+    attempt = await _get_attempt(session, attempt_id)
+    exercise = await session.get(Exercise, attempt.exercise_id)
+    if exercise is None:
+        raise _not_found("exercise", attempt.exercise_id)
+    envelope = await _diagnose_attempt(session, attempt)
+    prediction = DiagnosisPrediction(
+        misconception_code=envelope.diagnosis.misconception_code,
+        learner_friendly_name=envelope.diagnosis.learner_friendly_name,
+        confidence=envelope.diagnosis.confidence,
+        class_probabilities={MisconceptionCode(key): value for key, value in envelope.diagnosis.class_probabilities.items()},
+        evidence=envelope.diagnosis.evidence,
+        model_version=envelope.diagnosis.model_version,
+    )
+    normalized = AttemptForDiagnosis(
+        exercise_id=exercise.id, prompt=exercise.prompt, submitted_code=attempt.submitted_code,
+        test_results=attempt.test_results, learner_explanation=attempt.learner_explanation,
+    )
+    return await _review_normalized(normalized, prediction)
+
+
+@router.post("/code-review", response_model=CodeReviewRead)
+async def review_unsaved_attempt(payload: CodeReviewCreate) -> CodeReviewRead:
+    """Review curriculum challenges that have no persisted exercise row yet."""
+    normalized = AttemptForDiagnosis(
+        exercise_id=payload.exercise_id, prompt=payload.prompt,
+        submitted_code=payload.submitted_code,
+        test_results=payload.test_results.model_dump(mode="json"),
+        learner_explanation=payload.learner_explanation,
+    )
+    return await _review_normalized(normalized)
 
 
 @router.get("/diagnoses/{diagnosis_id}", response_model=DiagnosisEnvelope)

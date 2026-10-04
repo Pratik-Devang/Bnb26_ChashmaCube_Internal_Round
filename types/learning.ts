@@ -104,6 +104,16 @@ export interface DiagnosisResponse {
   conceptStatus?: ConceptStatus | null;
 }
 
+export interface CodeReviewResponse {
+  source: "gemini" | "deterministic";
+  model: string;
+  diagnosisCode: Misconception;
+  summary: string;
+  strengths: string[];
+  issues: { title: string; explanation: string; line?: number | null }[];
+  nextSteps: string[];
+}
+
 export interface InterventionCompletion {
   interventionId: string;
   completed: boolean;

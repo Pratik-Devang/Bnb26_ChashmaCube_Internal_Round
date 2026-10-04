@@ -803,6 +803,14 @@
 .classifierFeedback code { display: block; padding: 9px; background: #0d1610; color: var(--lime); font-size: .64rem; }
 .classifierFeedback em { display: block; margin-top: 10px; color: var(--gold); font-size: .62rem; font-style: normal; }
 .testCount { margin-top: 14px; color: #9baa98; font-size: .58rem; font-weight: 900; }
+.codeReview { margin-top: 14px; padding: 12px; border: 1px solid #66724e; background: #101a13; color: #cbd3c6; font-size: .6rem; line-height: 1.6; }
+.codeReview summary { color: var(--gold); cursor: pointer; font-weight: 900; letter-spacing: .05em; }
+.codeReview > small { display: block; margin-top: 12px; color: #95a584; font-size: .44rem; letter-spacing: .1em; }
+.codeReview p { margin: 8px 0 12px; }
+.codeReview strong { display: block; color: #f4e5bf; margin-top: 10px; }
+.codeReview ul, .codeReview ol { margin: 5px 0 0; padding-left: 17px; }
+.codeReview li { margin: 5px 0; }
+.codeReview b { color: #dce5d5; }
 .challengeError { color: #ff8c82 !important; }
 
 @keyframes idle {

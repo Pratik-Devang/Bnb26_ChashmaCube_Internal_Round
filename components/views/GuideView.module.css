@@ -1,0 +1,38 @@
+.page { --guide-gold: #d3b66f; --guide-cream: #f2e8cb; color: var(--guide-cream); font-family: "Courier New", monospace; }
+.heading { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 8px 30px; margin-bottom: 28px; padding: 8px 0 24px; border-bottom: 1px solid #55533d; }
+.heading > span { grid-column: 1 / -1; color: var(--guide-gold); font-size: .6rem; font-weight: 900; letter-spacing: .18em; }
+.page .heading h1 { margin: 0; color: #f2ecdb; font: bold clamp(2.1rem, 4vw, 4rem)/1.05 "Lucida Console", "Courier New", monospace; letter-spacing: -.08em; }
+.heading p { max-width: 570px; margin: 0; color: #bbb8aa; font-size: .78rem; line-height: 1.8; }
+.conversation { position: relative; min-height: 390px; display: grid; grid-template-columns: minmax(310px, 38%) 1fr; align-items: end; overflow: hidden; border: 4px double #847753; background: repeating-linear-gradient(0deg,#ffffff02 0 2px,transparent 2px 6px), radial-gradient(circle at 18% 55%, #4c5936 0, #263824 23%, transparent 45%), #121d17; box-shadow: inset 0 0 70px #0008, 7px 8px #080e0a; clip-path: polygon(12px 0, calc(100% - 12px) 0, 100% 12px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 12px 100%, 0 calc(100% - 12px), 0 12px); }
+.conversation::before { content: "LIVE FIELD NOTES"; position: absolute; top: 20px; right: 24px; color: #7c8466; font-size: .5rem; letter-spacing: .16em; }
+.portrait { position: relative; align-self: stretch; min-height: 390px; z-index: 1; }
+.portrait img { position: absolute; inset: auto 0 0; width: 100%; height: 110%; object-fit: contain; object-position: bottom center; image-rendering: pixelated; filter: drop-shadow(8px 0 #060b08aa); }
+.portrait .talking { transition: opacity .1s steps(2); }
+.halo { position: absolute; width: 240px; aspect-ratio: 1; left: 50%; top: 48%; transform: translate(-50%,-50%); border: 1px solid #cbb46a44; border-radius: 50%; box-shadow: 0 0 60px #bdd36a22, inset 0 0 40px #d3b66f18; animation: guideHalo 4s steps(24) infinite; }
+.dialogue { position: relative; align-self: center; min-height: 240px; margin: 70px 34px 34px -30px; padding: 45px 34px 24px; border: 3px solid #a89968; outline: 2px solid #20291e; background: #17241ef3; box-shadow: inset 0 0 0 5px #0f1813, inset 0 0 0 7px #5a563e, 6px 7px #060b08aa; z-index: 2; }
+.dialogue::before,.dialogue::after { content: "◆"; position: absolute; right: 10px; color: #b9a568; font-size: .65rem; }.dialogue::before { top: 9px; }.dialogue::after { bottom: 9px; }
+.nameplate { position: absolute; left: 24px; top: -22px; padding: 10px 24px; border: 3px solid #b6a16a; background: #3a472f; color: #fff0c5; font-size: .82rem; font-weight: 900; box-shadow: 3px 3px #0d140f; }
+.answerLabel { display: block; color: #b8cb78; font-size: .5rem; font-weight: 900; letter-spacing: .13em; }
+.dialogue > p:not(.srOnly) { min-height: 104px; margin: 17px 0 0; color: #eee7d3; font-size: clamp(.9rem, 1.2vw, 1.08rem); font-weight: 700; line-height: 1.8; text-shadow: 2px 2px #050b08; }
+.dialogue > p i { color: var(--guide-gold); font-style: normal; }
+.dialogue footer { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding-top: 18px; border-top: 1px solid #5a5c43; }
+.dialogue footer > div:last-child { display: flex; align-items: center; gap: 10px; }
+.dialogue footer a,.dialogue footer button { min-height: 38px; padding: 9px 13px; border: 1px solid #8d8259; background: #35422c; color: #f0ddb0; font: bold .65rem "Courier New",monospace; cursor: pointer; box-shadow: 3px 3px #0a100c; }
+.dialogue footer a:hover,.dialogue footer button:hover { background: #46553a; transform: translateY(-1px); }
+.pages { display: flex; gap: 7px; }.pages b { width: 17px; height: 4px; background: #535846; }.pages .current { background: var(--guide-gold); box-shadow: 3px 0 #d3b66f44; }
+.questionBoard { margin-top: 30px; padding: 28px; border: 3px solid #515640; background: #1b2119; box-shadow: 6px 7px #090e0a; }
+.boardHeading { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 5px 20px; margin-bottom: 24px; padding-bottom: 18px; border-bottom: 1px solid #555840; }
+.boardHeading > span { grid-column: 1 / -1; color: var(--guide-gold); font-size: .55rem; font-weight: 900; letter-spacing: .15em; }
+.page .boardHeading h2 { margin: 0; color: #eee8d5; font: bold 1.5rem "Lucida Console","Courier New",monospace; letter-spacing: -.05em; }
+.boardHeading p { margin: 0; color: #9fa591; font-size: .6rem; }
+.categories { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 22px; }
+.categories h3 { margin: 0 0 10px; color: #c9b878; font: bold .67rem "Courier New",monospace; letter-spacing: .1em; text-transform: uppercase; }
+.categories section > div { display: grid; gap: 8px; }
+.categories button { min-height: 54px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 13px; border: 1px solid #5b634d; background: #252c21; color: #dad9c8; text-align: left; font: bold .65rem/1.45 "Courier New",monospace; cursor: pointer; box-shadow: 3px 3px #0b100c; transition: transform .12s steps(2),border-color .12s,background .12s; }
+.categories button:hover,.categories button:focus-visible { border-color: #b6a05f; background: #35402d; transform: translate(-2px,-2px); }
+.categories button b { color: var(--guide-gold); font-size: .9rem; }
+.srOnly { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+@keyframes guideHalo { 0%,100% { opacity: .55; transform: translate(-50%,-50%) scale(.96); } 50% { opacity: 1; transform: translate(-50%,-50%) scale(1.04); } }
+@media(max-width:1000px) { .conversation { grid-template-columns: 300px 1fr; }.dialogue { margin-left: -55px; }.categories { grid-template-columns: 1fr 1fr; } }
+@media(max-width:700px) { .heading,.boardHeading { grid-template-columns: 1fr; }.conversation { display: block; overflow: visible; margin-top: 150px; }.portrait { position: absolute; top: -155px; left: 10px; width: 190px; min-height: 190px; }.portrait img { height: 100%; }.halo { width: 130px; }.dialogue { margin: 0; min-height: 280px; padding: 48px 20px 20px; }.categories { grid-template-columns: 1fr; }.questionBoard { padding: 18px; }.dialogue footer { align-items: flex-start; flex-direction: column; } }
+@media(prefers-reduced-motion:reduce) { .halo { animation: none; }.talking { transition: none !important; } }

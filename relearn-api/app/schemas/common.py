@@ -19,6 +19,8 @@ class ApiModel(BaseModel):
 class HealthResponse(ApiModel):
     status: str
     environment: str
+    code_review_provider: str
+    code_review_model: str | None = None
 
 
 class ErrorResponse(ApiModel):

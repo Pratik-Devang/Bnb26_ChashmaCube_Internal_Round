@@ -12,6 +12,7 @@ import { accountApiBase, currentLearnerId } from "./account";
 import type {
   AttemptRequest,
   AttemptResponse,
+  CodeReviewResponse,
   DiagnosisResponse,
   Exercise,
   Intervention,
@@ -243,6 +244,24 @@ export async function getDiagnosis(diagnosisId: string): Promise<DiagnosisRespon
     return mockDelay({ ...mockDiagnosisResponse });
   }
   return apiFetch<DiagnosisResponse>(`/api/v1/diagnoses/${encodeURIComponent(diagnosisId)}`);
+}
+
+export async function requestCodeReview(attemptId: string): Promise<CodeReviewResponse> {
+  return apiFetch<CodeReviewResponse>(`/api/v1/attempts/${encodeURIComponent(attemptId)}/code-review`, {
+    method: "POST",
+  });
+}
+
+export async function reviewCode(payload: {
+  exerciseId: string;
+  prompt: string;
+  submittedCode: string;
+  testResults: TestResults;
+}): Promise<CodeReviewResponse> {
+  return apiFetch<CodeReviewResponse>("/api/v1/code-review", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
 }
 
 export async function selectIntervention(diagnosisId: string): Promise<Intervention> {

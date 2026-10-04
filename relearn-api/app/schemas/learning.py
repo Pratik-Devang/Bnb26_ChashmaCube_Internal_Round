@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import Field
 
@@ -78,6 +78,30 @@ class DiagnosisEnvelope(ApiModel):
     intervention: InterventionRead
     reassessment_exercise_id: str | None = None
     concept_status: ConceptStatus | None = None
+
+
+class CodeReviewIssue(ApiModel):
+    title: str
+    explanation: str
+    line: int | None = Field(default=None, ge=1)
+
+
+class CodeReviewCreate(ApiModel):
+    exercise_id: str = Field(min_length=1, max_length=200)
+    prompt: str = Field(min_length=1, max_length=8_000)
+    submitted_code: str = Field(min_length=1, max_length=50_000)
+    test_results: TestResults
+    learner_explanation: str | None = Field(default=None, max_length=4_000)
+
+
+class CodeReviewRead(ApiModel):
+    source: Literal["gemini", "deterministic"]
+    model: str
+    diagnosis_code: MisconceptionCode
+    summary: str
+    strengths: list[str]
+    issues: list[CodeReviewIssue]
+    next_steps: list[str]
 
 
 class InterventionComplete(ApiModel):
