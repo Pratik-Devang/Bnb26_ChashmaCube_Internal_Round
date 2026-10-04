@@ -94,11 +94,32 @@ class GeminiCodeReviewService:
 
 
 def deterministic_review(attempt: AttemptForDiagnosis, prediction: DiagnosisPrediction) -> CodeReviewRead:
-    issues = [CodeReviewIssue(title=prediction.learner_friendly_name, explanation=item.message, line=item.line)
-              for item in prediction.evidence]
     passed = int(attempt.test_results.get("passed", 0))
     failed = int(attempt.test_results.get("failed", 0))
-    strengths = [f"{passed} predefined test{'s' if passed != 1 else ''} passed."] if passed else ["You submitted a complete attempt that can be reviewed."]
+    cases = attempt.test_results.get("cases", [])
+    failed_cases = [item for item in cases if isinstance(item, dict) and not item.get("passed")]
+    code_lines = attempt.submitted_code.splitlines()
+    pass_line = next((index for index, line in enumerate(code_lines, 1) if line.strip() == "pass"), None)
+    returned_nothing = bool(failed_cases) and all(item.get("actual") is None for item in failed_cases)
+
+    if pass_line and returned_nothing:
+        return CodeReviewRead(
+            source="deterministic",
+            model=prediction.model_version,
+            diagnosis_code=prediction.misconception_code,
+            summary="Your function header is ready, but pass is only a placeholder, so the function returns no result.",
+            strengths=["The requested function name and parameters are present, so the tests can call your code."],
+            issues=[CodeReviewIssue(
+                title="Replace the placeholder",
+                explanation="Python executes pass without doing anything. When the function reaches its end, it returns None, which is why every expected value was missed.",
+                line=pass_line,
+            )],
+            next_steps=["Replace pass with the logic described in the prompt, then make sure every possible branch returns a value."],
+        )
+
+    issues = [CodeReviewIssue(title=prediction.learner_friendly_name, explanation=item.message, line=item.line)
+              for item in prediction.evidence]
+    strengths = [f"{passed} predefined test{'s' if passed != 1 else ''} passed."] if passed else ["The function ran, which gives us concrete test evidence to inspect."]
     if failed == 0 and passed:
         next_steps = ["Explain why the solution works, then try a transfer problem with different inputs."]
     else:

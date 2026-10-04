@@ -4,12 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { getExercise, requestCodeReview, requestDiagnosis, reviewCode, submitAttempt } from "@/lib/api";
 import { currentLearnerId } from "@/lib/account";
 import { createPythonCodeRunner, type PythonCodeRunner } from "@/lib/code-runner";
-<<<<<<< HEAD
-import type { CodeReviewResponse, DiagnosisResponse, Exercise, TestResults } from "@/types/learning";
-=======
 import { challengeSolutions } from "@/lib/game/challenge-solutions";
-import type { DiagnosisResponse, Exercise, TestResults } from "@/types/learning";
->>>>>>> 8f420e4c7a4a444172dc8316cf36aa9ec9f7b758
+import type { CodeReviewResponse, DiagnosisResponse, Exercise, TestResults } from "@/types/learning";
 import styles from "../GameWorld.module.css";
 
 type Props = {
@@ -90,10 +86,18 @@ function guidanceFromDiagnosis(result: DiagnosisResponse): ScoutGuidance | null 
   };
 }
 
-function guidanceFromTests(results: TestResults, exerciseId: string, hint?: string): ScoutGuidance {
+function guidanceFromTests(results: TestResults, exerciseId: string, submittedCode: string, hint?: string): ScoutGuidance {
   const failed = results.cases.filter((item) => !item.passed);
   const firstError = failed.find((item) => item.error)?.error;
   if (firstError) return friendlyPythonError(firstError, exerciseId, hint);
+
+  const returnedNothing = failed.length > 0 && failed.every((item) => item.actual === null || typeof item.actual === "undefined");
+  if (returnedNothing && /(^|\s)pass(\s|$)/m.test(submittedCode)) return {
+    title: "The function does not return a result yet",
+    explanation: "pass is only a placeholder. Python reaches the end of the function without a return statement, so every test receives None instead of the requested value.",
+    check: hint ?? "Replace pass with the requested logic, and make sure every possible path returns a value.",
+    source: "tests",
+  };
 
   const unchanged = exerciseId === "starting-value-01" && failed.length > 0 && failed.every((item) => item.actual === item.args?.[0]);
   if (unchanged) return {
@@ -181,12 +185,9 @@ export function IslandScoutChallenge({ exerciseId, exerciseOverride, hint, recor
     setError("");
     setSyncWarning("");
     setDiagnosis(null);
-<<<<<<< HEAD
     setCodeReview(null);
-=======
     setHintOpen(false);
     setSolutionOpen(false);
->>>>>>> 8f420e4c7a4a444172dc8316cf36aa9ec9f7b758
 
     try {
       let nextResults: TestResults;
@@ -247,7 +248,7 @@ export function IslandScoutChallenge({ exerciseId, exerciseOverride, hint, recor
         return;
       }
 
-      const testGuidance = guidanceFromTests(nextResults, exerciseId, hint);
+      const testGuidance = guidanceFromTests(nextResults, exerciseId, code, hint);
       const hasRuntimeError = nextResults.cases.some((item) => !item.passed && item.error);
       setDiagnosis(hasRuntimeError ? testGuidance : journalGuidance ?? testGuidance);
       setStatus("failed");
@@ -275,21 +276,29 @@ export function IslandScoutChallenge({ exerciseId, exerciseOverride, hint, recor
 
         <div className={styles.challengeGrid}>
           <div className={styles.challengeEditor}>
-            <p>{exercise?.prompt ?? "The Island Scout is preparing your challenge..."}</p>
+            <div className={styles.editorHeading}>
+              <div><span>PYTHON EDITOR</span><strong>Your solution</strong></div>
+              <small>{status === "running" ? "RUNNING TESTS…" : "EDIT · TEST · IMPROVE"}</small>
+            </div>
+            <p className={styles.challengePrompt}>{exercise?.prompt ?? "The Island Scout is preparing your challenge..."}</p>
             <textarea
+              id="scout-python-solution"
               value={code}
               onChange={(event) => setCode(event.target.value)}
               aria-label="Python solution"
               spellCheck={false}
               disabled={status === "loading" || status === "running"}
             />
-            <button type="button" className={styles.primaryAction} onClick={runChallenge} disabled={!exercise || status === "running"}>
-              {status === "running" ? "Scout is checking..." : "Submit to the Scout"}
-            </button>
+            <div className={styles.editorActions}>
+              <small>Runs against {exercise?.testCases.length ?? 0} hidden checks</small>
+              <button type="button" className={styles.primaryAction} onClick={runChallenge} disabled={!exercise || status === "running"}>
+                {status === "running" ? "Scout is checking..." : "Run code & review"}
+              </button>
+            </div>
           </div>
 
           <aside className={styles.scoutFeedback}>
-            <span>{guideName.toUpperCase()}</span>
+            <div className={styles.reviewHeading}><span>{guideName.toUpperCase()}</span><small>REVIEW PANEL</small></div>
             {status === "loading" ? <p>“Let me prepare the trial.”</p> : null}
             {status === "ready" ? <p>“Use everything the island taught you. I’ll inspect the result, not just the final answer.”</p> : null}
             {status === "running" ? <p>“I’m tracing your code now...”</p> : null}

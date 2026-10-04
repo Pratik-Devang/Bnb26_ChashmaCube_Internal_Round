@@ -780,44 +780,45 @@
 .lockedLessonMessage p { margin-bottom: 9px; }
 .lockedLessonMessage strong { color: var(--lime); font-size: .62rem; }
 
-.challengeDialog { width: min(980px, calc(100vw - 64px)); display: block; }
-.challengeHeader { display: flex; align-items: flex-start; justify-content: space-between; padding: 20px 24px; border-bottom: 3px solid #425c45; background: #213325; }
+.challengeDialog { width: min(1180px, calc(100vw - 48px)); height: min(820px, calc(100vh - 48px)); max-height: 820px; display: flex; flex-direction: column; }
+.challengeHeader { flex: 0 0 auto; display: flex; align-items: flex-start; justify-content: space-between; padding: 20px 24px; border-bottom: 3px solid #425c45; background: #213325; }
 .challengeHeader span { color: var(--gold); font-size: .5rem; font-weight: 950; letter-spacing: .14em; }
 .challengeHeader h2 { margin: 4px 0 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 1.6rem; letter-spacing: -.04em; }
-.challengeHeader button { width: 32px; height: 32px; border: 2px solid #506753; background: #18251b; color: var(--cream); font-size: 1.2rem; cursor: pointer; }
-.challengeGrid { display: grid; grid-template-columns: 1.25fr .75fr; min-height: 430px; }
-.challengeEditor { padding: 22px; border-right: 3px solid #425c45; }
-.challengeEditor > p { color: #c2cdbf; font-size: .72rem; line-height: 1.55; }
-.challengeEditor textarea { width: 100%; min-height: 260px; display: block; margin: 14px 0; padding: 14px; border: 2px solid #456049; outline: 0; resize: vertical; background: #0b120d; color: #edf4e7; font: 700 .74rem/1.55 ui-monospace, Consolas, monospace; tab-size: 4; }
-.challengeEditor textarea:focus { border-color: var(--lime); }
-.challengeEditor .primaryAction { margin-left: auto; }
-.scoutFeedback { padding: 22px; background: #18251b; }
-.scoutFeedback > span { color: var(--lime); font-size: .52rem; font-weight: 950; letter-spacing: .14em; }
+.challengeHeader button { width: 36px; height: 36px; border: 2px solid #657d67; background: #142018; color: var(--cream); font-size: 1.2rem; cursor: pointer; }
+.challengeHeader button:hover { border-color: var(--lime); color: var(--lime); }
+.challengeGrid { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(350px, .85fr); }
+.challengeEditor { min-width: 0; min-height: 0; display: flex; flex-direction: column; padding: 24px; border-right: 3px solid #425c45; background: #152419; }
+.editorHeading, .reviewHeading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.editorHeading > div { display: flex; flex-direction: column; gap: 5px; }
+.editorHeading span, .reviewHeading span { color: var(--lime); font-size: .54rem; font-weight: 950; letter-spacing: .14em; }
+.editorHeading strong { color: var(--cream); font-size: .9rem; }
+.editorHeading small, .reviewHeading small { color: #859584; font-size: .48rem; font-weight: 900; letter-spacing: .1em; }
+.challengePrompt { margin: 20px 0 0; padding: 12px 14px; border-left: 3px solid var(--gold); background: #1d2d21; color: #d7dfd3; font-size: .78rem; line-height: 1.65; }
+.challengeEditor textarea { width: 100%; min-height: 300px; flex: 1 1 auto; display: block; margin: 16px 0; padding: 18px; border: 2px solid #526b55; outline: 0; resize: none; background: #09110c; color: #f0f6ec; caret-color: var(--lime); font: 700 .86rem/1.7 ui-monospace, Consolas, monospace; tab-size: 4; box-shadow: inset 0 0 0 1px #080d09; }
+.challengeEditor textarea:focus { border-color: var(--lime); box-shadow: 0 0 0 2px rgba(220, 243, 106, .12); }
+.editorActions { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+.editorActions > small { color: #829181; font-size: .56rem; }
+.challengeEditor .primaryAction { min-height: 44px; margin-left: auto; padding: 0 18px; border-color: #efff9a; background: #dcf36a; color: #14200f; font: 900 .68rem/1 ui-monospace, Consolas, monospace; text-transform: uppercase; cursor: pointer; }
+.challengeEditor .primaryAction:disabled { opacity: .55; cursor: wait; }
+.scoutFeedback { min-width: 0; min-height: 0; overflow-y: auto; padding: 24px; background: #111e15; scrollbar-color: #526b55 #0c160f; }
 .scoutFeedback > p { margin-top: 22px; color: #c6d0c3; font-size: .72rem; line-height: 1.7; }
 .challengeSuccess, .classifierFeedback { margin-top: 18px; padding: 16px; border: 2px solid #456149; background: #213426; }
 .challengeSuccess strong { color: var(--lime); }
 .challengeSuccess p { margin: 7px 0 0; color: #c5d1c3; font-size: .68rem; }
-<<<<<<< HEAD
-.classifierFeedback small { display: block; color: #ff9f6f; font-size: .48rem; font-weight: 950; letter-spacing: .11em; }
-.classifierFeedback strong { display: block; margin-top: 7px; color: #ffe5d5; font-size: .73rem; line-height: 1.4; }
-.classifierFeedback p { margin: 10px 0; color: #c4cec1; font-size: .66rem; line-height: 1.5; }
-.classifierFeedback code { display: block; padding: 9px; background: #0d1610; color: var(--lime); font-size: .64rem; }
-.classifierFeedback em { display: block; margin-top: 10px; color: var(--gold); font-size: .62rem; font-style: normal; }
-.testCount { margin-top: 14px; color: #9baa98; font-size: .58rem; font-weight: 900; }
-.codeReview { margin-top: 14px; padding: 12px; border: 1px solid #66724e; background: #101a13; color: #cbd3c6; font-size: .6rem; line-height: 1.6; }
-.codeReview summary { color: var(--gold); cursor: pointer; font-weight: 900; letter-spacing: .05em; }
-.codeReview > small { display: block; margin-top: 12px; color: #95a584; font-size: .44rem; letter-spacing: .1em; }
-.codeReview p { margin: 8px 0 12px; }
-.codeReview strong { display: block; color: #f4e5bf; margin-top: 10px; }
-.codeReview ul, .codeReview ol { margin: 5px 0 0; padding-left: 17px; }
-.codeReview li { margin: 5px 0; }
-.codeReview b { color: #dce5d5; }
-=======
 .classifierFeedback small { display: block; color: #ff9f6f; font-size: .62rem; font-weight: 950; letter-spacing: .11em; }
 .classifierFeedback strong { display: block; margin-top: 7px; color: #ffe5d5; font-size: .92rem; line-height: 1.4; }
 .classifierFeedback p { margin: 10px 0; color: #c4cec1; font-size: .86rem; line-height: 1.65; }
 .classifierFeedback code { display: block; padding: 9px; background: #0d1610; color: var(--lime); font-size: .82rem; }
 .classifierFeedback em { display: block; margin-top: 10px; color: var(--gold); font-size: .82rem; line-height: 1.55; font-style: normal; }
+.testCount { margin-top: 14px; color: #b7c5b4; font-size: .7rem; font-weight: 900; }
+.codeReview { margin-top: 14px; padding: 14px; border: 1px solid #66724e; background: #0c1710; color: #d5ded2; font-size: .72rem; line-height: 1.65; }
+.codeReview summary { color: var(--gold); cursor: pointer; font-weight: 900; letter-spacing: .05em; }
+.codeReview > small { display: block; margin-top: 12px; color: #95a584; font-size: .5rem; letter-spacing: .1em; }
+.codeReview p { margin: 8px 0 12px; }
+.codeReview strong { display: block; color: #f4e5bf; margin-top: 10px; }
+.codeReview ul, .codeReview ol { margin: 5px 0 0; padding-left: 17px; }
+.codeReview li { margin: 5px 0; }
+.codeReview b { color: #dce5d5; }
 .challengeHelp { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 8px; margin-top: 12px; }
 .challengeHelp > button, .solutionReveal > button { padding: 8px 10px; border: 1px solid #718263; background: #253629; color: #eee9dc; font-family: inherit; font-size: .78rem; line-height: 1.4; font-weight: 700; cursor: pointer; }
 .challengeHelp > button:hover, .solutionReveal > button:hover { background: #3b4d38; }
@@ -826,9 +827,20 @@
 .solutionReveal > strong { color: #e4d29b; font-size: .84rem; }
 .solutionReveal pre { max-height: 180px; overflow: auto; margin: 9px 0; padding: 10px; background: #0d1610; color: #dfead8; white-space: pre; font: .8rem/1.6 ui-monospace, Consolas, monospace; }
 .solutionReveal p { color: #c4cec1; font-size: .8rem; line-height: 1.55; }
-.testCount { margin-top: 14px; color: #c2cdbf; font-size: .75rem; font-weight: 800; }
->>>>>>> 8f420e4c7a4a444172dc8316cf36aa9ec9f7b758
 .challengeError { color: #ff8c82 !important; }
+
+@media (max-width: 760px) {
+  .dialogScrim { padding: 12px; }
+  .challengeDialog { width: calc(100vw - 24px); height: calc(100vh - 24px); }
+  .challengeHeader { padding: 16px; }
+  .challengeHeader h2 { font-size: 1.25rem; }
+  .challengeGrid { display: block; overflow-y: auto; }
+  .challengeEditor { min-height: 540px; border-right: 0; border-bottom: 3px solid #425c45; padding: 18px; }
+  .challengeEditor textarea { min-height: 320px; resize: vertical; }
+  .editorActions { align-items: stretch; flex-direction: column; }
+  .challengeEditor .primaryAction { width: 100%; margin-left: 0; }
+  .scoutFeedback { overflow: visible; padding: 18px; }
+}
 
 @keyframes idle {
   from { background-position: 0 0; }
