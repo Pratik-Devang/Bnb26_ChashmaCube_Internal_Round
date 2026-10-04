@@ -9,11 +9,15 @@ import styles from "../GameWorld.module.css";
 
 type Props = {
   exerciseId: string;
+  exerciseOverride?: Exercise;
+  hint?: string;
+  recordAttempt?: boolean;
+  guideName?: string;
   title: string;
   reward: number;
   alreadyCompleted: boolean;
   onClose: () => void;
-  onComplete: () => void;
+  onComplete: (submittedCode: string, results: TestResults) => void | Promise<void>;
 };
 
 type ScoutGuidance = {
@@ -43,7 +47,7 @@ function guidanceFromDiagnosis(result: DiagnosisResponse): ScoutGuidance | null 
   };
 }
 
-function guidanceFromTests(results: TestResults): ScoutGuidance {
+function guidanceFromTests(results: TestResults, exerciseId: string, hint?: string): ScoutGuidance {
   const failed = results.cases.filter((item) => !item.passed);
   const firstError = failed.find((item) => item.error)?.error;
   if (firstError) return {
@@ -53,7 +57,7 @@ function guidanceFromTests(results: TestResults): ScoutGuidance {
     source: "tests",
   };
 
-  const unchanged = failed.length > 0 && failed.every((item) => item.actual === item.args?.[0]);
+  const unchanged = exerciseId === "starting-value-01" && failed.length > 0 && failed.every((item) => item.actual === item.args?.[0]);
   if (unchanged) return {
     title: "The score stayed unchanged",
     explanation: "Your function returns the starting score, but the 10-point bonus was never added.",
@@ -62,7 +66,7 @@ function guidanceFromTests(results: TestResults): ScoutGuidance {
     source: "tests",
   };
 
-  const constantBonus = failed.length > 0 && failed.every((item) => item.actual === 10);
+  const constantBonus = exerciseId === "starting-value-01" && failed.length > 0 && failed.every((item) => item.actual === 10);
   if (constantBonus) return {
     title: "Keep the starting score",
     explanation: "Returning only 10 forgets the score supplied to the function. Add the bonus to score.",
@@ -77,13 +81,12 @@ function guidanceFromTests(results: TestResults): ScoutGuidance {
     explanation: first
       ? `For input ${JSON.stringify(first.args ?? first.input)}, the Scout expected ${JSON.stringify(first.expected)} but received ${JSON.stringify(first.actual)}.`
       : "The submitted function did not satisfy the challenge tests.",
-    example: "return score + 10",
-    check: "Use the score parameter in the result and add exactly 10.",
+    check: hint ?? "Compare the first failed input, expected value, and actual value, then trace where they diverge.",
     source: "tests",
   };
 }
 
-export function IslandScoutChallenge({ exerciseId, title, reward, alreadyCompleted, onClose, onComplete }: Props) {
+export function IslandScoutChallenge({ exerciseId, exerciseOverride, hint, recordAttempt = true, guideName = "Island Scout", title, reward, alreadyCompleted, onClose, onComplete }: Props) {
   const [exercise, setExercise] = useState<Exercise | null>(null);
   const [code, setCode] = useState("");
   const [results, setResults] = useState<TestResults | null>(null);
@@ -99,7 +102,11 @@ export function IslandScoutChallenge({ exerciseId, title, reward, alreadyComplet
     const runner = createPythonCodeRunner();
     runnerRef.current = runner;
 
-    getExercise(exerciseId)
+    if (exerciseOverride) {
+      setExercise(exerciseOverride);
+      setCode(exerciseOverride.starterCode);
+      setStatus("ready");
+    } else getExercise(exerciseId)
       .then((loaded) => {
         if (!mounted) return;
         setExercise(loaded);
@@ -116,7 +123,7 @@ export function IslandScoutChallenge({ exerciseId, title, reward, alreadyComplet
       mounted = false;
       runner.terminate();
     };
-  }, [exerciseId]);
+  }, [exerciseId, exerciseOverride]);
 
   useEffect(() => {
     closeRef.current?.focus();
@@ -139,7 +146,7 @@ export function IslandScoutChallenge({ exerciseId, title, reward, alreadyComplet
       setResults(nextResults);
       let journalGuidance: ScoutGuidance | null = null;
 
-      try {
+      if (recordAttempt) try {
         const attempt = await submitAttempt({
           learnerId: currentLearnerId(),
           exerciseId: exercise.id,
@@ -150,19 +157,19 @@ export function IslandScoutChallenge({ exerciseId, title, reward, alreadyComplet
         const savedDiagnosis = await requestDiagnosis(attempt.id);
         journalGuidance = guidanceFromDiagnosis(savedDiagnosis);
       } catch {
-        setSyncWarning("The Scout used the challenge tests, but could not save this attempt to your learning journal.");
+        setSyncWarning(`${guideName} used the challenge tests, but could not save this attempt to your learning journal.`);
       }
 
       if (nextResults.failed === 0 && nextResults.passed > 0) {
+        if (!alreadyCompleted) await onComplete(code, nextResults);
         setStatus("passed");
-        if (!alreadyCompleted) onComplete();
         return;
       }
 
-      setDiagnosis(journalGuidance ?? guidanceFromTests(nextResults));
+      setDiagnosis(journalGuidance ?? guidanceFromTests(nextResults, exerciseId, hint));
       setStatus("failed");
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "The Scout could not check that solution.");
+      setError(reason instanceof Error ? reason.message : `${guideName} could not check that solution.`);
       setStatus("failed");
     }
   };
@@ -197,14 +204,14 @@ export function IslandScoutChallenge({ exerciseId, title, reward, alreadyComplet
           </div>
 
           <aside className={styles.scoutFeedback}>
-            <span>ISLAND SCOUT</span>
+            <span>{guideName.toUpperCase()}</span>
             {status === "loading" ? <p>“Let me prepare the trial.”</p> : null}
             {status === "ready" ? <p>“Use everything the island taught you. I’ll inspect the result, not just the final answer.”</p> : null}
             {status === "running" ? <p>“I’m tracing your code now...”</p> : null}
             {status === "passed" ? (
               <div className={styles.challengeSuccess}>
                 <strong>Trial complete!</strong>
-                <p>Every test passed. You earned {alreadyCompleted ? "another clean run" : `${reward} coins`}.</p>
+                <p>Every test passed. {alreadyCompleted ? "That’s another clean run." : reward > 0 ? `You earned ${reward} coins.` : "The coding check is recorded in your adventure."}</p>
               </div>
             ) : null}
             {status === "failed" && diagnosis ? (

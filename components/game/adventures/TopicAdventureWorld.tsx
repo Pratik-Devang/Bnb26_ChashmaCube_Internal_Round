@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
+import type { TestResults } from "@/types/learning";
 import islandMap from "@/2d_assets/First Island/Tiled/Tiled_map.png";
 import explorer from "@/2d_assets/First Island/Characters/Character_1/Idle.png";
 import explorerWalk from "@/2d_assets/First Island/Characters/Character_1/Walk.png";
@@ -20,7 +21,8 @@ import { ChurchMapCanvas } from "../ChurchMapCanvas";
 import { ChurchExteriorCanvas } from "../ChurchExteriorCanvas";
 import { useAccount } from "@/components/auth/AccountProvider";
 import { CharacterDialogue, type CharacterConversation, type DialoguePortrait } from "../dialogs/CharacterDialogue";
-import { answerAdventureQuestion, finishAdventureLesson, topicNames, worldPath, type AdventureProgress, type AdventureWorld, type CurriculumTrack } from "@/lib/game/curriculum";
+import { IslandScoutChallenge } from "../dialogs/IslandScoutChallenge";
+import { answerAdventureQuestion, completeAdventureCodeQuestion, finishAdventureLesson, topicNames, worldPath, type AdventureProgress, type AdventureWorld, type CurriculumTrack } from "@/lib/game/curriculum";
 import styles from "./Adventure.module.css";
 
 type Position = { x: number; y: number };
@@ -57,6 +59,7 @@ export function TopicAdventureWorld({ world, track, initialProgress }: { world: 
   const [moving, setMoving] = useState(false);
   const [progress, setProgress] = useState(initialProgress);
   const [guide, setGuide] = useState<Guide | null>(null);
+  const [codeChallengeOpen, setCodeChallengeOpen] = useState(false);
   const [conversation, setConversation] = useState<(CharacterConversation & { target?: Guide }) | null>(() => ({
     speaker: chapel ? "Grounds Guide" : "Beach Cartographer", portrait: chapel ? "ranger" : "elder", label: "Begin exploring",
     lines: initialProgress.completedLessonIds.length ? [
@@ -86,7 +89,7 @@ export function TopicAdventureWorld({ world, track, initialProgress }: { world: 
 
   const closeDialog = () => { if (!busy) { setGuide(null); setFeedback(""); setChoice(null); } };
   const interact = (target: Guide) => {
-    if (busy || guide || conversation) return;
+    if (busy || guide || conversation || codeChallengeOpen) return;
     if (distance(position, target) > 11) { setMessage(`Walk closer to ${target.name}, then press E.`); return; }
     if (target.lesson < 0) {
       setConversation({ speaker: target.name, portrait: "keeper", label: "Return to exploring", lines: [
@@ -122,7 +125,7 @@ export function TopicAdventureWorld({ world, track, initialProgress }: { world: 
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (guide || conversation || busy || (event.target as HTMLElement)?.closest("input,textarea,select,a")) return;
+      if (guide || conversation || codeChallengeOpen || busy || (event.target as HTMLElement)?.closest("input,textarea,select,a")) return;
       const key = event.key.toLowerCase();
       if (key === "e") {
         event.preventDefault();
@@ -175,6 +178,19 @@ export function TopicAdventureWorld({ world, track, initialProgress }: { world: 
     finally { setBusy(false); }
   }
 
+  async function completeCodeChallenge(code: string, results: TestResults) {
+    if (!question || busy) return;
+    setBusy(true); setError("");
+    try {
+      const result = await completeAdventureCodeQuestion(selection, question.id, track.codeChallenge.id, code, results);
+      if (!result.correct) throw new Error("The server could not verify that solution. Try the Scout again.");
+      setProgress(result.progress);
+      setMessage("Coding trial complete. Return to the Island Scout for the transfer check.");
+    } catch (reason) {
+      throw reason instanceof Error ? reason : new Error("Could not save the coding trial.");
+    } finally { setBusy(false); }
+  }
+
   return <main className={styles.world}>
     <header className={styles.hud}><Link href={worldPath(world)}>← Change topic</Link><div><small>{chapel ? "CHAPEL OF CHOICES" : "THE FIRST ISLAND"}</small><strong>{topicNames[track.topic]} / {track.difficulty}</strong></div><span>{progress.coinsEarned} coins</span><Link href="/">Dashboard</Link></header>
     <div className={styles.objective}><span>{progress.completed ? "ADVENTURE COMPLETE" : `NEXT: ${nextGuide.name}`}</span><strong>{progress.completedLessonIds.length}/3 lessons · {progress.passedQuestionIds.length}/2 checks</strong></div>
@@ -191,8 +207,24 @@ export function TopicAdventureWorld({ world, track, initialProgress }: { world: 
     {conversation && <CharacterDialogue conversation={conversation} onDismiss={() => setConversation(null)} onComplete={() => {
       const target = conversation.target;
       setConversation(null);
-      if (target) { setChoice(null); setFeedback(""); setError(""); setGuide(target); }
+      if (target) {
+        setChoice(null); setFeedback(""); setError("");
+        if (target.lesson === 3 && progress.passedQuestionIds.length === 0) setCodeChallengeOpen(true);
+        else setGuide(target);
+      }
     }} />}
+    {codeChallengeOpen && <IslandScoutChallenge
+      exerciseId={track.codeChallenge.id}
+      exerciseOverride={track.codeChallenge}
+      hint={track.codeChallenge.hint}
+      recordAttempt={false}
+      guideName={chapel ? "Chapel Keeper" : "Island Scout"}
+      title={`The Scout’s ${topicNames[track.topic]} Code Trial`}
+      reward={0}
+      alreadyCompleted={progress.passedQuestionIds.includes(track.questions[0].id)}
+      onClose={() => setCodeChallengeOpen(false)}
+      onComplete={completeCodeChallenge}
+    />}
     <dialog ref={dialog} className={styles.dialog} onCancel={(event) => { event.preventDefault(); closeDialog(); }}>
       <header><small>{guide?.name} / {track.difficulty}</small><button disabled={busy} onClick={closeDialog} aria-label="Close lesson">×</button></header>
       {error && <p className={styles.error} role="alert">{error}</p>}
