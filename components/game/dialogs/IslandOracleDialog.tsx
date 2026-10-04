@@ -309,13 +309,7 @@ export function IslandOracleDialog({ onClose, onRewardCoins }: Props) {
         shortDesc: diagnosis?.evidence || diagnosis?.intervention?.explanation || DEFAULT_CONCEPT.shortDesc,
       };
 
-  const confidencePct = diagnosis?.top_prediction?.score
-    ? Math.min(99, Math.max(50, Math.round((diagnosis.top_prediction.score + 2) * 25)))
-    : diagnosis ? 88 : 0;
-
-  const confidenceBadge = typeof diagnosis?.confidence === "string"
-    ? diagnosis.confidence.toUpperCase()
-    : confidencePct >= 75 ? "HIGH" : "MODERATE";
+  const modelScore = diagnosis?.top_prediction?.score;
 
   return (
     <div className={styles.dialogScrim} role="presentation" onMouseDown={onClose}>
@@ -583,7 +577,7 @@ export function IslandOracleDialog({ onClose, onRewardCoins }: Props) {
                 >
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
                     <small style={{ color: isVerifiedClean ? "var(--lime)" : "#ff9f6f", fontWeight: 950 }}>
-                      {isVerifiedClean ? "🟢 CODE VERIFIED" : "🔴 MISCONCEPTION DETECTED"}
+                      {isVerifiedClean ? "CODE VERIFIED" : "POSSIBLE PATTERN"}
                     </small>
                     <span
                       style={{
@@ -595,7 +589,7 @@ export function IslandOracleDialog({ onClose, onRewardCoins }: Props) {
                         border: `1px solid ${isVerifiedClean ? "#52753a" : "#7d3a33"}`,
                       }}
                     >
-                      {confidenceBadge}
+                      {isVerifiedClean ? "TESTED" : "MODEL SUGGESTION"}
                     </span>
                   </div>
                   <strong style={{ fontSize: "0.76rem", color: "#ffffff", marginTop: "2px" }}>
@@ -603,7 +597,7 @@ export function IslandOracleDialog({ onClose, onRewardCoins }: Props) {
                   </strong>
                 </div>
 
-                {/* Card 2: AI Diagnosis */}
+                {/* The legacy classifier emits decision scores, not calibrated probabilities. */}
                 <div
                   style={{
                     background: "#213426",
@@ -614,32 +608,11 @@ export function IslandOracleDialog({ onClose, onRewardCoins }: Props) {
                 >
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
                     <span style={{ color: "var(--moss)", fontSize: "0.52rem", fontWeight: 950, letterSpacing: "0.12em", textTransform: "uppercase" }}>
-                      AI DIAGNOSIS
+                      CLASSIFIER SUGGESTION
                     </span>
                     <span style={{ color: "var(--gold)", fontSize: "0.6rem", fontWeight: 900 }}>
-                      {confidencePct}% Confidence
+                      {typeof modelScore === "number" ? `Decision score ${modelScore.toFixed(3)}` : "Uncalibrated result"}
                     </span>
-                  </div>
-
-                  {/* Confidence Bar */}
-                  <div
-                    style={{
-                      width: "100%",
-                      height: "4px",
-                      background: "#0c150e",
-                      borderRadius: "1px",
-                      overflow: "hidden",
-                      marginBottom: "8px",
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: `${confidencePct}%`,
-                        height: "100%",
-                        background: isVerifiedClean ? "var(--lime)" : "#ff9f6f",
-                        transition: "width 0.4s ease",
-                      }}
-                    />
                   </div>
 
                   <strong style={{ display: "block", color: "#f3f6f0", fontSize: "0.74rem", marginBottom: "4px" }}>

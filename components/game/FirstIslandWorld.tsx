@@ -20,6 +20,7 @@ import type { FirstIslandProgress, GameSpriteKey, IslandActor, MapPosition } fro
 import { IslandLessonDialog } from "./dialogs/IslandLessonDialog";
 import { IslandOracleDialog } from "./dialogs/IslandOracleDialog";
 import { IslandScoutChallenge } from "./dialogs/IslandScoutChallenge";
+import { PracticeArenaModal } from "@/components/practice/PracticeArenaModal";
 import styles from "./GameWorld.module.css";
 
 const actorSprites: Record<GameSpriteKey, { src: string }> = {
@@ -41,6 +42,7 @@ export function FirstIslandWorld() {
   const [lockedMessage, setLockedMessage] = useState<string | undefined>();
   const [challengeOpen, setChallengeOpen] = useState(false);
   const [oracleOpen, setOracleOpen] = useState(false);
+  const [arenaOpen, setArenaOpen] = useState(false);
   const [completionOpen, setCompletionOpen] = useState(false);
   const [activeAmbientId, setActiveAmbientId] = useState<string | null>(null);
   const [guidance, setGuidance] = useState("Use WASD or the arrow keys to reach the Beach Cartographer.");
@@ -169,6 +171,16 @@ export function FirstIslandWorld() {
           <button
             type="button"
             className={styles.oracleButton}
+            onClick={() => setArenaOpen(true)}
+            title="Open Practice Quiz"
+            aria-label="Open Practice Quiz"
+            style={{ width: "auto", padding: "0 12px", fontSize: "0.75rem", fontWeight: "bold", fontFamily: "monospace" }}
+          >
+            QUIZ
+          </button>
+          <button
+            type="button"
+            className={styles.oracleButton}
             onClick={() => setOracleOpen(true)}
             title="Consult AI Island Oracle (Spell & Code Diagnoser)"
             aria-label="Consult AI Island Oracle"
@@ -232,6 +244,7 @@ export function FirstIslandWorld() {
           </div>
         </section>
       </div> : null}
+      <PracticeArenaModal isOpen={arenaOpen} onClose={() => setArenaOpen(false)} initialDifficulty="easy" />
     </main>
   );
 }

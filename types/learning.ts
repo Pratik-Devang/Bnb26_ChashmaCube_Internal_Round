@@ -232,7 +232,7 @@ export interface InterventionDetail {
 }
 
 export interface ReassessmentResult {
-  status: "resolved" | "unresolved";
+  status: "resolved" | "unresolved" | "uncertain";
   misconception_id: number;
 }
 
