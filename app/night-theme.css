@@ -1,0 +1,119 @@
+/* Woodland expedition: charcoal, ivory, moss and restrained amber. */
+body { background: #11130f; }
+.product-shell {
+  --ink: #eee9dc; --paper: #1b1d18; --white: #252720; --muted: #c2bba9;
+  --line: #55583f; --mint: #55583f; --cyan: #34372d; --lilac: #34372d;
+  --pink: #463044; --yellow: #4e4428; --shadow: 0 14px 40px #0003;
+  width: 100%; min-height: 100vh; margin: 0; border: 0; box-shadow: none; padding-bottom: 0;
+  background: #171914;
+  color: var(--ink);
+}
+.product-shell :where(h1,h2,h3) { font-family: "Lucida Console", "Courier New", monospace; letter-spacing: -.055em; }
+.product-shell :where(a,button,input,select,textarea):focus-visible { outline: 2px solid #d4b277; outline-offset: 5px; }
+.product-header { min-height: 92px; padding: 0 4%; background: #11130f; border-bottom: 1px solid #34372d; color: #eee9dc; }
+.guild-emblem { width: 30px; height: 30px; font: bold 19px monospace; border: 2px solid #d4b277; color: #eee9dc; background: #252720; box-shadow: 3px 3px #55583f; }
+.brand { text-transform: uppercase; letter-spacing: -.06em; font-size: 1.25rem; }
+.brand span { color: #d4b277; }
+.top-navigation { border: 0; background: none; gap: 12px; margin-left: auto; }
+.top-navigation a { position: relative; height: 52px; color: #c2bba9; font-size: .81rem; letter-spacing: .02em; }
+.top-navigation a:hover, .top-navigation a.active { background: transparent; color: #eee9dc; box-shadow: none; }
+.top-navigation a.active::after { content: ""; position: absolute; width: 16px; height: 3px; background: #eee9dc; bottom: 2px; box-shadow: 5px 0 #eee9dc44; }
+.top-navigation a.active svg { color: #eee9dc; }
+.header-status { margin-left: auto; gap: 14px; }
+.header-chip, .header-chip.xp { background: #252720; border: 1px solid #34372d; color: #c2bba9; box-shadow: none; }
+.header-chip.xp { color: #eac67e; }
+.header-portrait { background: #34372d; border-color: #827d62; }
+.mini-profile, .profile-copy strong { color: #eee9dc; }
+.profile-copy small { color: #c2bba9; }
+.product-shell .mini-profile.active { background: #34372d; color: #eee9dc; }
+.product-shell .page-stage { width: min(1520px, 92%); margin: 0 auto; }
+.route-page { padding-top: 38px; }
+.home-page { padding-top: 0; }
+.product-shell .page-heading { border-bottom: 1px solid #55583f; padding-bottom: 26px; }
+.product-shell .page-heading h1 { color: #eee9dc; font-size: clamp(2rem, 3vw, 3.2rem); }
+.product-shell .page-heading p { color: #c2bba9; }
+.product-shell .page-heading .page-eyebrow { color: #d4b277; }
+.product-shell :is(.page-eyebrow,.section-heading > span,.section-heading > div > span,.lesson-kicker) { color: #d4b277; }
+.adventure-hero { position: relative; isolation: isolate; min-height: 650px; height: min(740px, 78vh); overflow: hidden; margin: 0 -4.35%; background: #252720; border-bottom: 1px solid #827d62; }
+.adventure-scene { z-index: -3; object-fit: cover; image-rendering: pixelated; object-position: 65% 43%; filter: brightness(.78) saturate(.92); }
+.adventure-scene-church { object-position: 66% 42%; transform: scale(1.12); }
+.adventure-vignette { position: absolute; inset: 0; z-index: -2; background: linear-gradient(90deg, #11130ff5 0%, #1b1d18cf 29%, #1b1d1828 66%), linear-gradient(0deg, #11130f 0%, transparent 42%, #11130f55 100%); }
+.adventure-hero::after { content: none; }
+.adventure-hero-top { position: absolute; top: 28px; left: 4%; right: 4%; display: flex; justify-content: space-between; font: 700 .62rem monospace; letter-spacing: .2em; color: #c2bba9; }
+.adventure-hero-copy { position: absolute; top: 22%; left: 5%; width: min(610px, 51%); }
+.adventure-welcome { font: 700 .65rem monospace; letter-spacing: .17em; color: #eee9dc; }
+.adventure-hero h1 { margin: 24px 0 26px; display: grid; gap: 19px; filter: drop-shadow(3px 4px #11130f); }
+.adventure-hero h1 svg { display: block; width: 100%; height: auto; color: #eee9dc; }
+.adventure-hero h1 svg:last-child { width: 64%; color: #d4b277; }
+.adventure-hero-copy > p { max-width: 420px; font-size: .95rem; line-height: 1.9; color: #c2bba9; margin-bottom: 28px; }
+.product-shell .solid-action { min-height: 44px; padding: 10px 20px; border: 1px solid #eee9dc; background: #d4b277; color: #252720; box-shadow: 4px 4px 0 #55583f; font: 800 .78rem "Courier New", monospace; }
+.product-shell .solid-action:hover:not(:disabled) { background: #eee9dc; color: #252720; transform: translateY(-2px); }
+.product-shell .adventure-play { gap: 24px; min-height: 52px; clip-path: polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px); }
+.adventure-save-status { display: block; margin-top: 20px; color: #c2bba9; font: .65rem monospace; }
+.adventure-guide { position: absolute; left: 5%; bottom: 35px; display: flex; align-items: center; gap: 14px; }
+.adventure-guide > span:last-child { font: .6rem monospace; letter-spacing: .1em; color: #d4b277; }
+.adventure-guide strong { display: block; margin-top: 8px; color: #eee9dc; font: 700 1rem monospace; letter-spacing: -.02em; }
+.adventure-selector { position: absolute; right: 4%; bottom: 36px; display: flex; gap: 13px; }
+.adventure-selector button { position: relative; width: 205px; height: 142px; overflow: hidden; padding: 0; border: 1px solid #827d62; background: #252720; cursor: pointer; text-align: left; box-shadow: 5px 5px #0005; }
+.adventure-selector button.selected { border: 2px solid #eee9dc; transform: translateY(-8px); }
+.adventure-selector img { width: 100%; height: 100%; object-fit: cover; image-rendering: pixelated; opacity: .8; }
+.adventure-selector button > span { position: absolute; bottom: 0; left: 0; right: 0; padding: 24px 12px 12px; background: linear-gradient(transparent,#1b1d18f5 40%); }
+.adventure-selector small { display: block; color: #c2bba9; font: .53rem monospace; margin-bottom: 6px; text-transform: uppercase; }
+.adventure-selector strong { font: 700 .75rem monospace; color: #eee9dc; }
+.adventure-section-heading { display: flex; justify-content: space-between; padding: 32px 0 20px; color: #c2bba9; font: 700 .66rem monospace; letter-spacing: .13em; }
+.adventure-section-heading a { color: #d4b277; letter-spacing: 0; }
+.product-shell :is(.surface-card,.plan-workspace,.today-panel,.learning-map,.lesson-focus,.insight-summary article,.diagnosis-spotlight,.progress-hero,.profile-card,.topic-hero,.topic-checkpoint,.reasoning-box) { background: #252720; color: #eee9dc; border: 1px solid #55583f; box-shadow: none; }
+.product-shell .today-panel { background: #252720; border-top: 2px solid #aaa28f; }
+.product-shell .compact-stats span { background: #252720; border-color: #55583f; color: #c2bba9; }
+.product-shell .featured-lesson { background: #34372d; border-color: #55583f; }
+.product-shell .featured-copy h2 { font-size: 2rem; line-height: 1.12; }
+.product-shell .featured-copy > p { color: #c2bba9; }
+.island-dashboard-preview { border: 1px solid #827d62; background: #252720; }
+.island-dashboard-preview::after { background: linear-gradient(0deg,#1b1d18,transparent 70%); }
+.island-dashboard-preview strong { font-family: monospace; color: #eee9dc; }
+.island-dashboard-preview small { color: #d4b277; }
+.product-shell :is(.misconception-signal,.practice-pulse,.week-strip,.day-streak-card,.insight-list article,.reward-stack > div,.profile-message,.gentle-note,.next-insight,.history-note) { background: #252720; border-color: #55583f; color: #eee9dc; }
+.product-shell :is(.day-streak-card span,.misconception-signal p,.misconception-signal small,.practice-pulse small,.island-objectives article small,.profile-card > p,.profile-stats span,.profile-message) { color: #c2bba9; }
+.product-shell :is(.date-badge,.round-count,.support-icon,.mini-path-card > span) { background: #55583f; color: #eee9dc; }
+.product-shell .mini-path-card.current { background: #34372d !important; box-shadow: inset 0 -2px #d4b277; }
+.island-objectives article, .island-objectives article.done { background: #34372d; border-color: #55583f; box-shadow: none; }
+.island-objectives article > span, .island-objectives article.done > span, .mini-path-card.done > span { background: #55583f; color: #eee9dc; }
+.island-objectives article i { color: #d4b277; }
+.product-shell .notice-board-link { color: #eee9dc; border-color: #827d62; }
+.product-shell .insights-empty-note { color: #c2bba9; }
+.product-shell :is(.level-pill,.setting-icon) { background: #55583f; color: #eee9dc; }
+.product-shell .setting-row > i.on { background: #aaa28f; }
+.product-shell .misconception-signal b { background: #55583f; color: #eee9dc; }
+.product-shell .quiet-action { color: #eee9dc; background: #34372d; border-color: #827d62; box-shadow: none; }
+.product-shell :is(.hero-progress > span,.focus-meter > span,.mastery-line) { background: #55583f; }
+.product-shell :is(.hero-progress i,.focus-meter i,.mastery-line i) { background: #d4b277; }
+.product-shell .practice-pulse { grid-template-columns: 1fr auto; }
+.product-shell .insight-summary article.summary-main { background: #34372d; border-color: #827d62; color: #eee9dc; }
+.product-shell .summary-main p { color: #c2bba9; }
+.product-shell .diagnosis-spotlight { border-top: 2px solid #c2bba9; }
+.product-shell .spotlight-title > span { background: #55583f; border-color: #827d62; }
+.product-shell .mastery-orbit { background: #55583f; border-color: #c2bba9; box-shadow: 6px 6px #11130f; }
+.product-shell .mastery-orbit > div { background: #252720; }
+.product-shell .large-avatar { border-color: #aaa28f; background: #34372d; box-shadow: 5px 5px #11130f; }
+.product-shell :is(.goal-setting select,.account-card button,.reasoning-textarea,.choice-button,.topic-objective,.topic-takeaway,.topic-code,.editor-toolbar,.test-case-item,.diagnosis-evidence-box,.feedback-banner,.topic-introduction,.intervention-game-card,.diagnosis-card,.topic-sidebar,.route-search) { background: #34372d; border-color: #827d62; color: #eee9dc; }
+.product-shell :is(.topic-sources li,.editor-tab-label svg,.status-announcer) { color: #d4b277; }
+.product-shell .editor-wrapper { background: #1b1d18; border-color: #827d62; }
+.product-shell :is(.choice-button.selected,.resolved-card,.correct-feedback) { background: #34372d; color: #eee9dc; border-color: #827d62; }
+.product-shell .action-error-banner { background: #3a202b; color: #ffc2cd; border-color: #7e485d; }
+.product-shell .guild-footer { color: #aaa28f; border-top: 1px solid #55583f; background: #11130f; margin-top: 40px; }
+.account-screen { background: #171914; color: #eee9dc; }
+.account-panel { background: #252720; border: 1px solid #aaa28f; box-shadow: 10px 10px #11130f; }
+.account-panel h1 { font-family: "Courier New",monospace; color: #eee9dc; }
+.account-panel .account-kicker,.account-panel .account-switch { color: #d4b277; }
+.account-panel p { color: #c2bba9; }
+.account-panel input { background: #1b1d18; border-color: #827d62; color: #eee9dc; }
+.account-panel button { background: #d4b277; border-color: #eee9dc; color: #252720; }
+@media (max-width: 1200px) {
+  .adventure-selector button { width: 170px; height: 125px; }
+  .product-header { padding-inline: 3%; }
+  .top-navigation { gap: 0; margin-left: 20px; }
+  .adventure-hero-copy { width: 55%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .adventure-selector button,.product-shell .solid-action { transition: none; }
+}
