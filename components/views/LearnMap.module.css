@@ -33,3 +33,32 @@
 .chartFooter { position: absolute; bottom: 18px; left: 28px; font: italic .85rem Georgia, serif; color: #d2e2c9; }
 .chartFooter span { color: #efd18c; padding-right: 8px; }
 @media (prefers-reduced-motion: reduce) { .worldLink { transition: none; } }
+
+/* The world chart belongs to the same night expedition as the dashboard. */
+.heading { color: #eee9dc; }
+.heading > div > span { color: #d4b277; }
+.heading p { color: #c2bba9; }
+.worldCount { background: #34372d; border-color: #827d62; color: #eee9dc; font-family: monospace; }
+.ocean { border: 1px solid #515747; background: #283d36; box-shadow: inset 0 0 120px #10171166; }
+.ocean::before { opacity: .08; }
+.chartTitle,.chartFooter { color: #c2bba9; }
+.chartTitle small { color: #c2bba9; }
+.routes path { stroke: #d4b277; filter: none; }
+.seaLabel { color: #d4b27788; font-family: monospace; }
+.plaque { background: #252720; border: 1px solid #aaa28f; color: #eee9dc; box-shadow: 5px 5px #1b1d1888; }
+.plaque small,.plaque b { color: #d4b277; }
+.plaque > span { color: #c2bba9; }
+.plaque b { border-color: #827d62; }
+.number { background: #d4b277; color: #34372d; border-color: #eee9dc; font-family: monospace; }
+.chartFooter { font-family: monospace; font-size: .7rem; }
+.chartFooter span { color: #eee9dc; }
+
+@keyframes islandDrift {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -8px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .landscape { animation: islandDrift 6s ease-in-out infinite; }
+  .destination:nth-child(even) .landscape { animation-delay: -3s; }
+  .worldLink:is(:hover,:focus-visible) .landscape { animation-play-state: paused; }
+}

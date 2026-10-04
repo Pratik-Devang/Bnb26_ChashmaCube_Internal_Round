@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 import { useAccount } from "@/components/auth/AccountProvider";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { PixelSprite } from "@/components/ui/PixelSprite";
+import { ScrollMotion } from "@/components/ui/ScrollMotion";
 
 const navigation: { href: string; label: string; icon: IconName }[] = [
   { href: "/", label: "Home", icon: "home" },
@@ -52,7 +53,7 @@ export function AppFrame({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      <div className="page-stage">{children}</div>
+      <ScrollMotion>{children}</ScrollMotion>
       <footer className="guild-footer"><span>RE:LEARN / THE EXPLORER’S JOURNAL</span><span>Every mistake reveals a new path.</span></footer>
 
       <nav className="mobile-navigation" aria-label="Mobile navigation">

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import "./pixel-theme.css";
+import "./night-theme.css";
 import { AppFrame } from "@/components/navigation/AppFrame";
 import { AccountProvider } from "@/components/auth/AccountProvider";
 

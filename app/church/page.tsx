@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { ChurchWorld } from "@/components/game/ChurchWorld";
+import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
-  title: "The Ruined Church · Re:Learn",
-  description: "Explore the ruined church with WASD movement.",
+  title: "The Chapel of Choices · Re:Learn",
+  description: "Learn Python conditions by exploring the Chapel of Choices.",
 };
 
 export default function ChurchPage() {
-  return <ChurchWorld />;
+  redirect("/game/church");
 }
