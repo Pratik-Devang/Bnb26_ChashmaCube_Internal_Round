@@ -242,17 +242,24 @@ export function TopicAdventureWorld({ world, track, initialProgress }: { world: 
     finally { setBusy(false); }
   }
 
-  async function completeCodeChallenge(code: string, results: TestResults) {
-    if (!question || busy) return;
+  async function recordCodeAttempt(code: string, results: TestResults) {
+    const codeQuestion = track.questions[0];
+    // The challenge dialog has its own submit lock. The world-level `busy`
+    // flag may still be settling from the interaction that opened it, so it
+    // must not silently discard a code attempt here.
+    if (!codeQuestion) throw new Error("This coding trial has no linked question, so the attempt could not be saved.");
     setBusy(true); setError("");
     try {
-      const result = await completeAdventureCodeQuestion(selection, question.id, track.codeChallenge.id, code, results);
-      if (!result.correct) throw new Error("The server could not verify that solution. Try the Scout again.");
+      const result = await completeAdventureCodeQuestion(selection, codeQuestion.id, track.codeChallenge.id, code, results);
       setProgress(result.progress);
-      setMessage("Coding trial complete. Return to the Island Scout for the transfer check.");
+      if (result.correct) setMessage("Coding trial complete. Return to the Island Scout for the transfer check.");
     } catch (reason) {
-      throw reason instanceof Error ? reason : new Error("Could not save the coding trial.");
+      throw reason instanceof Error ? reason : new Error("Could not save this coding attempt.");
     } finally { setBusy(false); }
+  }
+
+  async function completeCodeChallenge() {
+    setMessage("Coding trial complete. Return to the Island Scout for the transfer check.");
   }
 
   return <main className={styles.world}>
@@ -297,7 +304,7 @@ export function TopicAdventureWorld({ world, track, initialProgress }: { world: 
       setConversation(null);
       if (target) {
         setChoice(null); setFeedback(""); setError("");
-        if (target.lesson === 3 && progress.passedQuestionIds.length === 0) setCodeChallengeOpen(true);
+        if (target.lesson === 3 && (progress.passedQuestionIds.length === 0 || (!chapel && progress.completed))) setCodeChallengeOpen(true);
         else setGuide(target);
       }
     }} />}
@@ -306,6 +313,7 @@ export function TopicAdventureWorld({ world, track, initialProgress }: { world: 
       exerciseOverride={track.codeChallenge}
       hint={track.codeChallenge.hint}
       recordAttempt={false}
+      onAttempt={recordCodeAttempt}
       guideName={chapel ? "Chapel Keeper" : "Island Scout"}
       title={`The Scout’s ${topicNames[track.topic]} Code Trial`}
       reward={0}
@@ -316,7 +324,7 @@ export function TopicAdventureWorld({ world, track, initialProgress }: { world: 
     <dialog ref={dialog} className={styles.dialog} onCancel={(event) => { event.preventDefault(); closeDialog(); }}>
       <header><small>{guide?.name ?? (quizAt === "lever" ? "Lever" : quizAt === "treasure" ? "Treasure" : "Adventure")} / {track.difficulty}</small><button disabled={busy} onClick={closeDialog} aria-label="Close lesson">×</button></header>
       {error && <p className={styles.error} role="alert">{error}</p>}
-      {quizAt && question ? <><small>{quizAt === "lever" ? "LEVER CHECK · FIRST QUESTION" : "TREASURE CHECK · SECOND QUESTION"} / {topicNames[track.topic]}</small><h2>{question.prompt}</h2>{feedback && <aside role="status">{feedback}</aside>}<pre><code>{question.code}</code></pre><fieldset disabled={busy}><legend>Choose your answer</legend>{question.options.map((answer, index) => <label className={`${styles.answer} ${choice === index ? styles.selected : ""}`} key={`${question.id}-${index}`}><input type="radio" name="answer" checked={choice === index} onChange={() => setChoice(index)} />{answer}</label>)}</fieldset><button className={styles.primary} disabled={busy || choice === null} onClick={submitAnswer}>{busy ? "Checking…" : quizAt === "lever" ? "Check and pull lever" : "Check and open treasure"}</button></> : lesson ? <><small>{topicNames[track.topic]} · GUIDE {guide!.lesson + 1} · PAGE {lessonPage + 1} / {lessonPageCount}</small>{workedExample ? <><h2>{workedExample.title}</h2><p>{workedExample.prompt}</p><pre><code>{workedExample.code}</code></pre><aside className={styles.exampleAnswer}><strong>Answer</strong><span>{workedExample.answer}</span><p>{workedExample.explanation}</p></aside></> : <><h2>{lesson.title}</h2><p>{lesson.body}</p><pre><code>{lesson.code}</code></pre><aside>{lesson.takeaway}</aside></>}<div className={styles.lessonPager}><button type="button" className={styles.pageButton} disabled={lessonPage === 0 || busy} onClick={() => setLessonPage((page) => Math.max(0, page - 1))}>Previous</button><span aria-live="polite">Page {lessonPage + 1} of {lessonPageCount}</span>{lessonPage < lessonPageCount - 1 ? <button type="button" className={styles.pageButton} disabled={busy} onClick={() => setLessonPage((page) => Math.min(lessonPageCount - 1, page + 1))}>Next page</button> : <button type="button" className={styles.primary} disabled={busy} onClick={finishLesson}>{busy ? "Saving…" : progress.completedLessonIds.includes(lesson.id) ? "Return to the trail" : "Finish lesson · +10 coins"}</button>}</div></> : progress.completed ? <><h2>Adventure complete!</h2><p>You finished the lessons and both checks for {topicNames[track.topic]} ({track.difficulty}).</p><p>80 coins earned in this adventure. This is practice evidence; lasting understanding takes more than one session.</p>{feedback && <p role="status">{feedback}</p>}<Link className={styles.primary} href={worldPath(world)}>Choose another topic or difficulty →</Link></> : question ? <><small>{question.kind === "transfer" ? "TRANSFER CHECK / A NEW CONTEXT" : "FINAL TRIAL"}</small><h2>{question.prompt}</h2>{feedback && <aside role="status">{feedback}</aside>}<pre><code>{question.code}</code></pre><fieldset disabled={busy}><legend>Choose your answer</legend>{question.options.map((answer, index) => <label className={`${styles.answer} ${choice === index ? styles.selected : ""}`} key={`${question.id}-${index}`}><input type="radio" name="answer" checked={choice === index} onChange={() => setChoice(index)} />{answer}</label>)}</fieldset><button className={styles.primary} disabled={busy || choice === null} onClick={submitAnswer}>{busy ? "Checking…" : "Check answer"}</button></> : null}
+      {quizAt && question ? <><small>{quizAt === "lever" ? "LEVER CHECK · FIRST QUESTION" : "TREASURE CHECK · SECOND QUESTION"} / {topicNames[track.topic]}</small><h2>{question.prompt}</h2>{feedback && <aside role="status">{feedback}</aside>}<pre><code>{question.code}</code></pre><fieldset disabled={busy}><legend>Choose your answer</legend>{question.options.map((answer, index) => <label className={`${styles.answer} ${choice === index ? styles.selected : ""}`} key={`${question.id}-${index}`}><input type="radio" name="answer" checked={choice === index} onChange={() => setChoice(index)} />{answer}</label>)}</fieldset><button className={styles.primary} disabled={busy || choice === null} onClick={submitAnswer}>{busy ? "Checking…" : quizAt === "lever" ? "Check and pull lever" : "Check and open treasure"}</button></> : lesson ? <><small>{topicNames[track.topic]} · GUIDE {guide!.lesson + 1} · PAGE {lessonPage + 1} / {lessonPageCount}</small>{workedExample ? <><h2>{workedExample.title}</h2><p>{workedExample.prompt}</p><pre><code>{workedExample.code}</code></pre><aside className={styles.exampleAnswer}><strong>Answer</strong><span>{workedExample.answer}</span><p>{workedExample.explanation}</p></aside></> : <><h2>{lesson.title}</h2><p>{lesson.body}</p><pre><code>{lesson.code}</code></pre><aside>{lesson.takeaway}</aside></>}<div className={styles.lessonPager}><button type="button" className={styles.pageButton} disabled={lessonPage === 0 || busy} onClick={() => setLessonPage((page) => Math.max(0, page - 1))}>Previous</button><span aria-live="polite">Page {lessonPage + 1} of {lessonPageCount}</span>{lessonPage < lessonPageCount - 1 ? <button type="button" className={styles.pageButton} disabled={busy} onClick={() => setLessonPage((page) => Math.min(lessonPageCount - 1, page + 1))}>Next page</button> : <button type="button" className={styles.primary} disabled={busy} onClick={finishLesson}>{busy ? "Saving…" : progress.completedLessonIds.includes(lesson.id) ? "Return to the trail" : "Finish lesson · +10 coins"}</button>}</div></> : progress.completed ? <><h2>Adventure complete!</h2><p>You finished the lessons and both checks for {topicNames[track.topic]} ({track.difficulty}).</p><p>80 coins earned in this adventure. This is practice evidence; lasting understanding takes more than one session.</p>{feedback && <p role="status">{feedback}</p>}{!chapel && <><p>You can retry the coding trial for practice. Replaying won’t reset your progress or coins.</p><button type="button" className={styles.primary} onClick={() => { setGuide(null); setError(""); setFeedback(""); setCodeChallengeOpen(true); }}>Replay coding trial</button></>}<Link className={styles.primary} href={worldPath(world)}>Choose another topic or difficulty →</Link></> : question ? <><small>{question.kind === "transfer" ? "TRANSFER CHECK / A NEW CONTEXT" : "FINAL TRIAL"}</small><h2>{question.prompt}</h2>{feedback && <aside role="status">{feedback}</aside>}<pre><code>{question.code}</code></pre><fieldset disabled={busy}><legend>Choose your answer</legend>{question.options.map((answer, index) => <label className={`${styles.answer} ${choice === index ? styles.selected : ""}`} key={`${question.id}-${index}`}><input type="radio" name="answer" checked={choice === index} onChange={() => setChoice(index)} />{answer}</label>)}</fieldset><button className={styles.primary} disabled={busy || choice === null} onClick={submitAnswer}>{busy ? "Checking…" : "Check answer"}</button></> : null}
     </dialog>
     <PracticeArenaModal isOpen={arenaOpen} onClose={() => setArenaOpen(false)} initialDifficulty={(track.difficulty as any) || "easy"} />
   </main>;

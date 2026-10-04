@@ -797,12 +797,20 @@
 .challengeSuccess, .classifierFeedback { margin-top: 18px; padding: 16px; border: 2px solid #456149; background: #213426; }
 .challengeSuccess strong { color: var(--lime); }
 .challengeSuccess p { margin: 7px 0 0; color: #c5d1c3; font-size: .68rem; }
-.classifierFeedback small { display: block; color: #ff9f6f; font-size: .48rem; font-weight: 950; letter-spacing: .11em; }
-.classifierFeedback strong { display: block; margin-top: 7px; color: #ffe5d5; font-size: .73rem; line-height: 1.4; }
-.classifierFeedback p { margin: 10px 0; color: #c4cec1; font-size: .66rem; line-height: 1.5; }
-.classifierFeedback code { display: block; padding: 9px; background: #0d1610; color: var(--lime); font-size: .64rem; }
-.classifierFeedback em { display: block; margin-top: 10px; color: var(--gold); font-size: .62rem; font-style: normal; }
-.testCount { margin-top: 14px; color: #9baa98; font-size: .58rem; font-weight: 900; }
+.classifierFeedback small { display: block; color: #ff9f6f; font-size: .62rem; font-weight: 950; letter-spacing: .11em; }
+.classifierFeedback strong { display: block; margin-top: 7px; color: #ffe5d5; font-size: .92rem; line-height: 1.4; }
+.classifierFeedback p { margin: 10px 0; color: #c4cec1; font-size: .86rem; line-height: 1.65; }
+.classifierFeedback code { display: block; padding: 9px; background: #0d1610; color: var(--lime); font-size: .82rem; }
+.classifierFeedback em { display: block; margin-top: 10px; color: var(--gold); font-size: .82rem; line-height: 1.55; font-style: normal; }
+.challengeHelp { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 8px; margin-top: 12px; }
+.challengeHelp > button, .solutionReveal > button { padding: 8px 10px; border: 1px solid #718263; background: #253629; color: #eee9dc; font-family: inherit; font-size: .78rem; line-height: 1.4; font-weight: 700; cursor: pointer; }
+.challengeHelp > button:hover, .solutionReveal > button:hover { background: #3b4d38; }
+.challengeHelp > p { flex-basis: 100%; margin: 4px 0; color: #d4ddcf; font-size: .84rem; line-height: 1.6; }
+.solutionReveal { flex-basis: 100%; min-width: 0; padding: 12px; border: 1px solid #596f4f; background: #1e2b20; }
+.solutionReveal > strong { color: #e4d29b; font-size: .84rem; }
+.solutionReveal pre { max-height: 180px; overflow: auto; margin: 9px 0; padding: 10px; background: #0d1610; color: #dfead8; white-space: pre; font: .8rem/1.6 ui-monospace, Consolas, monospace; }
+.solutionReveal p { color: #c4cec1; font-size: .8rem; line-height: 1.55; }
+.testCount { margin-top: 14px; color: #c2cdbf; font-size: .75rem; font-weight: 800; }
 .challengeError { color: #ff8c82 !important; }
 
 @keyframes idle {

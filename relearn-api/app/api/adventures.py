@@ -96,6 +96,27 @@ async def progress(learner: Learner = Depends(current_user), session: AsyncSessi
         for attempt in save.get("attempts", []):
             if attempt.get("correct"):
                 continue
+            if attempt.get("answer") == "code":
+                challenge = CODE_CHALLENGES.get(save.get("track", ""), {})
+                if not challenge:
+                    continue
+                reviews.append({
+                    "id": f'{save.get("world", "")}/{save.get("track", "")}/{challenge.get("id", "code")}/{attempt.get("at", "")}',
+                    "kind": "code",
+                    "world": save.get("world", "first-island"),
+                    "track": save.get("track", ""),
+                    "topic": track.get("topic", "Topic adventure"),
+                    "difficulty": track.get("difficulty", ""),
+                    "questionId": attempt.get("questionId", ""),
+                    "exerciseId": challenge.get("id", ""),
+                    "prompt": challenge.get("prompt", "Coding trial"),
+                    "code": attempt.get("submittedCode", ""),
+                    "yourAnswer": "Your solution did not pass all the checks.",
+                    "correctAnswer": "See the worked solution in the review.",
+                    "explanation": challenge.get("hint", "Compare your function with the task and check what value it returns."),
+                    "attemptedAt": attempt.get("at"),
+                })
+                continue
             question = questions.get(attempt.get("questionId"))
             if question is None:
                 continue
@@ -208,13 +229,13 @@ async def code_answer(payload: CodeAnswerAction, learner: Learner = Depends(curr
         and reported.get("expected") == expected["expected"]
         for reported, expected in zip(payload.results, expected_cases)
     )
-    if payload.questionId not in passed:
-        data["attemptCount"] += 1
-        data["mistakeCount"] += int(not correct)
-        data["attempts"] = (data["attempts"] + [{"questionId": payload.questionId, "answer": "code",
-            "correct": correct, "at": datetime.now(timezone.utc).isoformat()}])[-30:]
-        if correct:
-            passed.append(payload.questionId)
+    data["attemptCount"] += 1
+    data["mistakeCount"] += int(not correct)
+    data["attempts"] = (data["attempts"] + [{"questionId": payload.questionId, "answer": "code",
+        "exerciseId": payload.exerciseId, "submittedCode": payload.code,
+        "correct": correct, "at": datetime.now(timezone.utc).isoformat()}])[-30:]
+    if correct and payload.questionId not in passed:
+        passed.append(payload.questionId)
     done = len(passed) == len(track["questions"])
     data.update(passedQuestionIds=passed, completed=done,
                 coinsEarned=len(data["completedLessonIds"]) * 10 + (50 if done else 0),

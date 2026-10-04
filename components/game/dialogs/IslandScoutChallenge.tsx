@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { getExercise, requestDiagnosis, submitAttempt } from "@/lib/api";
 import { currentLearnerId } from "@/lib/account";
 import { createPythonCodeRunner, type PythonCodeRunner } from "@/lib/code-runner";
+import { challengeSolutions } from "@/lib/game/challenge-solutions";
 import type { DiagnosisResponse, Exercise, TestResults } from "@/types/learning";
 import styles from "../GameWorld.module.css";
 
@@ -17,6 +18,7 @@ type Props = {
   reward: number;
   alreadyCompleted: boolean;
   onClose: () => void;
+  onAttempt?: (submittedCode: string, results: TestResults) => void | Promise<void>;
   onComplete: (submittedCode: string, results: TestResults) => void | Promise<void>;
 };
 
@@ -34,6 +36,43 @@ const recommendedCode: Partial<Record<DiagnosisResponse["diagnosis"]["misconcept
   VARIABLE_ROLE_CONFUSION: "return score + 10",
 };
 
+function friendlyPythonError(error: string, exerciseId: string, hint?: string): ScoutGuidance {
+  if (/can only concatenate str|unsupported operand type\(s\) for \+/.test(error)) return {
+    title: "Convert the text before adding",
+    explanation: exerciseId === "variables-medium-code"
+      ? "raw arrives as text, so Python cannot add 5 to it yet. Convert it with int(raw), add 5, then return the result so the Scout can check it. print displays a value but does not return it."
+      : "This input arrives as text, and Python cannot add text and a number directly. Convert the input to a number first, then do the addition.",
+    example: exerciseId === "variables-medium-code" ? "return int(raw) + 5" : undefined,
+    check: hint ?? "Use int(...) on the text value before doing arithmetic.",
+    source: "tests",
+  };
+  if (/NameError/.test(error)) return {
+    title: "Check the name you used",
+    explanation: "Python found a name it does not recognize. Check the spelling and make sure the value is created before you use it.",
+    check: hint ?? "Compare each name in your code with the names in the function prompt.", source: "tests",
+  };
+  if (/IndentationError|TabError/.test(error)) return {
+    title: "Check the line spacing",
+    explanation: "Python uses indentation to show which lines belong inside a function, loop, or if statement. Lines in the same block need the same spacing.",
+    check: "Indent each line in a block by four spaces, and keep the return line inside the function.", source: "tests",
+  };
+  if (/SyntaxError/.test(error)) return {
+    title: "Check the Python punctuation",
+    explanation: "Python could not understand one of the lines. Check that parentheses and quotes are paired, and that lines ending in if, else, or a function header have a colon.",
+    check: hint ?? "Read the line before the one Python points to; a missing symbol can make the next line look wrong.", source: "tests",
+  };
+  if (/ZeroDivisionError/.test(error)) return {
+    title: "Check before dividing",
+    explanation: "The code tried to divide by zero. Handle the zero case before running the division.",
+    check: hint ?? "Add an if check for a zero divisor before the division line.", source: "tests",
+  };
+  return {
+    title: "Python stopped before it could check your answer",
+    explanation: "That message is about how the code ran, not a score. Read your function from top to bottom and check the names, indentation, and the value it returns.",
+    check: hint ?? "Try one small change, then submit again. You can reveal a worked solution if you get stuck.", source: "tests",
+  };
+}
+
 function guidanceFromDiagnosis(result: DiagnosisResponse): ScoutGuidance | null {
   const diagnosis = result.diagnosis;
   if (diagnosis.misconceptionCode === "CORRECT") return null;
@@ -50,12 +89,7 @@ function guidanceFromDiagnosis(result: DiagnosisResponse): ScoutGuidance | null 
 function guidanceFromTests(results: TestResults, exerciseId: string, hint?: string): ScoutGuidance {
   const failed = results.cases.filter((item) => !item.passed);
   const firstError = failed.find((item) => item.error)?.error;
-  if (firstError) return {
-    title: "Python could not run this yet",
-    explanation: firstError,
-    check: "Fix the reported Python error, then ask the Scout to check again.",
-    source: "tests",
-  };
+  if (firstError) return friendlyPythonError(firstError, exerciseId, hint);
 
   const unchanged = exerciseId === "starting-value-01" && failed.length > 0 && failed.every((item) => item.actual === item.args?.[0]);
   if (unchanged) return {
@@ -86,7 +120,7 @@ function guidanceFromTests(results: TestResults, exerciseId: string, hint?: stri
   };
 }
 
-export function IslandScoutChallenge({ exerciseId, exerciseOverride, hint, recordAttempt = true, guideName = "Island Scout", title, reward, alreadyCompleted, onClose, onComplete }: Props) {
+export function IslandScoutChallenge({ exerciseId, exerciseOverride, hint, recordAttempt = true, guideName = "Island Scout", title, reward, alreadyCompleted, onClose, onAttempt, onComplete }: Props) {
   const [exercise, setExercise] = useState<Exercise | null>(null);
   const [code, setCode] = useState("");
   const [results, setResults] = useState<TestResults | null>(null);
@@ -94,6 +128,8 @@ export function IslandScoutChallenge({ exerciseId, exerciseOverride, hint, recor
   const [status, setStatus] = useState<"loading" | "ready" | "running" | "passed" | "failed">("loading");
   const [error, setError] = useState("");
   const [syncWarning, setSyncWarning] = useState("");
+  const [hintOpen, setHintOpen] = useState(false);
+  const [solutionOpen, setSolutionOpen] = useState(false);
   const runnerRef = useRef<PythonCodeRunner | null>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
 
@@ -140,10 +176,32 @@ export function IslandScoutChallenge({ exerciseId, exerciseOverride, hint, recor
     setError("");
     setSyncWarning("");
     setDiagnosis(null);
+    setHintOpen(false);
+    setSolutionOpen(false);
 
     try {
-      const nextResults = await runnerRef.current.run({ code, testCases: exercise.testCases });
+      let nextResults: TestResults;
+      try {
+        nextResults = await runnerRef.current.run({ code, testCases: exercise.testCases });
+      } catch (reason) {
+        // A timeout or worker failure is still an incorrect submitted answer.
+        // Turn it into failed test evidence so the adventure journal records it.
+        const message = reason instanceof Error ? reason.message : "Python could not finish running this attempt.";
+        nextResults = {
+          passed: 0,
+          failed: exercise.testCases.length,
+          cases: exercise.testCases.map((testCase) => ({
+            input: testCase.input,
+            args: testCase.args,
+            expected: testCase.expected,
+            actual: null,
+            passed: false,
+            error: message,
+          })),
+        };
+      }
       setResults(nextResults);
+      if (onAttempt) await onAttempt(code, nextResults);
       let journalGuidance: ScoutGuidance | null = null;
 
       if (recordAttempt) try {
@@ -166,10 +224,14 @@ export function IslandScoutChallenge({ exerciseId, exerciseOverride, hint, recor
         return;
       }
 
-      setDiagnosis(journalGuidance ?? guidanceFromTests(nextResults, exerciseId, hint));
+      const testGuidance = guidanceFromTests(nextResults, exerciseId, hint);
+      const hasRuntimeError = nextResults.cases.some((item) => !item.passed && item.error);
+      setDiagnosis(hasRuntimeError ? testGuidance : journalGuidance ?? testGuidance);
       setStatus("failed");
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : `${guideName} could not check that solution.`);
+      setError(reason instanceof Error
+        ? `This attempt could not be saved: ${reason.message}`
+        : "This attempt could not be saved. Your code is still here; try again.");
       setStatus("failed");
     }
   };
@@ -224,6 +286,21 @@ export function IslandScoutChallenge({ exerciseId, exerciseOverride, hint, recor
               </div>
             ) : null}
             {results ? <div className={styles.testCount}>{results.passed} passed · {results.failed} failed</div> : null}
+            {status === "failed" && exercise ? <div className={styles.challengeHelp}>
+              {hint && <button type="button" onClick={() => setHintOpen((open) => !open)} aria-expanded={hintOpen}>
+                {hintOpen ? "Hide hint" : "Show a hint"}
+              </button>}
+              {challengeSolutions[exercise.id] && <button type="button" onClick={() => setSolutionOpen((open) => !open)} aria-expanded={solutionOpen}>
+                {solutionOpen ? "Hide solution" : "Show solution"}
+              </button>}
+              {hintOpen && hint ? <p><strong>Hint:</strong> {hint}</p> : null}
+              {solutionOpen && challengeSolutions[exercise.id] ? <div className={styles.solutionReveal}>
+                <strong>Worked solution</strong>
+                <pre><code>{challengeSolutions[exercise.id]}</code></pre>
+                <p>Read each line, then load it into the editor and submit it to finish the trial.</p>
+                <button type="button" onClick={() => { setCode(challengeSolutions[exercise.id] ?? ""); setError(""); }}>Use this solution</button>
+              </div> : null}
+            </div> : null}
             {syncWarning ? <p className={styles.challengeError}>{syncWarning}</p> : null}
             {error ? <p className={styles.challengeError}>{error}</p> : null}
           </aside>

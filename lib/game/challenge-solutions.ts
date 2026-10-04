@@ -1,0 +1,17 @@
+export const challengeSolutions: Record<string, string> = {
+  "variables-easy-code": "def add_bonus(score):\n    return score + 10",
+  "variables-medium-code": "def add_five(raw):\n    return int(raw) + 5",
+  "variables-hard-code": "def copy_and_add(values):\n    result = values.copy()\n    result.append(99)\n    return result",
+  "conditions-easy-code": "def age_label(age):\n    if age >= 18:\n        return 'adult'\n    return 'minor'",
+  "conditions-medium-code": "def shipping_cost(total, member):\n    if total >= 50 or member:\n        return 0\n    return 5",
+  "conditions-hard-code": "def safe_ratio(total, count):\n    if count == 0:\n        return None\n    return total / count",
+  "loops-easy-code": "def inclusive_sum(n):\n    total = 0\n    for number in range(1, n + 1):\n        total += number\n    return total",
+  "loops-medium-code": "def countdown_total(start):\n    current = start\n    total = 0\n    while current > 0:\n        total += current\n        current -= 1\n    return total",
+  "loops-hard-code": "def grid_visits(rows, columns):\n    count = 0\n    for row in range(rows):\n        for column in range(columns):\n            count += 1\n    return count",
+  "lists-easy-code": "def add_items(values):\n    total = 0\n    for value in values:\n        total += value\n    return total",
+  "lists-medium-code": "def middle_items(values):\n    return values[1:-1]",
+  "lists-hard-code": "def lengths_after_copy(values):\n    copied = values.copy()\n    copied.append(0)\n    return [len(values), len(copied)]",
+  "functions-easy-code": "def double(number):\n    return number * 2",
+  "functions-medium-code": "def final_price(price, discount=0):\n    return price - discount",
+  "functions-hard-code": "def collect(item, bag=None):\n    if bag is None:\n        bag = []\n    bag.append(item)\n    return bag",
+};
