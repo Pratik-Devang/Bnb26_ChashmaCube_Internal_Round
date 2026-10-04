@@ -7,7 +7,7 @@ from threading import Lock
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -164,6 +164,27 @@ class IslandSave(BaseModel):
         return values
 
 
+class ChapelSave(BaseModel):
+    introComplete: bool = False
+    completedObjectiveIds: list[str] = Field(default_factory=list, max_length=3)
+    questCompleted: bool = False
+    coinsEarned: int = Field(default=0, ge=0, le=1000)
+
+    @field_validator("completedObjectiveIds")
+    @classmethod
+    def valid_objectives(cls, values):
+        objective_order = ["lever", "treasure", "keeper"]
+        if values != objective_order[:len(values)]:
+            raise ValueError("Chapel objectives must be completed in order.")
+        return values
+
+    @model_validator(mode="after")
+    def objectives_require_intro(self):
+        if self.completedObjectiveIds and not self.introComplete:
+            raise ValueError("Complete the chapel introduction before its objectives.")
+        return self
+
+
 class Preferences(BaseModel):
     sound: bool = True
     reminders: bool = True
@@ -208,6 +229,30 @@ async def save_world(payload: IslandSave, learner: Learner = Depends(current_use
         session.add(saved)
     progress = payload.model_dump()
     progress["coinsEarned"] = len(payload.completedLessonIds) * 10 + (50 if payload.challengeCompleted else 0)
+    saved.progress = progress
+    await session.commit()
+    return saved.progress
+
+
+@router.get("/worlds/chapel-of-choices")
+async def load_chapel(learner: Learner = Depends(current_user), session: AsyncSession = Depends(get_session)):
+    saved = await session.get(WorldSave, (learner.id, "chapel-of-choices"))
+    return saved.progress if saved else ChapelSave().model_dump()
+
+
+@router.put("/worlds/chapel-of-choices")
+async def save_chapel(payload: ChapelSave, learner: Learner = Depends(current_user), session: AsyncSession = Depends(get_session)):
+    saved = await session.get(WorldSave, (learner.id, "chapel-of-choices"))
+    if saved is None:
+        saved = WorldSave(learner_id=learner.id, world_id="chapel-of-choices", progress={})
+        session.add(saved)
+    previous = ChapelSave.model_validate(saved.progress) if saved.progress else ChapelSave()
+    objective_ids = payload.completedObjectiveIds if len(payload.completedObjectiveIds) >= len(previous.completedObjectiveIds) else previous.completedObjectiveIds
+    progress = payload.model_dump()
+    progress["introComplete"] = payload.introComplete or previous.introComplete
+    progress["completedObjectiveIds"] = objective_ids
+    progress["questCompleted"] = len(objective_ids) == 3
+    progress["coinsEarned"] = len(objective_ids) * 20 + (40 if progress["questCompleted"] else 0)
     saved.progress = progress
     await session.commit()
     return saved.progress

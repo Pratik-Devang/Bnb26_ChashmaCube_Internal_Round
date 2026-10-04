@@ -38,6 +38,15 @@ export type FirstIslandProgress = {
   coinsEarned: number;
 };
 
+export type ChapelObjectiveId = "lever" | "treasure" | "keeper";
+
+export type ChapelProgress = {
+  introComplete: boolean;
+  completedObjectiveIds: ChapelObjectiveId[];
+  questCompleted: boolean;
+  coinsEarned: number;
+};
+
 /** Legacy prototype types retained until the original static GameWorld is removed. */
 export type AmbientActor = Omit<IslandActor, "role" | "lesson">;
 

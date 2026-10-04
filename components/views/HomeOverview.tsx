@@ -115,12 +115,12 @@ export function HomeOverview() {
                 <span><i style={{ width: `${journeyPercent}%` }} /></span>
                 <strong>{journeyPercent}%</strong>
               </div>
-              <Link href={islandComplete ? "/game/church" : "/game"} className="solid-action"><Icon name="play" />{islandComplete ? "Enter the ruined church" : hasStarted ? "Continue adventure" : "Enter the first island"}</Link>
+              <Link href={islandComplete ? "/game/church" : "/game"} className="solid-action"><Icon name="play" />{islandComplete ? "Enter the Chapel of Choices" : hasStarted ? "Continue adventure" : "Enter the first island"}</Link>
             </div>
 
-            <Link href={islandComplete ? "/game/church" : "/game"} className={`island-dashboard-preview${islandComplete ? " next-world-preview" : ""}`} aria-label={islandComplete ? "Open The Ruined Church" : "Open The First Island"}>
-              <Image src={islandComplete ? ruinedChurchMap : firstIslandMap} alt={islandComplete ? "The Ruined Church learning map" : "The First Island learning map"} unoptimized priority />
-              <span><small>{islandComplete ? "NEXT WORLD" : "NEXT GUIDE"}</small><strong>{islandComplete ? "The Ruined Church" : nextTeacher?.name ?? "Island Scout"}</strong></span>
+            <Link href={islandComplete ? "/game/church" : "/game"} className={`island-dashboard-preview${islandComplete ? " next-world-preview" : ""}`} aria-label={islandComplete ? "Open The Chapel of Choices" : "Open The First Island"}>
+              <Image src={islandComplete ? ruinedChurchMap : firstIslandMap} alt={islandComplete ? "The Chapel of Choices learning map" : "The First Island learning map"} unoptimized priority />
+              <span><small>{islandComplete ? "NEXT WORLD" : "NEXT GUIDE"}</small><strong>{islandComplete ? "The Chapel of Choices" : nextTeacher?.name ?? "Island Scout"}</strong></span>
             </Link>
           </article>
 
@@ -176,7 +176,7 @@ export function HomeOverview() {
           <section className="week-strip" aria-label="Account adventure status">
             <div><span className="page-eyebrow">YOUR ACCOUNT</span><strong>Level {learner.level}</strong></div>
             <p>{loadingProgress ? "Opening your adventure journal…" : islandComplete ? "The First Island is complete." : "The First Island is your next destination."}</p>
-            <Link href={islandComplete ? "/game/church" : "/game"} className="notice-board-link">{islandComplete ? "Enter the ruined church →" : hasStarted ? "Continue island →" : "Begin adventure →"}</Link>
+            <Link href={islandComplete ? "/game/church" : "/game"} className="notice-board-link">{islandComplete ? "Enter the Chapel of Choices →" : hasStarted ? "Continue island →" : "Begin adventure →"}</Link>
           </section>
         </aside>
       </div>

@@ -177,7 +177,7 @@ export function InsightsView() {
             <Icon name="target" />
             <div>
               <strong>Recommended next step</strong>
-              <span>{practiceConcept ? guidance?.next ?? "Return to the challenge and try a revised solution." : islandProgress.challengeCompleted ? "Continue to the Ruined Church and apply your learning in a new setting." : "Continue along the First Island trail."}</span>
+              <span>{practiceConcept ? guidance?.next ?? "Return to the challenge and try a revised solution." : islandProgress.challengeCompleted ? "Continue to the Chapel of Choices and apply your learning in a new setting." : "Continue along the First Island trail."}</span>
             </div>
             <Link href={islandProgress.challengeCompleted ? "/game/church" : "/game"} className="solid-action" style={{ marginLeft: "auto" }}><Icon name="play" /> {islandProgress.challengeCompleted ? "Next world" : islandStarted ? "Continue" : "Start"}</Link>
           </div>

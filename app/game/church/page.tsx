@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { ChurchMap } from "@/components/game/church/ChurchMap";
+import { ChurchWorld } from "@/components/game/ChurchWorld";
 
 export const metadata: Metadata = {
-  title: "The Ruined Church · Re:Learn",
-  description: "Explore the ruined church, the future home of the Conditions learning journey.",
+  title: "The Chapel of Choices · Re:Learn",
+  description: "Learn Python conditions by exploring the Chapel of Choices.",
 };
 
 export default function ChurchPage() {
-  return <ChurchMap />;
+  return <ChurchWorld />;
 }

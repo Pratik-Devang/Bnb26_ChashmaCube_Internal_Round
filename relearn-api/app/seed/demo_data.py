@@ -213,9 +213,6 @@ async def main() -> None:
     async with async_session_factory() as session:
         await seed_demo_data(session)
     await dispose_engine()
-    print("Seeded deterministic Re:Learn demo data.")
-
-
 if __name__ == "__main__":
     if sys.platform == "win32":
         # Psycopg's async driver requires a selector loop on Windows.
