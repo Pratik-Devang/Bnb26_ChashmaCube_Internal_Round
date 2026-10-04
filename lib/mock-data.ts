@@ -33,14 +33,14 @@ export const learningModules: LearningModule[] = [
   },
   {
     id: "conditions",
-    title: "Conditions",
-    description: "Help your code choose what to do next.",
-    beginnerNote: "An if statement asks a yes-or-no question before running code.",
+    title: "The Ruined Church",
+    description: "Enter the overgrown ruins where the Conditions journey will unfold.",
+    beginnerNote: "This church will become your next learning world for Python conditions.",
     status: "completed",
     progress: 100,
     xpReward: 90,
     accent: "mint",
-    icon: "🔀",
+    icon: "⛪",
     misconception: "CORRECT",
   },
   {

@@ -6,6 +6,7 @@ import { conceptStates as defaultConcepts, diagnosis } from "@/lib/mock-data";
 import { getLearnerProgress } from "@/lib/api";
 import { Icon } from "@/components/ui/Icon";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { PixelSprite } from "@/components/ui/PixelSprite";
 import type { LearnerConceptState } from "@/types/learning";
 
 const labels: Record<string, string> = {
@@ -112,7 +113,7 @@ export function InsightsView() {
         <section className="diagnosis-spotlight">
           <span className="page-eyebrow">LATEST INSIGHT</span>
           <div className="spotlight-title">
-            <span>🪲</span>
+            <span><PixelSprite character="scout" /></span>
             <div>
               <h2>{diagnosis.title}</h2>
               <p>It’s a common first-loop idea—not a failure.</p>

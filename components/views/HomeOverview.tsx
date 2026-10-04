@@ -11,6 +11,7 @@ import {
 import { completeQuest, getLearningPlan } from "@/lib/api";
 import { Icon } from "@/components/ui/Icon";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { WorldDestinations } from "@/components/dashboard/WorldDestinations";
 import type { DashboardStatistics, Learner, LearningModule, Quest } from "@/types/learning";
 
 export function HomeOverview() {
@@ -77,12 +78,13 @@ export function HomeOverview() {
   return (
     <main className="route-page home-page">
       <PageHeader
-        eyebrow={`GOOD AFTERNOON, ${learner.name.toUpperCase()}`}
-        title="Your learning plan"
-        description="Saturday, 3 October · Python foundations"
+        eyebrow={`WELCOME BACK, ${learner.name.toUpperCase()} / PYTHON FOUNDATIONS`}
+        title="Your next adventure awaits."
+        description="Explore a world. Untangle an idea. Come back a little wiser."
         action={<Link className="quiet-action" href="/insights">View today’s insight</Link>}
       />
 
+      <WorldDestinations />
       <div className="dashboard-grid">
         <section className="plan-workspace" aria-label="Learning plan">
           <div className="plan-toolbar">
@@ -139,7 +141,7 @@ export function HomeOverview() {
         </section>
 
         <aside className="today-panel" aria-label="Today">
-          <div className="today-heading"><div><span className="page-eyebrow">SATURDAY</span><h2>Today</h2></div><span className="date-badge">03</span></div>
+          <div className="today-heading"><div><span className="page-eyebrow">THE NOTICE BOARD</span><h2>Daily quests</h2></div><span className="date-badge" aria-hidden="true">✦</span></div>
 
           <article className="day-streak-card"><Icon name="flame" /><div><strong>{learner.streak} day streak</strong><span>One focused session keeps it going.</span></div></article>
 
