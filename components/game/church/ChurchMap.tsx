@@ -7,6 +7,7 @@ import churchExterior from "@/2d_assets/Church/Maps/Ruined_temple_exterior.png";
 import churchInterior from "@/2d_assets/Church/Maps/Ruined_temple_interior.png";
 import playerIdle from "@/2d_assets/First Island/Characters/Character_1/Idle.png";
 import playerWalk from "@/2d_assets/First Island/Characters/Character_1/Walk.png";
+import { IslandOracleDialog } from "../dialogs/IslandOracleDialog";
 import styles from "./ChurchMap.module.css";
 
 type ChurchScene = "exterior" | "interior";
@@ -42,6 +43,7 @@ export function ChurchMap() {
   const [playerPosition, setPlayerPosition] = useState<Position>(scenes.exterior.start);
   const [isMoving, setIsMoving] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [oracleOpen, setOracleOpen] = useState(false);
   const movementTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const currentScene = scenes[scene];
 
@@ -93,7 +95,18 @@ export function ChurchMap() {
           <h1>The Ruined Church</h1>
         </div>
         <div className={styles.location}><small>LOCATION</small><strong>{currentScene.name}</strong></div>
-        <Link href="/learn">Return to learning path</Link>
+        <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
+          <button
+            type="button"
+            className={styles.oracleButton}
+            onClick={() => setOracleOpen(true)}
+            title="Consult AI Oracle (Spell & Code Diagnoser)"
+            aria-label="Consult AI Oracle"
+          >
+            ✨
+          </button>
+          <Link href="/learn">Return to learning path</Link>
+        </div>
       </header>
 
       <section className={styles.mapFrame} aria-label="The exterior grounds of the ruined church">
@@ -119,6 +132,7 @@ export function ChurchMap() {
         <div className={styles.controls}><kbd>WASD</kbd> or arrow keys to move</div>
         <div className={`${styles.transition}${isTransitioning ? ` ${styles.transitionActive}` : ""}`} aria-hidden="true" />
       </section>
+      {oracleOpen ? <IslandOracleDialog onClose={() => setOracleOpen(false)} /> : null}
     </main>
   );
 }

@@ -167,6 +167,41 @@
   transform: rotate(-45deg);
 }
 
+.oracleButton {
+  width: 40px;
+  height: 40px;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fdba74;
+  border-radius: 4px;
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  color: #ffffff;
+  box-shadow: 0 0 14px rgba(249, 115, 22, 0.65), 3px 3px 0 #070c08;
+  font-size: 1.25rem;
+  cursor: pointer;
+  animation: oracleGlow 2s ease-in-out infinite alternate;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  user-select: none;
+}
+
+.oracleButton:hover {
+  transform: scale(1.1) translate(-1px, -1px);
+  box-shadow: 0 0 22px rgba(249, 115, 22, 0.95), 4px 4px 0 #070c08;
+}
+
+@keyframes oracleGlow {
+  0% {
+    box-shadow: 0 0 8px rgba(249, 115, 22, 0.45), 3px 3px 0 #070c08;
+    transform: scale(1);
+  }
+  100% {
+    box-shadow: 0 0 18px rgba(249, 115, 22, 0.9), 3px 3px 0 #070c08;
+    transform: scale(1.06);
+  }
+}
+
 .exitButton {
   padding: 0 14px;
   color: #d7dfd4;
@@ -673,6 +708,17 @@
 
 .dialogActions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 22px; }
 .dialogActions > * { min-height: 42px; display: inline-flex; align-items: center; justify-content: center; padding: 0 16px; border-radius: 0; font-size: .62rem; font-weight: 900; text-transform: uppercase; letter-spacing: .04em; cursor: pointer; }
+.completionDialog { position: relative; width: min(600px, 100%); display: block; padding: 38px; text-align: center; }
+.completionClose { position: absolute; top: 12px; right: 12px; width: 34px; height: 34px; border: 1px solid #415243; background: #142018; color: var(--cream); font-size: 1.3rem; cursor: pointer; }
+.completionIcon { width: 62px; height: 62px; display: grid; place-items: center; margin: 0 auto 16px; border: 3px solid #efff9a; background: var(--lime); color: #14200f; font-size: 2rem; font-weight: 950; box-shadow: 4px 4px 0 #516719; }
+.completionDialog > small { color: var(--moss); font-size: .58rem; font-weight: 950; letter-spacing: .14em; }
+.completionDialog h2 { margin: 10px 0; color: var(--cream); font-size: clamp(1.7rem, 5vw, 2.5rem); }
+.completionDialog > p { max-width: 430px; margin: 0 auto; color: #b8c3b6; font-size: .78rem; line-height: 1.7; }
+.completionActions { display: grid; gap: 10px; margin-top: 24px; }
+.completionActions > * { min-height: 44px; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 14px; border: 1px solid #415243; color: #d5dfd1; font-size: .68rem; font-weight: 900; text-align: center; text-decoration: none; cursor: pointer; }
+.completionActions .completionNext { border: 2px solid #efff9a; background: var(--lime); color: #14200f; box-shadow: 4px 4px 0 #516719; }
+.completionActions .completionSecondary { background: #142018; }
+.completionActions > *:hover { filter: brightness(1.12); }
 .secondaryAction { border: 1px solid #415243; background: transparent; color: #abb7a9; }
 .primaryAction { gap: 12px; border: 2px solid #efff9a; background: var(--lime); color: #14200f; box-shadow: 4px 4px 0 #516719; }
 .primaryAction:hover { background: #edff81; }

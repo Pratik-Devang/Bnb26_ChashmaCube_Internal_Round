@@ -18,6 +18,7 @@ import { firstIsland, firstIslandActors, orderedFirstIslandLessons } from "@/lib
 import { emptyFirstIslandProgress, loadFirstIslandProgress, saveFirstIslandProgress } from "@/lib/game/first-island/progress";
 import type { FirstIslandProgress, GameSpriteKey, IslandActor, MapPosition } from "@/types/game";
 import { IslandLessonDialog } from "./dialogs/IslandLessonDialog";
+import { IslandOracleDialog } from "./dialogs/IslandOracleDialog";
 import { IslandScoutChallenge } from "./dialogs/IslandScoutChallenge";
 import styles from "./GameWorld.module.css";
 
@@ -39,6 +40,8 @@ export function FirstIslandWorld() {
   const [selectedActor, setSelectedActor] = useState<IslandActor | null>(null);
   const [lockedMessage, setLockedMessage] = useState<string | undefined>();
   const [challengeOpen, setChallengeOpen] = useState(false);
+  const [oracleOpen, setOracleOpen] = useState(false);
+  const [completionOpen, setCompletionOpen] = useState(false);
   const [activeAmbientId, setActiveAmbientId] = useState<string | null>(null);
   const [guidance, setGuidance] = useState("Use WASD or the arrow keys to reach the Beach Cartographer.");
   const [isMoving, setIsMoving] = useState(false);
@@ -142,6 +145,8 @@ export function FirstIslandWorld() {
     if (progress.challengeCompleted) return;
     updateProgress({ ...progress, challengeCompleted: true, coinsEarned: progress.coinsEarned + firstIsland.challenge.reward });
     setGuidance("The First Island is complete. Your variables foundation is secure.");
+    setChallengeOpen(false);
+    setCompletionOpen(true);
   };
 
   const currentObjective = nextTeacher
@@ -161,6 +166,16 @@ export function FirstIslandWorld() {
         <div className={styles.topActions}>
           <div className={styles.coinWallet} aria-label={`${progress.coinsEarned} coins`}><span className={styles.coin}>●</span><strong>{progress.coinsEarned}</strong></div>
           <button type="button" className={styles.iconButton} onClick={() => setSoundEnabled((value) => !value)} aria-label={soundEnabled ? "Mute game sounds" : "Enable game sounds"} aria-pressed={soundEnabled}><span aria-hidden="true">♪</span>{!soundEnabled && <i aria-hidden="true" />}</button>
+          <button
+            type="button"
+            className={styles.oracleButton}
+            onClick={() => setOracleOpen(true)}
+            title="Consult AI Island Oracle (Spell & Code Diagnoser)"
+            aria-label="Consult AI Island Oracle"
+          >
+            ✨
+          </button>
+          <Link href="/church" className={styles.exitButton}>Explore church</Link>
           <Link href="/learn" className={styles.exitButton}>Learning path</Link>
         </div>
       </header>
@@ -191,6 +206,32 @@ export function FirstIslandWorld() {
       <footer className={styles.gameFooter}><span>{guidance}</span><span><kbd>WASD</kbd> move <i /> <kbd>E</kbd> interact</span></footer>
       {selectedActor ? <IslandLessonDialog actor={selectedActor} lockedMessage={lockedMessage} completed={Boolean(selectedActor.lesson && progress.completedLessonIds.includes(selectedActor.lesson.id))} onClose={() => { setSelectedActor(null); setLockedMessage(undefined); }} onComplete={completeSelectedLesson} /> : null}
       {challengeOpen ? <IslandScoutChallenge exerciseId={firstIsland.challenge.exerciseId} title={firstIsland.challenge.title} reward={firstIsland.challenge.reward} alreadyCompleted={progress.challengeCompleted} onClose={() => setChallengeOpen(false)} onComplete={completeChallenge} /> : null}
+      {oracleOpen ? (
+        <IslandOracleDialog
+          onClose={() => setOracleOpen(false)}
+          onRewardCoins={(amount) => {
+            setProgress((prev) => {
+              const next = { ...prev, coinsEarned: prev.coinsEarned + amount };
+              saveFirstIslandProgress(next);
+              return next;
+            });
+          }}
+        />
+      ) : null}
+      {completionOpen ? <div className={styles.dialogScrim} role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setCompletionOpen(false); }}>
+        <section className={`${styles.dialog} ${styles.completionDialog}`} role="dialog" aria-modal="true" aria-labelledby="island-complete-title">
+          <button className={styles.completionClose} type="button" onClick={() => setCompletionOpen(false)} aria-label="Close quest completion">×</button>
+          <span className={styles.completionIcon} aria-hidden="true">✓</span>
+          <small>THE FIRST ISLAND · VARIABLES &amp; VALUES</small>
+          <h2 id="island-complete-title">Quest completed!</h2>
+          <p>You finished every island lesson and passed the Scout’s final trial. Your next learning path is ready.</p>
+          <div className={styles.completionActions}>
+            <Link href="/church" className={styles.completionNext}>Next learning path: Conditions <span aria-hidden="true">→</span></Link>
+            <Link href="/learn" className={styles.completionSecondary}>View all learning paths</Link>
+            <button type="button" className={styles.completionSecondary} onClick={() => setCompletionOpen(false)}>Keep exploring the island</button>
+          </div>
+        </section>
+      </div> : null}
     </main>
   );
 }
