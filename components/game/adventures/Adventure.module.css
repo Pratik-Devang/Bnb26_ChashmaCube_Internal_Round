@@ -48,7 +48,7 @@
 
 .hudLeft small, .hudLeft strong { display: block; }
 .hudLeft strong { text-transform: capitalize; }
-.hudLeft a { color: #d4b277; font: bold .75rem monospace; }
+.hudLeft a { color: #d4b277; font: bold .95rem monospace; }
 
 .hudCenter {
   display: flex;
