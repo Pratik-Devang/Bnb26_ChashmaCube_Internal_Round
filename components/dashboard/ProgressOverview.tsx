@@ -5,6 +5,7 @@ const stateLabels: Record<ConceptState, string> = {
   resolved: "Resolved",
   improving: "Improving",
   "needs-practice": "Needs practice",
+  learned: "Learning",
   untested: "Untested",
 };
 

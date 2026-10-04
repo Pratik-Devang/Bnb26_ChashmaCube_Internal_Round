@@ -48,6 +48,8 @@
 .actor b { position: absolute; top: -15px; left: 15px; background: #eedda9; border: 2px solid #363d2b; color: #24271f; width: 22px; font: bold 14px monospace; }
 .actor > span,.player > span { position: absolute; top: 100%; left: 50%; transform: translateX(-50%); white-space: nowrap; font: bold 10px monospace; padding: 3px 5px; background: #182016dd; color: #f5e7b7; }
 .actor:hover { filter: drop-shadow(0 0 3px #e8d395); }
+.objectTarget { position: absolute; z-index: 5; transform: translate(-50%,-50%); padding: 5px 7px; border: 2px solid #d6b968; background: #20291fe8; color: #f4e8bc; font: 800 10px monospace; letter-spacing: .04em; cursor: pointer; white-space: nowrap; }
+.objectTarget:hover { background: #465239; filter: drop-shadow(0 0 4px #e8d395); }
 .player { pointer-events: none; z-index: 4; }
 .player > span { top: -8px; }
 .ambient { pointer-events: none; }
@@ -63,6 +65,15 @@
 .dialog p { line-height: 1.8; }
 .dialog pre { background: #10170f; padding: 20px; overflow: auto; border: 1px solid #536042; color: #ede2b4; font: .95rem/1.7 monospace; }
 .dialog aside { padding: 15px; background: #343d28; border-left: 3px solid #b8bd80; line-height: 1.7; margin: 18px 0; }
+.exampleAnswer { display: grid; gap: 6px; border-left-color: #d6b968 !important; background: #303829 !important; }
+.exampleAnswer strong { color: #e6cb83; font: 800 .68rem monospace; letter-spacing: .08em; text-transform: uppercase; }
+.exampleAnswer > span { color: #f3ecd5; font-weight: 800; }
+.exampleAnswer p { margin: 0; color: #c7cebc; font-size: .86rem; }
+.lessonPager { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 22px; padding-top: 16px; border-top: 1px solid #4b5945; }
+.lessonPager > span { color: #c5cbbb; font: 700 .72rem monospace; white-space: nowrap; }
+.pageButton { min-height: 40px; padding: 9px 14px; border: 1px solid #738064; background: #1a2119; color: #eee9dc; font-weight: 800; cursor: pointer; }
+.pageButton:hover:not(:disabled) { background: #35412f; }
+.pageButton:disabled { opacity: .45; cursor: not-allowed; }
 .answer { display: flex; align-items: center; gap: 12px; margin: 9px 0; white-space: pre-wrap; font-family: monospace; }
 .setup :is(a,button,input):focus-visible,.world :is(a,button,input):focus-visible { outline: 3px solid #e5c386; outline-offset: 4px; }
 @media (prefers-reduced-motion: no-preference) { .actor,.ambient,.player { animation: spriteFrames 1.2s steps(var(--frames)) infinite; } }

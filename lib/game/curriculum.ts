@@ -12,7 +12,12 @@ export type AdventureProgress = AdventureSelection & {
   completedLessonIds: string[]; passedQuestionIds: string[]; completed: boolean;
   coinsEarned: number; attemptCount: number; mistakeCount: number; updatedAt: string | null;
 };
-export type AdventureJournal = { recent: AdventureSelection | null; saves: AdventureProgress[] };
+export type IncorrectAdventureReview = {
+  id: string; world: AdventureWorld; track: string; topic: string; difficulty: string;
+  questionId: string; prompt: string; code: string; yourAnswer: string;
+  correctAnswer: string; explanation: string; attemptedAt: string | null;
+};
+export type AdventureJournal = { recent: AdventureSelection | null; saves: AdventureProgress[]; incorrectReviews: IncorrectAdventureReview[] };
 export const topicNames: Record<string, string> = {
   variables: "Variables & values", conditions: "Conditions", loops: "Loops", lists: "Lists", functions: "Functions",
 };

@@ -1,7 +1,7 @@
 export type ModuleStatus = "completed" | "active" | "upcoming" | "locked";
 export type QuestStatus = "open" | "completed";
 
-export type ConceptState = "resolved" | "improving" | "needs-practice" | "untested";
+export type ConceptState = "resolved" | "improving" | "needs-practice" | "learned" | "untested";
 export type ConceptStatus = "UNTESTED" | "NEEDS_PRACTICE" | "IMPROVING" | "RESOLVED";
 
 export type Misconception =

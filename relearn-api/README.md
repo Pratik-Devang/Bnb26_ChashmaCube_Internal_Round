@@ -91,7 +91,7 @@ When `previous_misconception_id` is supplied:
 
 ## Local setup
 
-Requirements: Python 3.11+, PostgreSQL, and a virtual environment.
+Requirements: Python 3.11+ and a virtual environment. Local development uses the project-root `relearn-local.sqlite3` database by default. Set `RELEARN_DATABASE_URL` to use PostgreSQL or another configured database.
 
 ### 1. Install dependencies
 ```powershell
@@ -115,7 +115,7 @@ Check the service at `http://localhost:8000/health` and the Swagger UI at `http:
 
 ## Create and seed the database
 
-After PostgreSQL is running and `.env` contains the correct connection string:
+For local SQLite development, the API creates the tables and seeds an empty database on startup. To use PostgreSQL, set `RELEARN_DATABASE_URL` in `.env`, start PostgreSQL, then run:
 
 ```powershell
 alembic upgrade head

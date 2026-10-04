@@ -16,6 +16,7 @@ const labels: Record<string, string> = {
   resolved: "Resolved",
   improving: "Improving",
   "needs-practice": "Needs practice",
+  learned: "Learning",
   untested: "Not checked yet",
 };
 
@@ -89,11 +90,11 @@ export function InsightsView() {
     const derivedVariables: LearnerConceptState = {
       id: "concept-variables",
       concept: "Variables & values",
-      state: islandProgress.challengeCompleted ? "improving" : "untested",
+      state: islandProgress.challengeCompleted ? "improving" : completedIslandLessons > 0 ? "learned" : "untested",
       mastery: islandProgress.challengeCompleted ? 55 : 0,
       friendlyDescription: islandProgress.challengeCompleted
         ? `Completed all ${orderedFirstIslandLessons.length} island lessons and passed the Scout’s trial. A new transfer challenge is needed to confirm mastery.`
-        : `${completedIslandLessons}/${orderedFirstIslandLessons.length} First Island lessons completed. The Scout’s trial will add attempt evidence.`,
+        : `${completedIslandLessons}/${orderedFirstIslandLessons.length} First Island lessons completed. Complete the Scout’s trial to add code-challenge evidence.`,
       misconception: "CORRECT",
     };
     return [derivedVariables, ...liveConcepts];
@@ -102,7 +103,7 @@ export function InsightsView() {
   const resolvedCount = concepts.filter((concept) => concept.state === "resolved").length;
   const improvingCount = concepts.filter((concept) => concept.state === "improving").length;
   const practiceCount = concepts.filter((concept) => concept.state === "needs-practice").length;
-  const checkedCount = concepts.filter((concept) => concept.state !== "untested").length;
+  const checkedCount = concepts.filter((concept) => concept.state !== "untested" && concept.state !== "learned").length;
   const practiceConcept = concepts.find((concept) => concept.state === "needs-practice");
   const guidance = practiceConcept ? misconceptionGuidance[practiceConcept.misconception] : undefined;
   const nextTeacher = orderedFirstIslandLessons.find(
@@ -143,9 +144,9 @@ export function InsightsView() {
           <div className="insight-list">
             {concepts.map((concept) => (
               <article key={concept.id}>
-                <div className={`state-symbol state-${concept.state}`}>{concept.state === "resolved" ? "✓" : concept.state === "improving" ? "↗" : concept.state === "needs-practice" ? "◎" : "·"}</div>
+                <div className={`state-symbol state-${concept.state}`}>{concept.state === "resolved" || concept.state === "learned" ? "✓" : concept.state === "improving" ? "↗" : concept.state === "needs-practice" ? "◎" : "·"}</div>
                 <div><h3>{concept.concept}</h3><p>{concept.friendlyDescription}</p></div>
-                <span className={`state-label state-${concept.state}`}>{labels[concept.state] ?? concept.state}</span>
+                <span className={`state-label state-${concept.state}`}>{concept.state === "learned" && completedIslandLessons === orderedFirstIslandLessons.length ? "Lessons complete" : labels[concept.state] ?? concept.state}</span>
               </article>
             ))}
           </div>

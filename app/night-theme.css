@@ -74,6 +74,8 @@ body { background: #11130f; }
 .island-dashboard-preview small { color: #d4b277; }
 .product-shell :is(.misconception-signal,.practice-pulse,.week-strip,.day-streak-card,.insight-list article,.reward-stack > div,.profile-message,.gentle-note,.next-insight,.history-note) { background: #252720; border-color: #55583f; color: #eee9dc; }
 .product-shell :is(.day-streak-card span,.misconception-signal p,.misconception-signal small,.practice-pulse small,.island-objectives article small,.profile-card > p,.profile-stats span,.profile-message) { color: #c2bba9; }
+.product-shell .state-symbol.state-untested, .product-shell .state-label.state-untested { background: #34372d; color: #eee9dc; border: 1px solid #827d62; }
+.product-shell .state-symbol.state-learned, .product-shell .state-label.state-learned { background: #3e5a39; color: #f2efdf; border: 1px solid #82936a; }
 .product-shell :is(.date-badge,.round-count,.support-icon,.mini-path-card > span) { background: #55583f; color: #eee9dc; }
 .product-shell .mini-path-card.current { background: #34372d !important; box-shadow: inset 0 -2px #d4b277; }
 .island-objectives article, .island-objectives article.done { background: #34372d; border-color: #55583f; box-shadow: none; }
@@ -122,9 +124,16 @@ body { background: #11130f; }
 .adventure-journal { margin: 28px 0; }
 .adventure-journal > div { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 18px; }
 .adventure-journal-card h2 { margin: 12px 0; }
-.adventure-journal-card p { color: #c2bba9; }
-.adventure-journal-stats { display: flex; flex-wrap: wrap; gap: 16px; font: .78rem monospace; color: #d4b277; }
-.adventure-evidence-note { margin-top: 18px; max-width: 650px; font-size: .8rem; line-height: 1.7; }
+.adventure-journal-card p { color: #c2bba9; font-size: 1rem; line-height: 1.65; }
+.adventure-journal-card h2 { font-size: 1.65rem; line-height: 1.35; }
+.adventure-journal-card > div:first-child > span { font-size: .82rem; }
+.adventure-journal-stats { display: flex; flex-wrap: wrap; gap: 16px; font: .95rem monospace; color: #d4b277; }
+.adventure-evidence-note { margin-top: 18px; max-width: 650px; font-size: .95rem; line-height: 1.7; }
+.adventure-review-toggle { font-size: 1.05rem; }
+.incorrect-review-meta { font-size: .82rem; }
+.incorrect-review-item { font-size: 1.08rem; line-height: 1.7; }
+.incorrect-review-item h3 { font-size: 1.3rem; }
+.incorrect-review-item pre { font-size: 1rem; }
 @keyframes expedition-float {
   0%, 100% { translate: 0 0; }
   50% { translate: 0 -7px; }
