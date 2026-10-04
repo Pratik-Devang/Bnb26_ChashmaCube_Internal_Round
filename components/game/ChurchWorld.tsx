@@ -8,6 +8,7 @@ import guideIdle from "@/2d_characters/Archer/Idle.png";
 import { ChurchMapCanvas } from "./ChurchMapCanvas";
 import { ChurchExteriorCanvas } from "./ChurchExteriorCanvas";
 import { IslandOracleDialog } from "./dialogs/IslandOracleDialog";
+import { PracticeArenaModal } from "@/components/practice/PracticeArenaModal";
 import { loadFirstIslandProgress } from "@/lib/game/first-island/progress";
 import { emptyChapelProgress, loadChapelProgress, saveChapelProgress } from "@/lib/game/chapel-of-choices/progress";
 import type { ChapelProgress } from "@/types/game";
@@ -87,6 +88,7 @@ export function ChurchWorld() {
   const [activeProblem, setActiveProblem] = useState<ObjectiveTarget | null>(null);
   const [choice, setChoice] = useState<string | null>(null);
   const [oracleOpen, setOracleOpen] = useState(false);
+  const [arenaOpen, setArenaOpen] = useState(false);
   const [chapelProgress, setChapelProgress] = useState<ChapelProgress>(emptyChapelProgress);
   const [saveReady, setSaveReady] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -315,6 +317,16 @@ export function ChurchWorld() {
           <button
             type="button"
             className={styles.oracleButton}
+            onClick={() => setArenaOpen(true)}
+            title="Open Practice Quiz"
+            aria-label="Open Practice Quiz"
+            style={{ width: "auto", padding: "0 12px", fontSize: "0.75rem", fontWeight: "bold", fontFamily: "monospace" }}
+          >
+            QUIZ
+          </button>
+          <button
+            type="button"
+            className={styles.oracleButton}
             onClick={() => setOracleOpen(true)}
             title="Consult AI Oracle (Spell & Code Diagnoser)"
             aria-label="Consult AI Oracle"
@@ -385,6 +397,7 @@ export function ChurchWorld() {
         </section>
       </div> : null}
       {oracleOpen ? <IslandOracleDialog onClose={() => setOracleOpen(false)} /> : null}
+      <PracticeArenaModal isOpen={arenaOpen} onClose={() => setArenaOpen(false)} initialDifficulty="medium" />
     </main>
   );
 }

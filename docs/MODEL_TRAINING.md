@@ -30,3 +30,20 @@ The later training matrix will combine:
 - Test signatures: pass/fail vector, timeout flag, numeric delta pattern, unchanged output, and last-contribution behavior.
 
 Structured learner-facing evidence is produced by deterministic feature rules. Model probabilities choose or abstain from a class; generated prose never decides the diagnosis.
+
+## Demo integration status
+
+The First Island Scout uses the authenticated attempt pipeline, which combines the exercise identifier, submitted code, and actual test results. For `starting-value-01`, deterministic test signatures identify an unchanged score, a discarded input score, or a consistent bonus offset. If journal synchronization fails, the Scout reports the failed test evidence locally instead of inventing a classifier result.
+
+The separate legacy code classifier remains experimental. Its SVM-style decision values are uncalibrated scores, not confidence percentages. The UI labels them accordingly, and an unavailable classifier now produces an explicit error instead of a fabricated fallback prediction. A changed code-only label is `uncertain`, not proof that a prior misconception was resolved.
+
+### Optional Gemini code-review layer
+
+Gemini may reword the trusted rule/test diagnosis as a structured learner-facing code review. It does not select or override the misconception label, test outcome, mastery state, or intervention. Configure it only on the FastAPI server in `relearn-api/.env`:
+
+```env
+RELEARN_GEMINI_API_KEY=your_key_from_google_ai_studio
+RELEARN_GEMINI_MODEL=gemini-2.5-flash
+```
+
+Never use a `NEXT_PUBLIC_` variable for this key. If the key is absent, timed out, blocked, or returns invalid structured output, `/api/v1/attempts/{attempt_id}/code-review` returns a deterministic evidence-based review instead. This keeps the learning flow usable and prevents generated prose from becoming grading evidence.

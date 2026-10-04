@@ -5,6 +5,7 @@ import { getLearnerProgress, getLearningPlan } from "@/lib/api";
 import { Icon } from "@/components/ui/Icon";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { AdventureJournal } from "@/components/dashboard/AdventureJournal";
+import { SkillBook } from "@/components/skills/SkillBook";
 import { useAccount } from "@/components/auth/AccountProvider";
 import type { Learner, LearnerConceptState, LearningModule } from "@/types/learning";
 
@@ -64,6 +65,9 @@ export function ProgressView() {
 
   return (
     <main className="route-page progress-page">
+      <SkillBook />
+      <details>
+      <summary>View challenge mastery & adventure history</summary>
       {loadError && <p role="alert">{loadError}</p>}
       <PageHeader
         eyebrow="YOUR PROGRESS"
@@ -158,6 +162,7 @@ export function ProgressView() {
           </p>
         </section>
       </div>
+      </details>
     </main>
   );
 }

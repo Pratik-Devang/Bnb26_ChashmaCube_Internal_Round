@@ -2,7 +2,7 @@
 import json
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
@@ -16,6 +16,7 @@ from app.models.learner import Learner
 
 router = APIRouter(prefix="/api/v1/auth/adventures", tags=["adventures"])
 CATALOG = json.loads((Path(__file__).parent.parent / "data" / "adventure_curriculum.json").read_text(encoding="utf-8"))
+CODE_CHALLENGES = json.loads((Path(__file__).parent.parent / "data" / "adventure_code_challenges.json").read_text(encoding="utf-8"))
 TRACKS = {track["id"]: track for track in CATALOG}
 World = Literal["first-island", "chapel-of-choices"]
 
@@ -32,6 +33,13 @@ class LessonAction(Selection):
 class AnswerAction(Selection):
     questionId: str = Field(max_length=30)
     answer: int = Field(ge=0, le=10)
+
+
+class CodeAnswerAction(Selection):
+    questionId: str = Field(max_length=30)
+    exerciseId: str = Field(max_length=40)
+    code: str = Field(min_length=1, max_length=20_000)
+    results: list[dict[str, Any]] = Field(min_length=1, max_length=10)
 
 
 def track_for(track_id):
@@ -70,7 +78,8 @@ async def remember(session, learner, world, track):
 
 @router.get("/catalog")
 async def catalog(learner: Learner = Depends(current_user)):
-    return [{**track, "questions": [{k: v for k, v in question.items() if k not in {"answer", "feedback"}}
+    return [{**track, "codeChallenge": CODE_CHALLENGES[track["id"]],
+             "questions": [{k: v for k, v in question.items() if k not in {"answer", "feedback"}}
                                     for question in track["questions"]]} for track in CATALOG]
 
 
@@ -79,7 +88,57 @@ async def progress(learner: Learner = Depends(current_user), session: AsyncSessi
     saves = (await session.scalars(select(WorldSave).where(
         WorldSave.learner_id == learner.id, WorldSave.world_id.like("adventure:%")))).all()
     recent = next((saved.progress for saved in saves if saved.world_id == "adventure:recent"), None)
-    return {"recent": recent, "saves": [saved.progress for saved in saves if saved.world_id != "adventure:recent"]}
+    progress_saves = [saved.progress for saved in saves if saved.world_id != "adventure:recent"]
+    reviews = []
+    for save in progress_saves:
+        track = TRACKS.get(save.get("track", ""), {})
+        questions = {question["id"]: question for question in track.get("questions", [])}
+        for attempt in save.get("attempts", []):
+            if attempt.get("correct"):
+                continue
+            if attempt.get("answer") == "code":
+                challenge = CODE_CHALLENGES.get(save.get("track", ""), {})
+                if not challenge:
+                    continue
+                reviews.append({
+                    "id": f'{save.get("world", "")}/{save.get("track", "")}/{challenge.get("id", "code")}/{attempt.get("at", "")}',
+                    "kind": "code",
+                    "world": save.get("world", "first-island"),
+                    "track": save.get("track", ""),
+                    "topic": track.get("topic", "Topic adventure"),
+                    "difficulty": track.get("difficulty", ""),
+                    "questionId": attempt.get("questionId", ""),
+                    "exerciseId": challenge.get("id", ""),
+                    "prompt": challenge.get("prompt", "Coding trial"),
+                    "code": attempt.get("submittedCode", ""),
+                    "yourAnswer": "Your solution did not pass all the checks.",
+                    "correctAnswer": "See the worked solution in the review.",
+                    "explanation": challenge.get("hint", "Compare your function with the task and check what value it returns."),
+                    "attemptedAt": attempt.get("at"),
+                })
+                continue
+            question = questions.get(attempt.get("questionId"))
+            if question is None:
+                continue
+            options = question.get("options", [])
+            selected = attempt.get("answer")
+            correct = question.get("answer")
+            reviews.append({
+                "id": f'{save.get("world", "")}/{save.get("track", "")}/{attempt.get("questionId", "")}/{attempt.get("at", "")}',
+                "world": save.get("world", "first-island"),
+                "track": save.get("track", ""),
+                "topic": track.get("topic", "Topic adventure"),
+                "difficulty": track.get("difficulty", ""),
+                "questionId": question["id"],
+                "prompt": question["prompt"],
+                "code": question.get("code", ""),
+                "yourAnswer": options[selected] if isinstance(selected, int) and 0 <= selected < len(options) else "Unavailable",
+                "correctAnswer": options[correct] if isinstance(correct, int) and 0 <= correct < len(options) else "Unavailable",
+                "explanation": question.get("feedback", "Review the related lesson and trace each step carefully."),
+                "attemptedAt": attempt.get("at"),
+            })
+    reviews.sort(key=lambda review: review.get("attemptedAt") or "", reverse=True)
+    return {"recent": recent, "saves": progress_saves, "incorrectReviews": reviews}
 
 
 @router.post("/start")
@@ -121,9 +180,14 @@ async def answer(payload: AnswerAction, learner: Learner = Depends(current_user)
         raise HTTPException(422, "Choose an available answer.")
     saved = await locked_save(session, learner, payload.world, payload.track)
     data = {**saved.progress}
-    if len(data["completedLessonIds"]) != len(track["lessons"]):
-        raise HTTPException(409, "Finish the guide lessons before this trial.")
     passed = list(data["passedQuestionIds"])
+    required_lessons = len(track["lessons"])
+    if payload.world == "chapel-of-choices":
+        # The chapel places its first topic check at the lever after two guides,
+        # then the treasure check after the final guide.
+        required_lessons = min(len(track["lessons"]), 2 + len(passed))
+    if len(data["completedLessonIds"]) < required_lessons:
+        raise HTTPException(409, "Visit the required guide before this question.")
     if payload.questionId not in passed and payload.questionId != track["questions"][len(passed)]["id"]:
         raise HTTPException(409, "Complete the earlier question first.")
     correct = payload.answer == question["answer"]
@@ -141,3 +205,43 @@ async def answer(payload: AnswerAction, learner: Learner = Depends(current_user)
     await remember(session, learner, payload.world, payload.track)
     await session.commit()
     return {"progress": data, "correct": correct, "feedback": question["feedback"], "source": "authored"}
+
+
+@router.post("/code-answer")
+async def code_answer(payload: CodeAnswerAction, learner: Learner = Depends(current_user), session: AsyncSession = Depends(get_session)):
+    track = track_for(payload.track)
+    challenge = CODE_CHALLENGES[payload.track]
+    if payload.exerciseId != challenge["id"]:
+        raise HTTPException(422, "This coding trial is not available for the selected track.")
+    question = track["questions"][0]
+    if payload.questionId != question["id"]:
+        raise HTTPException(409, "Complete the coding trial before the transfer question.")
+    saved = await locked_save(session, learner, payload.world, payload.track)
+    data = {**saved.progress}
+    if len(data["completedLessonIds"]) != len(track["lessons"]):
+        raise HTTPException(409, "Finish the guide lessons before this trial.")
+    passed = list(data["passedQuestionIds"])
+    expected_cases = challenge["testCases"]
+    correct = len(payload.results) == len(expected_cases) and all(
+        reported.get("passed") is True
+        and not reported.get("error")
+        and reported.get("actual") == expected["expected"]
+        and reported.get("expected") == expected["expected"]
+        for reported, expected in zip(payload.results, expected_cases)
+    )
+    data["attemptCount"] += 1
+    data["mistakeCount"] += int(not correct)
+    data["attempts"] = (data["attempts"] + [{"questionId": payload.questionId, "answer": "code",
+        "exerciseId": payload.exerciseId, "submittedCode": payload.code,
+        "correct": correct, "at": datetime.now(timezone.utc).isoformat()}])[-30:]
+    if correct and payload.questionId not in passed:
+        passed.append(payload.questionId)
+    done = len(passed) == len(track["questions"])
+    data.update(passedQuestionIds=passed, completed=done,
+                coinsEarned=len(data["completedLessonIds"]) * 10 + (50 if done else 0),
+                updatedAt=datetime.now(timezone.utc).isoformat())
+    saved.progress = data
+    await remember(session, learner, payload.world, payload.track)
+    await session.commit()
+    return {"progress": data, "correct": correct,
+            "feedback": challenge["hint"], "source": "code-tests"}

@@ -1,21 +1,24 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { getLearnerProgress } from "@/lib/api";
-import { orderedFirstIslandLessons } from "@/lib/game/first-island/content";
-import { emptyFirstIslandProgress, loadFirstIslandProgress } from "@/lib/game/first-island/progress";
+import { adventureHref, loadAdventureJournal, topicNames } from "@/lib/game/curriculum";
 import { Icon } from "@/components/ui/Icon";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { PixelSprite } from "@/components/ui/PixelSprite";
 import { AdventureJournal } from "@/components/dashboard/AdventureJournal";
-import type { FirstIslandProgress } from "@/types/game";
+import type { AdventureJournal as AdventureJournalData, AdventureProgress } from "@/lib/game/curriculum";
 import type { LearnerConceptState, Misconception } from "@/types/learning";
+
+const emptyJournal: AdventureJournalData = { recent: null, saves: [], incorrectReviews: [] };
+const adventureSteps = ["Lesson 1", "Lesson 2", "Lesson 3", "Check 1", "Code check"];
 
 const labels: Record<string, string> = {
   resolved: "Resolved",
   improving: "Improving",
   "needs-practice": "Needs practice",
+  learned: "Learning",
   untested: "Not checked yet",
 };
 
@@ -54,21 +57,21 @@ const misconceptionGuidance: Partial<Record<Misconception, { title: string; expl
 
 export function InsightsView() {
   const [liveConcepts, setLiveConcepts] = useState<LearnerConceptState[]>([]);
-  const [islandProgress, setIslandProgress] = useState<FirstIslandProgress>(emptyFirstIslandProgress);
+  const [journal, setJournal] = useState<AdventureJournalData>(emptyJournal);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
     let isMounted = true;
 
-    Promise.all([getLearnerProgress(), loadFirstIslandProgress()])
-      .then(([concepts, progress]) => {
+    Promise.allSettled([getLearnerProgress(), loadAdventureJournal()])
+      .then(([conceptResult, journalResult]) => {
         if (!isMounted) return;
-        setLiveConcepts(concepts);
-        setIslandProgress(progress);
-      })
-      .catch(() => {
-        if (isMounted) setLoadError("Unable to load your insights. Refresh to retry.");
+        if (conceptResult.status === "fulfilled") setLiveConcepts(conceptResult.value);
+        if (journalResult.status === "fulfilled") setJournal(journalResult.value);
+        if (conceptResult.status === "rejected" || journalResult.status === "rejected") {
+          setLoadError("Some progress could not be loaded. Refresh to retry.");
+        }
       })
       .finally(() => {
         if (isMounted) setIsLoading(false);
@@ -79,35 +82,29 @@ export function InsightsView() {
     };
   }, []);
 
-  const completedIslandLessons = islandProgress.completedLessonIds.length;
-  const islandStarted = completedIslandLessons > 0 || islandProgress.challengeCompleted;
-  const variablesEvidence = liveConcepts.find((concept) => concept.id === "concept-variables");
-
-  const concepts = useMemo(() => {
-    if (variablesEvidence || !islandStarted) return liveConcepts;
-
-    const derivedVariables: LearnerConceptState = {
-      id: "concept-variables",
-      concept: "Variables & values",
-      state: islandProgress.challengeCompleted ? "improving" : "untested",
-      mastery: islandProgress.challengeCompleted ? 55 : 0,
-      friendlyDescription: islandProgress.challengeCompleted
-        ? `Completed all ${orderedFirstIslandLessons.length} island lessons and passed the Scout’s trial. A new transfer challenge is needed to confirm mastery.`
-        : `${completedIslandLessons}/${orderedFirstIslandLessons.length} First Island lessons completed. The Scout’s trial will add attempt evidence.`,
-      misconception: "CORRECT",
-    };
-    return [derivedVariables, ...liveConcepts];
-  }, [completedIslandLessons, islandProgress.challengeCompleted, islandStarted, liveConcepts, variablesEvidence]);
+  const concepts = liveConcepts;
+  const recentProgress = journal.recent
+    ? journal.saves.find((save) => save.world === journal.recent?.world && save.track === journal.recent?.track)
+    : undefined;
+  const activeProgress: AdventureProgress | undefined = recentProgress
+    ?? [...journal.saves].sort((left, right) => (right.updatedAt ?? "").localeCompare(left.updatedAt ?? ""))[0];
+  const [activeTopic = "variables", activeDifficulty = "easy"] = activeProgress?.track.split("-") ?? [];
+  const activeTopicName = topicNames[activeTopic] ?? activeTopic;
+  const activeWorldName = activeProgress?.world === "chapel-of-choices" ? "Chapel of Choices" : "The First Island";
+  const completedLessons = activeProgress?.completedLessonIds.length ?? 0;
+  const completedChecks = activeProgress?.passedQuestionIds.length ?? 0;
+  const completedStepCount = completedLessons + completedChecks;
+  const adventureStarted = Boolean(activeProgress);
 
   const resolvedCount = concepts.filter((concept) => concept.state === "resolved").length;
   const improvingCount = concepts.filter((concept) => concept.state === "improving").length;
   const practiceCount = concepts.filter((concept) => concept.state === "needs-practice").length;
-  const checkedCount = concepts.filter((concept) => concept.state !== "untested").length;
+  const checkedCount = concepts.filter((concept) => concept.state !== "untested" && concept.state !== "learned").length;
   const practiceConcept = concepts.find((concept) => concept.state === "needs-practice");
   const guidance = practiceConcept ? misconceptionGuidance[practiceConcept.misconception] : undefined;
-  const nextTeacher = orderedFirstIslandLessons.find(
-    (actor) => actor.lesson && !islandProgress.completedLessonIds.includes(actor.lesson.id),
-  );
+  const nextIncomplete = journal.saves.find((save) => !save.completed);
+  const recommendation = activeProgress && !activeProgress.completed ? activeProgress : nextIncomplete;
+  const recommendationHref = recommendation ? adventureHref(recommendation) : "/learn";
 
   return (
     <main className="route-page insights-page">
@@ -132,7 +129,7 @@ export function InsightsView() {
         <article><span className="metric-icon yellow">◎</span><div><strong>{practiceCount}</strong><p>Practice next</p></div></article>
       </section>
 
-      {!islandStarted && concepts.length === 0 && !isLoading ? <p className="insights-empty-note">No code-challenge evidence yet. Topic-adventure progress is tracked separately above.</p> : null}
+      {concepts.length === 0 && !isLoading ? <p className="insights-empty-note">No code-challenge evidence yet. Topic-adventure progress is tracked separately above.</p> : null}
 
       <div className="insights-grid">
         <section className="surface-card concept-insights">
@@ -143,7 +140,7 @@ export function InsightsView() {
           <div className="insight-list">
             {concepts.map((concept) => (
               <article key={concept.id}>
-                <div className={`state-symbol state-${concept.state}`}>{concept.state === "resolved" ? "✓" : concept.state === "improving" ? "↗" : concept.state === "needs-practice" ? "◎" : "·"}</div>
+                <div className={`state-symbol state-${concept.state}`}>{concept.state === "resolved" || concept.state === "learned" ? "✓" : concept.state === "improving" ? "↗" : concept.state === "needs-practice" ? "◎" : "·"}</div>
                 <div><h3>{concept.concept}</h3><p>{concept.friendlyDescription}</p></div>
                 <span className={`state-label state-${concept.state}`}>{labels[concept.state] ?? concept.state}</span>
               </article>
@@ -152,28 +149,28 @@ export function InsightsView() {
         </section>
 
         <section className={`diagnosis-spotlight${practiceConcept ? " needs-practice-spotlight" : ""}`} aria-label="Latest learning insight">
-          <span className="page-eyebrow">{practiceConcept ? "YOUR LATEST CODE EVIDENCE" : islandProgress.challengeCompleted ? "YOUR LATEST ACHIEVEMENT" : "YOUR ISLAND JOURNAL"}</span>
+          <span className="page-eyebrow">{practiceConcept ? "YOUR LATEST CODE EVIDENCE" : activeProgress?.completed ? "YOUR LATEST ACHIEVEMENT" : "YOUR ADVENTURE JOURNAL"}</span>
           <div className="spotlight-title">
             <span><PixelSprite character="scout" /></span>
             <div>
-              <h2>{practiceConcept ? guidance?.title ?? "One idea needs another look" : islandProgress.challengeCompleted ? "The Scout’s trial is complete" : islandStarted ? "Your trail is taking shape" : "Begin with The First Island"}</h2>
-              <p>{practiceConcept ? practiceConcept.concept : islandProgress.challengeCompleted ? "Variables & values · challenge passed" : `${completedIslandLessons}/${orderedFirstIslandLessons.length} island lessons found`}</p>
+              <h2>{practiceConcept ? guidance?.title ?? "One idea needs another look" : activeProgress?.completed ? `${activeTopicName} adventure complete` : adventureStarted ? `Continue ${activeTopicName}` : "Choose your first adventure"}</h2>
+              <p>{practiceConcept ? practiceConcept.concept : adventureStarted ? `${activeWorldName} · ${activeDifficulty} · ${completedLessons}/3 lessons · ${completedChecks}/2 checks` : "Select a topic, difficulty, and world"}</p>
             </div>
           </div>
 
           <p>{practiceConcept
             ? guidance?.explanation ?? practiceConcept.friendlyDescription
-            : islandProgress.challengeCompleted
-              ? "You completed every island lesson and passed a working-code challenge. Re:Learn marks the concept as improving until you apply it successfully in a different problem."
-              : islandStarted
-                ? `${nextTeacher?.name ?? "The Island Scout"} is your next stop. Complete the trail to unlock the final code challenge.`
-                : "Meet the island teachers, learn how variables hold values, and finish with the Scout’s code challenge."
+            : activeProgress?.completed
+              ? `You completed all lessons and both checks for ${activeTopicName} at ${activeDifficulty} difficulty in ${activeWorldName}. Choose another track or revisit this one to practise.`
+              : adventureStarted
+                ? `Your saved ${activeTopicName} journey is ${completedStepCount * 20}% complete. Resume it to continue from the next unfinished lesson or check.`
+                : "Choose what you want to learn, select a difficulty, and begin on either available world. Your lessons and checks will appear here automatically."
           }</p>
 
-          {islandStarted ? <div className="evidence-path island-evidence-path">
-            {orderedFirstIslandLessons.map((actor, index) => {
-              const complete = actor.lesson ? islandProgress.completedLessonIds.includes(actor.lesson.id) : false;
-              return <span key={actor.id} className={complete ? "included" : "excluded"}>{index + 1}<small>{complete ? "learned" : "not found"}</small></span>;
+          {adventureStarted ? <div className="evidence-path island-evidence-path">
+            {adventureSteps.map((step, index) => {
+              const complete = index < completedStepCount;
+              return <span key={step} className={complete ? "included" : "excluded"}>{index + 1}<small>{complete ? "complete" : step}</small></span>;
             })}
           </div> : null}
 
@@ -181,9 +178,9 @@ export function InsightsView() {
             <Icon name="target" />
             <div>
               <strong>Recommended next step</strong>
-              <span>{practiceConcept ? guidance?.next ?? "Return to the challenge and try a revised solution." : islandProgress.challengeCompleted ? "Continue to the Chapel of Choices and apply your learning in a new setting." : "Continue along the First Island trail."}</span>
+              <span>{practiceConcept ? guidance?.next ?? "Return to the challenge and try a revised solution." : recommendation ? `Resume ${topicNames[recommendation.track.split("-")[0]] ?? recommendation.track} where you left off.` : "Choose a new topic and difficulty to begin your next adventure."}</span>
             </div>
-            <Link href={islandProgress.challengeCompleted ? "/game/church" : "/game"} className="solid-action" style={{ marginLeft: "auto" }}><Icon name="play" /> {islandProgress.challengeCompleted ? "Next world" : islandStarted ? "Continue" : "Start"}</Link>
+            <Link href={recommendationHref} className="solid-action" style={{ marginLeft: "auto" }}><Icon name="play" /> {recommendation ? "Resume" : adventureStarted ? "New adventure" : "Choose"}</Link>
           </div>
         </section>
       </div>

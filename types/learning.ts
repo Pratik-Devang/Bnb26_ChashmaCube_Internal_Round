@@ -1,7 +1,7 @@
 export type ModuleStatus = "completed" | "active" | "upcoming" | "locked";
 export type QuestStatus = "open" | "completed";
 
-export type ConceptState = "resolved" | "improving" | "needs-practice" | "untested";
+export type ConceptState = "resolved" | "improving" | "needs-practice" | "learned" | "untested";
 export type ConceptStatus = "UNTESTED" | "NEEDS_PRACTICE" | "IMPROVING" | "RESOLVED";
 
 export type Misconception =
@@ -102,6 +102,17 @@ export interface DiagnosisResponse {
   intervention: Intervention;
   reassessmentExerciseId?: string | null;
   conceptStatus?: ConceptStatus | null;
+}
+
+export interface CodeReviewResponse {
+  source: "gemini" | "deterministic";
+  model: string;
+  availabilityMessage?: string | null;
+  diagnosisCode: Misconception;
+  summary: string;
+  strengths: string[];
+  issues: { title: string; explanation: string; line?: number | null }[];
+  nextSteps: string[];
 }
 
 export interface InterventionCompletion {
@@ -232,7 +243,7 @@ export interface InterventionDetail {
 }
 
 export interface ReassessmentResult {
-  status: "resolved" | "unresolved";
+  status: "resolved" | "unresolved" | "uncertain";
   misconception_id: number;
 }
 

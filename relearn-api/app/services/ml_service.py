@@ -178,8 +178,9 @@ class MLDiagnosisService:
         # Handle reassessment if previous_misconception_id is supplied
         reassessment: ReassessmentResult | None = None
         if previous_misconception_id is not None:
-            # If the previous misconception is no longer top-1, consider resolved
-            status = "resolved" if top_pred.id != previous_misconception_id else "unresolved"
+            # A changed code-only prediction is not evidence that the earlier
+            # misconception was resolved. Resolution requires a passing transfer task.
+            status = "unresolved" if top_pred.id == previous_misconception_id else "uncertain"
             reassessment = ReassessmentResult(
                 status=status,
                 misconception_id=previous_misconception_id,
